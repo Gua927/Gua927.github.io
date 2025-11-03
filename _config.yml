@@ -87,7 +87,7 @@ bing_site_verification: # out your bing-site-verification ID (Bing Webmaster)
 # -----------------------------------------------------------------------------
 
 blog_name: Gua's Space # blog_name will be displayed in your blog page
-blog_description: a simple whitespace theme for academics
+blog_description: My Note when reading papers and learning new things. # blog_description will be displayed in your blog page
 permalink: /blog/:year/:title/
 lsi: false # produce an index for related posts
 
