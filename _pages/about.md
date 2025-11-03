@@ -2,16 +2,16 @@
 layout: about
 title: about
 permalink: /
-subtitle: <a href='https://www.ruc.edu.cn/'>Renmin University of China</a> · <a href='https://www.gensi-thuair.com/#/portal_home'>GenSI Lab, THU‑AIR</a>
+subtitle: <a href='#'>Affiliations</a>. Address. Contacts. Motto. Etc.
 
 profile:
   align: right
   image: prof_pic.jpg
-  image_circular: flase # crops the image to make it circular
+  image_circular: false # crops the image to make it circular
   more_info: >
-    <p><a href="mailto:runzer.tian@gmail.com">runzer.tian@gmail.com</a></p>
-    <p>School of Statistics, Renmin University of China</p>
-    <p>GenSI Lab (THU‑AIR), Beijing, China</p>
+    <p>555 your office number</p>
+    <p>123 your address street</p>
+    <p>Your City, State 12345</p>
 
 selected_papers: true # includes a list of papers marked as "selected={true}"
 social: true # includes social icons at the bottom of the page
@@ -27,30 +27,8 @@ latest_posts:
   limit: 3 # leave blank to include all the blog posts
 ---
 
-I am an individual who enjoys experimenting, thinking, learning, and creating.
+Write your biography here. Tell the world about yourself. Link to your favorite [subreddit](http://reddit.com). You can put a picture in, too. The code is already in, just name your picture `prof_pic.jpg` and put it in the `img/` folder.
 
-I am currently a graduate student in the elite statistics program at the School of Statistics, Renmin University of China. I am also a research intern at **[GenSI Lab](https://www.gensi-thuair.com/#/portal_home)** (THU‑AIR), where I work on cutting-edge generative AI research.
+Put your address / P.O. box / other info right below your picture. You can also disable any of these elements by editing `profile` property of the YAML header of your `_pages/about.md`. Edit `_bibliography/papers.bib` and Jekyll will render your [publications page](/al-folio/publications/) automatically.
 
-My research focuses on **Generative Models** with applications in natural language processing and computational biology.
-
-**2025 Research Focus**
-
-- 💬 **Diffusion Language Models**: Exploring diffusion-based approaches for text generation, understanding, and controllable generation
-- 🧬 **Molecular Generation**: Developing generative models for small molecule design and drug discovery
-- 🧪 **Protein Generation**: Advancing protein structure generation and protein design using deep learning
-
-I'm also a lover of LaTeX and Julia.
-
-<div align="center">
-
-# <a href="https://git.io/typing-svg"><img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=40&duration=5001&pause=1000&color=2B8822&background=F892FF00&center=true&width=800&height=65&lines=Hi+there%2C+I+am+Tian+Runze!" alt="Typing SVG"></a>
-
-</div>
-
-- :telescope: **Research Interests**: Diffusion Models, Natural Language Processing, Generative AI
-- :seedling: I'm currently **exploring** diffusion-based language models and their applications in text generation
-- :handshake: I'm **looking to collaborate** on diffusion models research in NLP and AI for Science
-- :goal_net: **2025 Goals**: Advance research in diffusion language models and publish innovative work in controllable text generation
-
----
-
+Link to your social media connections, too. This theme is set up to use [Font Awesome icons](https://fontawesome.com/) and [Academicons](https://jpswalsh.github.io/academicons/), like the ones below. Add your Facebook, Twitter, LinkedIn, Google Scholar, or just disable all of them.
