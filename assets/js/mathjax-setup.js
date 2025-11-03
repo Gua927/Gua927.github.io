@@ -8,6 +8,10 @@ window.MathJax = {
     // Enable automatic line breaking for long equations
     processEscapes: true,
     processEnvironments: true,
+    processRefs: true,
+    digits: /^(?:[0-9]+(?:\{,\}[0-9]{3})*(?:\.[0-9]*)?|\.[0-9]+)/,
+    // Improve parsing for complex inline math
+    maxBuffer: 5 * 1024,
   },
   chtml: {
     // Enable responsive scaling

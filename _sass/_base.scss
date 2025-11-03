@@ -58,10 +58,11 @@ table.table a {
 
 blockquote {
   background: var(--global-bg-color);
-  border-left: 5px solid var(--global-theme-color);
+  border-left: 4px solid var(--global-text-color-light);
   margin: 1.5em 0;
   padding: 1em;
-  font-size: 1.2rem;
+  font-size: 0.95rem;
+  color: var(--global-text-color-light);
 
   p {
     margin-bottom: 0;
@@ -887,6 +888,30 @@ pre {
   background-color: var(--global-code-bg-color);
   border-radius: 6px;
   padding: 6px 12px;
+  overflow-x: auto;
+
+  // Custom scrollbar with neutral colors (not theme color)
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  // Firefox scrollbar styling
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.05);
 
   pre,
   code {
@@ -1079,19 +1104,20 @@ nav[data-toggle="toc"] {
     font-size: 0.75rem;
 
     &:hover {
-      color: var(--global-hover-color);
-      border-left-color: var(--global-hover-color);
+      color: var(--global-text-color);
+      border-left-color: var(--global-text-color);
     }
   }
 
   .nav-link.active {
-    color: var(--global-theme-color);
-    border-left-color: var(--global-theme-color);
+    color: var(--global-text-color);
+    border-left-color: var(--global-text-color);
     font-size: 0.75rem;
+    font-weight: 600;
 
     &:hover {
-      color: var(--global-hover-color);
-      border-left-color: var(--global-hover-color);
+      color: var(--global-text-color);
+      border-left-color: var(--global-text-color);
     }
   }
 }

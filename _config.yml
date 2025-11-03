@@ -163,6 +163,12 @@ highlighter: rouge
 future: true # Allow posts with future dates
 kramdown:
   input: GFM
+  math_engine: mathjax
+  math_engine_opts:
+    preview: true
+    preview_as_code: false
+  parse_block_html: true
+  parse_span_html: true
   syntax_highlighter_opts:
     css_class: "highlight"
     span:
