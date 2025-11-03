@@ -1,14 +1,9 @@
 github_users:
-  - torvalds
-  - alshedivat
+  - Gua927
 
 repo_description_lines_max: 2
 
 github_repos:
-  - alshedivat/al-folio
-  - jekyll/jekyll
-  - twbs/bootstrap
-  - jquery/jquery
-  - FortAwesome/Font-Awesome
-  - mathjax/MathJax
-  - jpswalsh/academicons
+  - Gua927/Latex_Template
+  - Gua927/CUMCM2024-C
+  - Gua927/GeoMulan

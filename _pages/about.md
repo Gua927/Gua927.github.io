@@ -2,18 +2,14 @@
 layout: about
 title: about
 permalink: /
-subtitle: Graduate Student @ <a href='https://stat.ruc.edu.cn/'>School of Statistics, Renmin University of China</a>
+subtitle: Undergraduate Student @ <a href='https://stat.ruc.edu.cn/'>School of Statistics, Renmin University of China</a>; Intern at <a href='https://www.gensi-thuair.com/#/portal_home'GenSI Lab, THU-AIR</a>
 
 profile:
   align: right
   image: prof_pic.jpg
   image_circular: false # crops the image to make it circular
-  more_info: >
-    <p>Research Intern</p>
-    <p>GenSI Lab, THU-AIR</p>
-    <p>Beijing, China</p>
 
-selected_papers: true # includes a list of papers marked as "selected={true}"
+selected_papers: false # includes a list of papers marked as "selected={true}"
 social: true # includes social icons at the bottom of the page
 
 announcements:
@@ -27,7 +23,11 @@ latest_posts:
   limit: 3 # leave blank to include all the blog posts
 ---
 
-Hi there, I am **Tian Runze**!
+<div align="center">
+
+# [![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&size=40&duration=5001&pause=1000&color=2B8822&background=F892FF00&center=true&width=800&height=65&lines=Hi+there%2C+I+am+Tian+Runze!)](https://git.io/typing-svg)
+
+</div>
 
 I am an individual who enjoys experimenting, thinking, learning, and creating.
 
@@ -35,9 +35,6 @@ I am currently a graduate student in the elite statistics program at the School 
 
 My research focuses on **Generative Models** with applications in natural language processing and computational biology.
 
-## 2025 Research Focus
-
 - 💬 **Diffusion Language Models**: Exploring diffusion-based approaches for text generation, understanding, and controllable generation
 - 🧬 **Molecular Generation**: Developing generative models for small molecule design and drug discovery
 - 🧪 **Protein Generation**: Advancing protein structure generation and protein design using deep learning
-
