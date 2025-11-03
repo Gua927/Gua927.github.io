@@ -1,14 +1,29 @@
 ---
-layout: post
+layout: distill
 title: The Unification of DDPM and Score-based Models
 date: 2025-11-03 14:17:00
-description: The unification of x-pred and score-pred in image generation
+description: This post explores the unification of DDPM and Score-based Models in diffusion generative modeling. We show how x-prediction and score-prediction are fundamentally equivalent, and how both can be viewed through the lens of Stochastic Differential Equations (SDEs).
 tags: diffusion-model image-generation score-matching
 categories: Notes
+authors:
+  - name: Runze Tian
+    url: "https://gua927.github.io"
+    affiliations:
+      name: Renmin University of China
+      url: "https://www.ruc.edu.cn"
 giscus_comments: true
 related_posts: true
 toc:
-  sidebar: left
+  - name: DDPM from a Score Perspective
+  - name: SDE Model
+    subsections:
+      - name: Definition
+      - name: Forward SDE
+      - name: Reverse SDE
+      - name: Optimization Target
+      - name: PC Sampling
+  - name: Probability Flow ODE
+  - name: Conditional Generation
 ---
 
 ## DDPM from a Score Perspective
