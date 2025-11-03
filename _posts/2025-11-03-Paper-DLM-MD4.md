@@ -16,7 +16,8 @@ toc:
 - Code Link: https://github.com/google-deepmind/md4
 - Video Link: https://www.youtube.com/watch?v=0--pr5c2U4E
 - Author:
-  ![](MD4-pic1.png)
+
+{% include figure.liquid path="assets/img/MD4-pic1.png" class="img-fluid rounded z-depth-1" %}
 
 ## Core Contributions
 

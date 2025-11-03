@@ -2,7 +2,7 @@
 # Site settings
 # -----------------------------------------------------------------------------
 
-title: Gua's lab # the website title (if blank, full name will be used instead)
+title: # the website title (if blank, full name will be used instead)
 first_name: R.
 middle_name: Z.
 last_name: Tian
@@ -160,6 +160,7 @@ collections:
 # Markdown and syntax highlight
 markdown: kramdown
 highlighter: rouge
+future: true # Allow posts with future dates
 kramdown:
   input: GFM
   syntax_highlighter_opts:
