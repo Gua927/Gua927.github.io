@@ -177,12 +177,14 @@ exclude:
   - bin/
   - CONTRIBUTING.md
   - CUSTOMIZE.md
+  - DISTILL_LAYOUT_GUIDE.md
   - Dockerfile
   - docker-compose.yml
   - docker-compose-slim.yml
   - FAQ.md
   - Gemfile
   - Gemfile.lock
+  - IMAGE_MATH_FIXES.md
   - INSTALL.md
   - LICENSE
   - lighthouse_results/
