@@ -1,10 +1,14 @@
 ---
 layout: post
 title: Simplified and Generalized Masked Diffusion for Discrete Data
-date: 2025-11-03 14:17
-description: The x_0-predtion framework for masked Diffsuion Model published on NIPS 2024.
-tags: Discrete Diffusion Model
-categories: Paper Reading
+date: 2025-11-03 14:17:00
+description: The x_0-prediction framework for masked Diffusion Model published on NeurIPS 2024.
+tags: discrete-diffusion diffusion-models NIPS2024
+categories: paper-reading
+giscus_comments: true
+related_posts: true
+toc:
+  sidebar: left
 ---
 
 - NIPS 2024
@@ -12,8 +16,9 @@ categories: Paper Reading
 - Code Link: https://github.com/google-deepmind/md4
 - Video Link: https://www.youtube.com/watch?v=0--pr5c2U4E
 - Author:
+  ![](MD4-pic1.png)
 
-Core Contributions
+## Core Contributions
 
 - 建立了更好的加噪去噪过程
 - 推导了一个简单的ELBO，并证明它对应于SE Loss对时间的加权积分
@@ -22,10 +27,14 @@ Core Contributions
 
 ---
 
-Masked Diffusion
+## Masked Diffusion
+
 我们希望将一个离散序列（句子中的词序列）逐步替换为特殊的mask token，并根据mask的过程，学习去mask过程，最终实现由纯mask生成文本。
+
 设总词汇数也即离散状态空间大小为m，表示m种token，对应的one-hot向量分别为e_0,e_1,...,e_m-1，再增加一个mask状态，索引为m，记为e_m，最终得到具有m+1个状态的状态空间。
-Discrete-time forward process
+
+### Discrete-time forward process
+
 先考虑单一token的情况，forward process是一个离散时间马尔科夫链：
 
 $$
@@ -34,8 +43,12 @@ $$
 
 其中 x_t 表示token在时间 t 的状态（或者对应的one-hot向量）。
 将区间 [0,1] 离散化为 T 个时间步，定义：
-$$s(i)=\frac{i-1}{T},\quad t(i)=\frac{i}{T}$$
-那么在时间步 s(i)-->t(i) 的状态转移可以由转移矩阵 $$Q_i\in\mathbb R^{(m+1)\times(m+1)} $$ 来表示，定义为：
+
+$$
+s(i)=\frac{i-1}{T},\quad t(i)=\frac{i}{T}
+$$
+
+那么在时间步 s(i)-->t(i) 的状态转移可以由转移矩阵 $Q_i\in\mathbb R^{(m+1)\times(m+1)}$ 来表示，定义为：
 
 $$
 Q_i = (1-\beta_i) I + \beta_i \, \mathbf{1} e_m^\top
@@ -43,18 +56,24 @@ Q_i = (1-\beta_i) I + \beta_i \, \mathbf{1} e_m^\top
 [Q_i]_{jk} = (1-\beta_i)\,\delta_{jk} + \beta_i\,\delta_{k m}
 $$
 
-这表明每一步以概率 1-beta*i 保持原状态，以概率 beta_i 转移为mask状态m。且mask为吸收态，因为 [Q_i]*{m,m}=1。
+这表明每一步以概率 $1-beta_i$ 保持原状态，以概率 beta_i 转移为mask状态m。且mask为吸收态，因为 $[Q_i]*{m,m}=1$。
 由以上设定，我们可以计算给定初始状态 x_0 ，在时刻 t(i) 的分布为：
 
 $$
 q(x_{t(i)}|x_0) = \mathrm{Cat}(x_{t(i)};\ \bar Q_i^\top x_0)=x_0^\top \bar Q_ix_t(i)
 $$
 
-Cat(x;p) 表示一个类别分布，其中 p 是概率向量。$$\bar Q_i=\prod_{j=1}^i Q_j=\alpha_i I+(1-\alpha)\bold 1e_m^\top$$表示从第一步到第i步的累积转移矩阵，$$\alpha_i=\prod_{j=1}^i (1-\beta_j)$$。
-Continuous-time Limit
-通过令T-->∞，并将构造连续 beta(t) 函数使得 beta*i=beta(t(i))/T ，我们可以得到连续情形下的公式：
-$$\bar Q(t)\triangleq \lim*{T\to\infty} \bar Q_i=\alpha_tI+(1-\alpha_t)]\bold 1e_m^\top,\quad \alpha_t\triangleq \exp \left( -\int_0^t\beta(s)ds \right)$$
-于是 $$q(x_t|x_0)=\text{Cat}(x_t;\bar Q(t)^\top x_0)$$，同时对于任意两个时间s，t满足 0<=s<t<=1，条件概率可以写为：
+Cat(x;p) 表示一个类别分布，其中 p 是概率向量。$\bar Q_i=\prod_{j=1}^i Q_j=\alpha_i I+(1-\alpha)\bold 1e_m^\top$ 表示从第一步到第i步的累积转移矩阵，$\alpha_i=\prod_{j=1}^i (1-\beta_j)$。
+
+### Continuous-time Limit
+
+通过令 $T-->∞$，并将构造连续 beta(t) 函数使得 beta\*i=beta(t(i))/T ，我们可以得到连续情形下的公式：
+
+$$
+\bar Q(t)\triangleq \lim*{T\to\infty} \bar Q_i=\alpha_tI+(1-\alpha_t)]\bold 1e_m^\top,\quad \alpha_t\triangleq \exp \left( -\int_0^t\beta(s)ds \right)
+$$
+
+于是 $q(x_t|x_0)=\text{Cat}(x_t;\bar Q(t)^\top x_0)$，同时对于任意两个时间s，t满足 $0<=s<t<=1$，条件概率可以写为：
 
 $$
 q(x_t|x_s)=\text{Cat}(x_t;\bar Q(x,t)^\top x_s)=x_s^\top\bar Q(s,t)x_t,
@@ -103,9 +122,11 @@ $$
    &= \frac{\alpha_t}{\alpha_s} I + \left(1 - \frac{\alpha_t}{\alpha_s}\right)\mathbf{1}e_m^T
    \end{aligned}
    $$
-   Masking Schedule
-   有效的噪声调度应该满足在起始时间 t=0 时，alpha_t=1，而在结束时间 t=1 时，alpha_1 必须等于或非常接近于0，这保证了前向过程的终点是一个几乎完全被掩码的句子。
-   目前已存在的策略及对应的效果如下：
+
+### Masking Schedule
+
+有效的噪声调度应该满足在起始时间 t=0 时，alpha_t=1，而在结束时间 t=1 时，alpha_1 必须等于或非常接近于0，这保证了前向过程的终点是一个几乎完全被掩码的句子。
+目前已存在的策略及对应的效果如下：
 
 Time reversal of the forward process given $$\bold x_0$$
 通过学习 $$p(x_s|x_t),s<t$$，我们希望最终能够学习到 $$p(x_0|x_1)$$，即从一个完全掩码的句子 x_1 恢复出原始句子 x_0。
