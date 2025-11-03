@@ -27,7 +27,7 @@ ninja.data = [{
         
           title: "The Unification of DDPM and Score-based Models",
         
-        description: "The unification of x-pred and score-pred in image generation",
+        description: "This post explores the unification of DDPM and Score-based Models in diffusion generative modeling. We show how x-prediction and score-prediction are fundamentally equivalent, and how both can be viewed through the lens of Stochastic Differential Equations (SDEs).",
         section: "Posts",
         handler: () => {
           
