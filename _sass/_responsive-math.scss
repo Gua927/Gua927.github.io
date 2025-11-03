@@ -16,29 +16,29 @@ mjx-container[jax="CHTML"][display="true"] {
   max-width: 100%;
   padding: 0.5em 0;
   margin: 1em 0;
-  
+
   // Prevent the container from breaking the page layout
   box-sizing: border-box;
-  
+
   // Custom scrollbar for better UX
   &::-webkit-scrollbar {
     height: 6px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: var(--global-bg-color, rgba(0, 0, 0, 0.05));
     border-radius: 3px;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: var(--global-theme-color, rgba(0, 0, 0, 0.3));
     border-radius: 3px;
-    
+
     &:hover {
       background: var(--global-hover-color, rgba(0, 0, 0, 0.4));
     }
   }
-  
+
   // Firefox scrollbar styling
   scrollbar-width: thin;
   scrollbar-color: var(--global-theme-color, rgba(0, 0, 0, 0.3)) var(--global-bg-color, rgba(0, 0, 0, 0.05));
@@ -49,7 +49,7 @@ mjx-container[jax="CHTML"][display="false"] {
   max-width: 100%;
   display: inline-block;
   vertical-align: middle;
-  
+
   // Allow line breaking for very long inline formulas
   word-wrap: break-word;
 }
@@ -60,21 +60,21 @@ mjx-container[jax="CHTML"][display="false"] {
   overflow-x: auto;
   overflow-y: hidden;
   max-width: 100%;
-  
+
   &::-webkit-scrollbar {
     height: 6px;
   }
-  
+
   &::-webkit-scrollbar-track {
     background: var(--global-bg-color, rgba(0, 0, 0, 0.05));
     border-radius: 3px;
   }
-  
+
   &::-webkit-scrollbar-thumb {
     background: var(--global-theme-color, rgba(0, 0, 0, 0.3));
     border-radius: 3px;
   }
-  
+
   scrollbar-width: thin;
   scrollbar-color: var(--global-theme-color, rgba(0, 0, 0, 0.3)) var(--global-bg-color, rgba(0, 0, 0, 0.05));
 }
@@ -93,7 +93,7 @@ mjx-container[jax="CHTML"][display="false"] {
   // Ensure post content doesn't exceed container width
   overflow-x: hidden;
   word-wrap: break-word;
-  
+
   // Responsive images
   img {
     max-width: 100%;
@@ -101,43 +101,43 @@ mjx-container[jax="CHTML"][display="false"] {
     display: block;
     margin: 1.5rem auto;
     border-radius: 4px;
-    
+
     // Add subtle shadow for better visual separation
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    
+
     // Ensure images don't break layout on mobile
     @media (max-width: 768px) {
       margin: 1rem auto;
     }
   }
-  
+
   // GIF images maintain original rendering
   img[src$=".gif"] {
     image-rendering: auto;
     image-rendering: -webkit-optimize-contrast;
   }
-  
+
   // Tables should also be responsive
   table {
     display: block;
     overflow-x: auto;
     max-width: 100%;
-    
+
     &::-webkit-scrollbar {
       height: 6px;
     }
-    
+
     &::-webkit-scrollbar-track {
       background: var(--global-bg-color, rgba(0, 0, 0, 0.05));
       border-radius: 3px;
     }
-    
+
     &::-webkit-scrollbar-thumb {
       background: var(--global-theme-color, rgba(0, 0, 0, 0.3));
       border-radius: 3px;
     }
   }
-  
+
   // Code blocks should also handle overflow
   pre {
     overflow-x: auto;
@@ -153,7 +153,7 @@ mjx-container[jax="CHTML"][display="false"] {
 .container {
   // Allow content to be scrollable if needed
   overflow-x: hidden;
-  
+
   // On very small screens, reduce padding
   @media (max-width: 576px) {
     padding-left: 15px;
@@ -164,7 +164,7 @@ mjx-container[jax="CHTML"][display="false"] {
 // Post container specific adjustments
 article {
   overflow-x: hidden;
-  
+
   // Ensure all direct children respect container width
   > * {
     max-width: 100%;
@@ -175,23 +175,23 @@ article {
  * Dark Mode Adjustments
  ******************************************************************************/
 
-html[data-theme='dark'] {
+html[data-theme="dark"] {
   mjx-container[jax="CHTML"][display="true"],
   .MathJax,
   .MathJax_Display {
     &::-webkit-scrollbar-track {
       background: rgba(255, 255, 255, 0.05);
     }
-    
+
     &::-webkit-scrollbar-thumb {
       background: rgba(255, 255, 255, 0.3);
-      
+
       &:hover {
         background: rgba(255, 255, 255, 0.4);
       }
     }
   }
-  
+
   .post img {
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   }

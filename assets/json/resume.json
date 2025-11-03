@@ -35,11 +35,7 @@
       "startDate": "2025-01-01",
       "endDate": "2025-06-01",
       "summary": "Worked on 3D generation models deployment, testing and pipeline construction. Participated in building, cleaning and annotation of large-scale 3D asset datasets. Implemented multiple model API deployments and MCP service deployment. Participated in discussions and implementation of deep learning parameterized modeling for 3D asset large models.",
-      "highlights": [
-        "Deployed and tested 3D generation models",
-        "Built large-scale 3D asset datasets",
-        "Implemented model APIs and MCP services"
-      ]
+      "highlights": ["Deployed and tested 3D generation models", "Built large-scale 3D asset datasets", "Implemented model APIs and MCP services"]
     }
   ],
   "volunteer": [],
@@ -72,14 +68,7 @@
       "startDate": "2023-09-01",
       "endDate": "2027-06-01",
       "score": "",
-      "courses": [
-        "Microeconomics",
-        "Monetary Finance",
-        "Macroeconomics",
-        "Financial Practice",
-        "Introduction to Fintech",
-        "Business Skills"
-      ]
+      "courses": ["Microeconomics", "Monetary Finance", "Macroeconomics", "Financial Practice", "Introduction to Fintech", "Business Skills"]
     }
   ],
   "awards": [
@@ -112,50 +101,25 @@
       "name": "Programming Languages",
       "level": "Proficient",
       "icon": "fa-solid fa-code",
-      "keywords": [
-        "Python",
-        "C",
-        "C++",
-        "Julia",
-        "Matlab"
-      ]
+      "keywords": ["Python", "C", "C++", "Julia", "Matlab"]
     },
     {
       "name": "Machine Learning & Deep Learning",
       "level": "Advanced",
       "icon": "fa-solid fa-brain",
-      "keywords": [
-        "PyTorch",
-        "Deep Learning",
-        "Machine Learning",
-        "Computer Vision",
-        "Generative Models",
-        "Diffusion Models",
-        "Flow Models"
-      ]
+      "keywords": ["PyTorch", "Deep Learning", "Machine Learning", "Computer Vision", "Generative Models", "Diffusion Models", "Flow Models"]
     },
     {
       "name": "Tools & Workflow",
       "level": "Proficient",
       "icon": "fa-solid fa-tools",
-      "keywords": [
-        "Git",
-        "GitHub",
-        "Linux (Ubuntu)",
-        "Docker",
-        "LaTeX",
-        "Beamer"
-      ]
+      "keywords": ["Git", "GitHub", "Linux (Ubuntu)", "Docker", "LaTeX", "Beamer"]
     },
     {
       "name": "3D Modeling",
       "level": "Intermediate",
       "icon": "fa-solid fa-cube",
-      "keywords": [
-        "Blender",
-        "3D Generation Models",
-        "3D Asset Pipeline"
-      ]
+      "keywords": ["Blender", "3D Generation Models", "3D Asset Pipeline"]
     }
   ],
   "languages": [
@@ -174,33 +138,17 @@
     {
       "name": "Artificial Intelligence",
       "icon": "fa-solid fa-robot",
-      "keywords": [
-        "Generative AI",
-        "Deep Learning",
-        "Computer Vision",
-        "Diffusion Models",
-        "Flow Models",
-        "Molecular Generation"
-      ]
+      "keywords": ["Generative AI", "Deep Learning", "Computer Vision", "Diffusion Models", "Flow Models", "Molecular Generation"]
     },
     {
       "name": "Mathematical Modeling",
       "icon": "fa-solid fa-square-root-alt",
-      "keywords": [
-        "Optimization",
-        "Numerical Methods",
-        "Differential Equations",
-        "Data Mining"
-      ]
+      "keywords": ["Optimization", "Numerical Methods", "Differential Equations", "Data Mining"]
     },
     {
       "name": "3D Generation & Graphics",
       "icon": "fa-solid fa-cubes",
-      "keywords": [
-        "3D Generation Models",
-        "Computer Graphics",
-        "3D Asset Creation"
-      ]
+      "keywords": ["3D Generation Models", "Computer Graphics", "3D Asset Creation"]
     }
   ],
   "references": [

@@ -17,8 +17,8 @@ window.MathJax = {
     // Improve display for long equations
     linebreaks: {
       automatic: false, // Set to false to prevent unexpected breaks
-      width: "container"
-    }
+      width: "container",
+    },
   },
   options: {
     renderActions: {
