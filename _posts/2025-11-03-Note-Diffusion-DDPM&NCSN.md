@@ -329,15 +329,15 @@ Due to this special connection with KL divergence, and the equivalence between m
 
 Reviewing DDPM and NCSN from an algorithmic implementation perspective, DDPM is based on the Markov assumption, assuming that samples at different times follow conditional probability distributions. Therefore, DDPM uses Ancestral Sampling to solve the SDE equation, with the algorithm shown below:
 
-{% include figure.liquid loading="eager" path="https://i-blog.csdnimg.cn/blog_migrate/11a3ad2f3090305f3e0f40a64e197955.png" class="img-fluid rounded z-depth-1" zoomable=true %}
+{% include figure.liquid loading="eager" path="/assets/img/251103-sampling.png" class="img-fluid rounded z-depth-1" zoomable=true %}
 
 While NCSN relies on Langevin Dynamics for iterative optimization under the same noise distribution. For different noise magnitudes, there is no dependency relationship between the obtained samples. Its sampling method is shown as follows:
 
-{% include figure.liquid loading="eager" path="https://i-blog.csdnimg.cn/blog_migrate/e761207ab3238ab653ee29b6b780ce67.png" class="img-fluid rounded z-depth-1" zoomable=true %}
+{% include figure.liquid loading="eager" path="/assets/img/251103-ALD.png" class="img-fluid rounded z-depth-1" zoomable=true %}
 
 The former can be seen as solving the discrete form of the SDE equation, called the Predictor, while the latter can be seen as a further optimization process, called the Corrector. The author combines these two parts to present the Predictor-Corrector Sampling Method:
 
-{% include figure.liquid loading="eager" path="https://i-blog.csdnimg.cn/blog_migrate/57e5ddf18d1b3573d7aa65539109b823.png" class="img-fluid rounded z-depth-1" zoomable=true %}
+{% include figure.liquid loading="eager" path="/assets/img/251103-contrast.png" class="img-fluid rounded z-depth-1" zoomable=true %}
 
 ---
 
