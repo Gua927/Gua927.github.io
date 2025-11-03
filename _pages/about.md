@@ -2,7 +2,7 @@
 layout: about
 title: about
 permalink: /
-subtitle: Undergraduate Student @ <a href='https://stat.ruc.edu.cn/'>School of Statistics, Renmin University of China</a>; Intern at <a href='https://www.gensi-thuair.com/#/portal_home'GenSI Lab, THU-AIR</a>
+subtitle: Undergraduate Student @ <a href='https://stat.ruc.edu.cn/'>School of Statistics, Renmin University of China</a>; Intern @ <a href='https://www.gensi-thuair.com/#/portal_home'GenSI Lab, THU-AIR</a>
 
 profile:
   align: right
