@@ -98,7 +98,7 @@ Meanwhile, we find that under optimal conditions, $L_t$ cannot reach 0, meaning 
 
 What happens if we extend the finite steps $T$ to infinite steps? Experimental validation shows that larger $T$ can yield more accurate likelihood estimates and better quality results. Thus, continuous-time perturbation of data can be modeled as a stochastic differential equation (SDE).
 
-![img](https://yang-song.net/assets/img/score/denoise_vp.gif)
+{% include figure.liquid loading="eager" path="https://yang-song.net/assets/img/score/denoise_vp.gif" class="img-fluid rounded z-depth-1" zoomable=true %}
 
 ### Definition
 
@@ -117,7 +117,7 @@ where $f(\cdot)$ is called the drift coefficient, $g(t)$ is called the diffusion
 > - $X(t)$ is an independent increment process;
 > - $\forall s, t > 0, X(s + t) - X(s) \sim N(0, c^2 t)$
 >
-> then the stochastic process $\{X(t), t \geq 0\}$ is called **Brownian motion** (denoted as $B(t)$) or **Wiener process** (denoted as $W(t)$). In this text, we will subsequently denote it as $W(t)$. If \(c = 1\), it is called **standard Brownian motion**, satisfying $W(t) \sim N(0, t)$.
+> then the stochastic process $\{X(t), t \geq 0\}$ is called **Brownian motion** (denoted as $B(t)$) or **Wiener process** (denoted as $W(t)$). In this text, we will subsequently denote it as $W(t)$. If $c = 1$, it is called **standard Brownian motion**, satisfying $W(t) \sim N(0, t)$.
 
 ### Forward SDE
 
@@ -255,7 +255,7 @@ $$
 \color{blue}dx=\big[f(x_t,t)-g^2(t)\color{red}\nabla_{x_t}\log p(x_t)\color{blue} \big]dt+g(t)dW
 $$
 
-![img](https://yang-song.net/assets/img/score/sde_schematic.jpg)
+{% include figure.liquid loading="eager" path="https://yang-song.net/assets/img/score/sde_schematic.jpg" class="img-fluid rounded z-depth-1" zoomable=true %}
 
 Therefore, after we have learned the **_score function_**, the reverse process becomes completely solvable. During generation, we start by sampling $x_T \sim \mathcal{N}(0, 1)$, and gradually obtain $x_0$ using the discrete process above. This discretization method for stochastic differential equations is also called the **Euler–Maruyama method**.
 
@@ -314,15 +314,15 @@ Due to this special connection with KL divergence, and the equivalence between m
 
 Reviewing DDPM and NCSN from an algorithmic implementation perspective, DDPM is based on the Markov assumption, assuming that samples at different times follow conditional probability distributions. Therefore, DDPM uses Ancestral Sampling to solve the SDE equation, with the algorithm shown below:
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/blog_migrate/11a3ad2f3090305f3e0f40a64e197955.png#pic_center)
+{% include figure.liquid loading="eager" path="https://i-blog.csdnimg.cn/blog_migrate/11a3ad2f3090305f3e0f40a64e197955.png" class="img-fluid rounded z-depth-1" zoomable=true %}
 
 While NCSN relies on Langevin Dynamics for iterative optimization under the same noise distribution. For different noise magnitudes, there is no dependency relationship between the obtained samples. Its sampling method is shown as follows:
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/blog_migrate/e761207ab3238ab653ee29b6b780ce67.png#pic_center)
+{% include figure.liquid loading="eager" path="https://i-blog.csdnimg.cn/blog_migrate/e761207ab3238ab653ee29b6b780ce67.png" class="img-fluid rounded z-depth-1" zoomable=true %}
 
 The former can be seen as solving the discrete form of the SDE equation, called the Predictor, while the latter can be seen as a further optimization process, called the Corrector. The author combines these two parts to present the Predictor-Corrector Sampling Method:
 
-![在这里插入图片描述](https://i-blog.csdnimg.cn/blog_migrate/57e5ddf18d1b3573d7aa65539109b823.png)
+{% include figure.liquid loading="eager" path="https://i-blog.csdnimg.cn/blog_migrate/57e5ddf18d1b3573d7aa65539109b823.png" class="img-fluid rounded z-depth-1" zoomable=true %}
 
 ---
 
@@ -336,7 +336,7 @@ $$
 
 The figure below depicts trajectories of stochastic differential equations (SDEs) and probability flow ordinary differential equations (ODEs). It can be seen that ODE trajectories are significantly smoother than SDE trajectories, and they transform the same data distribution into the same prior distribution and vice versa, sharing the same set of marginal distributions $\{p_t(\boldsymbol{x})\}_{t\in[0,T]}$. In other words, trajectories obtained by solving the probability flow ODE have the same marginal distributions as SDE trajectories.
 
-![img](https://yang-song.net/assets/img/score/teaser.jpg)
+{% include figure.liquid loading="eager" path="https://yang-song.net/assets/img/score/teaser.jpg" class="img-fluid rounded z-depth-1" zoomable=true %}
 
 Using **_probability flow ODEs_** provides many benefits:
 
