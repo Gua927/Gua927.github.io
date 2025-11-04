@@ -38,7 +38,9 @@
                 <a class="news-title" href="{{ item.redirect | relative_url }}">{{ item.title }}</a>
               {% endif %}
               {% if item.description %}
-                <p class="post-description" style="margin-top: 0.5rem; margin-bottom: 0; color: var(--global-text-color-light); font-size: 0.9rem;">{{ item.description }}</p>
+                <p class="post-description" style="margin-top: 0.5rem; margin-bottom: 0; color: var(--global-text-color-light); font-size: 0.9rem;">
+                  {{ item.description }}
+                </p>
               {% endif %}
             </td>
           </tr>

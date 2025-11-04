@@ -22,9 +22,9 @@ window.MathJax = {
     // Ensure MathJax processes the page when ready
     pageReady: () => {
       return MathJax.startup.defaultPageReady().then(() => {
-        console.log('MathJax initial typesetting complete');
+        console.log("MathJax initial typesetting complete");
       });
-    }
+    },
   },
   chtml: {
     // Enable responsive scaling

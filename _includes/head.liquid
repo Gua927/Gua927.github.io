@@ -193,9 +193,15 @@
   <script>
     window.MathJax = {
       tex: {
-        tags: "ams",
-        inlineMath: [["$", "$"], ["\\(", "\\)"]],
-        displayMath: [["$$", "$$"], ["\\[", "\\]"]],
+        tags: 'ams',
+        inlineMath: [
+          ['$', '$'],
+          ['\\(', '\\)'],
+        ],
+        displayMath: [
+          ['$$', '$$'],
+          ['\\[', '\\]'],
+        ],
         processEscapes: true,
         processEnvironments: true,
         processRefs: true,
@@ -206,20 +212,22 @@
         scale: 1,
         minScale: 0.5,
         matchFontHeight: true,
-        linebreaks: { automatic: false, width: "container" },
+        linebreaks: { automatic: false, width: 'container' },
       },
       startup: {
         pageReady: () => {
           return MathJax.startup.defaultPageReady().then(() => {
             console.log('MathJax typesetting complete');
           });
-        }
+        },
       },
       options: {
         renderActions: {
-          addCss: [200, function (doc) {
-            const style = document.createElement("style");
-            style.innerHTML = `
+          addCss: [
+            200,
+            function (doc) {
+              const style = document.createElement('style');
+              style.innerHTML = `
               .mjx-container { color: inherit; }
               mjx-container[display="true"] {
                 overflow-x: auto; overflow-y: hidden; max-width: 100%;
@@ -235,8 +243,10 @@
                 background: rgba(0,0,0,0.3);
               }
             `;
-            document.head.appendChild(style);
-          }, ""],
+              document.head.appendChild(style);
+            },
+            '',
+          ],
         },
       },
     };
