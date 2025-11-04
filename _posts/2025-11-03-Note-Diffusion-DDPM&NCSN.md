@@ -123,16 +123,18 @@ $$
 \mathrm{d}\boldsymbol{x} = f(\boldsymbol{x}, t)\mathrm{d}t + g(t)\mathrm{d}\boldsymbol{w}
 $$
 
-where $f(\cdot)$ is called the drift coefficient, $g(t)$ is called the diffusion coefficient, $\boldsymbol{w}$ is a standard Brownian motion, and $\mathrm{d}\boldsymbol{w}$ can be viewed as white noise. The solution to this stochastic differential equation is a set of continuous random variables $\{\boldsymbol{x}(t)\}_{t \in [0,T]}$, where $t$ represents the continuous version of the discrete form $(1, 2, \ldots, T)$. We use $p_t(\boldsymbol{x})$ to denote the probability density function of $\boldsymbol{x}(t)$, which corresponds to the previous $p_{\sigma_t}(\boldsymbol{x}_t)$. Here $p_0(\boldsymbol{x}) = p(\boldsymbol{x})$ is the original data distribution, and $p_T(\boldsymbol{x}) = \mathcal{N}(0, \mathbf{I})$ is the white noise obtained after noise perturbation.
+where $f(\cdot)$ is called the drift coefficient, $g(t)$ is called the diffusion coefficient, $\boldsymbol{w}$ is a standard Brownian motion, and $\mathrm{d}\boldsymbol{w}$ can be viewed as white noise. The solution to this stochastic differential equation is a set of continuous random variables $\lbrace\boldsymbol x(t)\rbrace_{t\in [0,T]}$, where $t$ represents the continuous version of the discrete form $(1, 2, \ldots, T)$.
+
+We use $p_t(\boldsymbol{x})$ to denote the probability density function of $\boldsymbol{x}(t)$, which corresponds to the previous $p_{\sigma_t}(\boldsymbol{x}_t)$. Here $p_0(\boldsymbol{x}) = p(\boldsymbol{x})$ is the original data distribution, and $p_T(\boldsymbol{x}) = \mathcal{N}(0, \mathbf{I})$ is the white noise obtained after noise perturbation.
 
 > **_Brownian Motion_**
 >
-> If a stochastic process $\{X(t), t \geq 0\}$ satisfies:
+> If a stochastic process $\lbrace X(t), t \geq 0\rbrace$ satisfies:
 >
 > - $X(t)$ is an independent increment process;
 > - $\forall s, t > 0, X(s + t) - X(s) \sim N(0, c^2 t)$
 >
-> then the stochastic process $\{X(t), t \geq 0\}$ is called **Brownian motion** (denoted as $B(t)$) or **Wiener process** (denoted as $W(t)$). In this text, we will subsequently denote it as $W(t)$. If $c = 1$, it is called **standard Brownian motion**, satisfying $W(t) \sim N(0, t)$.
+> then the stochastic process $\lbrace X(t), t \geq 0\rbrace$ is called **Brownian motion** (denoted as $B(t)$) or **Wiener process** (denoted as $W(t)$). In this text, we will subsequently denote it as $W(t)$. If $c = 1$, it is called **standard Brownian motion**, satisfying $W(t) \sim N(0, t)$.
 
 ### Forward SDE
 
@@ -232,10 +234,10 @@ $$
 we have the conditional probability:
 
 $$
-x_{t+\Delta t}|x_t\sim\mathcal N(x_t+f(x_t,t)\Delta t,g^2(t)\Delta tI)
+x_{t+\Delta t}|x_t\sim \mathcal{N}(x_t+f(x_t,t)\Delta t, g^2(t)\Delta tI)
 $$
 
-Considering the reverse process $x_t|x_{t+\Delta t}$, we have
+Considering the reverse process from $x_{t+\Delta t}$ to $x_t$, we have the conditional probability:
 
 $$
 \begin{align*}
@@ -253,7 +255,9 @@ p(x_t|x_{t+\Delta t})&=\frac{p(x_{t+\Delta t}|x_t)p(x_t)}{p(x_{t+\Delta t})}\\
 \end{align*}
 $$
 
-Therefore, $x_t|x_{t+\Delta t}$ follows a Gaussian distribution with mean and variance as follows:
+Therefore,
+$x_t|x_{t+\Delta t}$
+follows a Gaussian distribution with mean and variance as follows:
 
 $$
 \mu=x_{t+\Delta t}-\big[f(x_t,t)-g^2(t)\nabla_{x_t}\log p(x_t) \big]\Delta t\\
@@ -343,13 +347,13 @@ The former can be seen as solving the discrete form of the SDE equation, called 
 
 ## Probability Flow ODE
 
-We can transform any **_SDE_** into an **_ODE_** without changing the marginal distributions $\{p_t(x)\}_{t\in[0,T]}$ of the stochastic differential equation. Therefore, by solving this **_ODE_**, we can sample from the same distribution as the **_Reverse SDE_**. The **_ODE_** corresponding to the **_SDE_** is called the **_Probability flow ODE_**, with the form:
+We can transform any **_SDE_** into an **_ODE_** without changing the marginal distributions $\lbrace p_t(x)\rbrace_{t\in[0,T]}$ of the stochastic differential equation. Therefore, by solving this **_ODE_**, we can sample from the same distribution as the **_Reverse SDE_**. The **_ODE_** corresponding to the **_SDE_** is called the **_Probability flow ODE_**, with the form:
 
 $$
 \color{blue}dx=\big[f(x_t,t)-\frac{1}{2}g^2(t)\color{red}\nabla_{x_t}\log p(x_t)\color{blue} \big]dt
 $$
 
-The figure below depicts trajectories of stochastic differential equations (SDEs) and probability flow ordinary differential equations (ODEs). It can be seen that ODE trajectories are significantly smoother than SDE trajectories, and they transform the same data distribution into the same prior distribution and vice versa, sharing the same set of marginal distributions $\{p_t(\boldsymbol{x})\}_{t\in[0,T]}$. In other words, trajectories obtained by solving the probability flow ODE have the same marginal distributions as SDE trajectories.
+The figure below depicts trajectories of stochastic differential equations (SDEs) and probability flow ordinary differential equations (ODEs). It can be seen that ODE trajectories are significantly smoother than SDE trajectories, and they transform the same data distribution into the same prior distribution and vice versa, sharing the same set of marginal distributions $\lbrace p_t(\boldsymbol{x})\rbrace_{t\in[0,T]}$. In other words, trajectories obtained by solving the probability flow ODE have the same marginal distributions as SDE trajectories.
 
 {% include figure.liquid loading="eager" path="https://yang-song.net/assets/img/score/teaser.jpg" class="img-fluid rounded z-depth-1" zoomable=true %}
 
@@ -376,4 +380,6 @@ $$
 \nabla_x\log p(x|y)=\nabla_x\log p(x)+\nabla_x\log p(y|x)
 $$
 
-Both latter terms are **_score functions_** that we can estimate. Therefore, we can generate $p(x|y)$ by solving the reverse SDE.
+Both latter terms are **_score functions_** that we can estimate. Therefore, we can generate
+$p(x|y)$
+by solving the reverse SDE.

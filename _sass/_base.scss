@@ -286,6 +286,7 @@ ul.task-list input[type="checkbox"] {
 
   .navbar-brand {
     color: var(--global-text-color);
+    font-weight: bold !important;
   }
 
   .navbar-nav .nav-item .nav-link {
@@ -439,6 +440,48 @@ ul.task-list input[type="checkbox"] {
 
   .contact-note {
     font-size: 0.8rem;
+  }
+}
+
+// Social icons under profile image
+.profile-social {
+  text-align: center;
+  margin-top: 1rem;
+
+  .contact-icons {
+    font-size: 1.5rem;
+
+    a {
+      img {
+        width: 1.2rem;
+        height: 1.2rem;
+        margin-bottom: 0.3rem;
+      }
+
+      svg {
+        width: 1.3rem;
+        height: 1.5rem;
+        margin-bottom: 0.2rem;
+
+        image {
+          width: 1.3rem;
+          height: 1.3rem;
+        }
+      }
+
+      i::before {
+        color: var(--global-text-color);
+        transition-property: all 0.2s ease-in-out;
+      }
+
+      &:hover {
+        text-decoration: none;
+
+        i::before {
+          color: var(--global-theme-color);
+        }
+      }
+    }
   }
 }
 

@@ -39,10 +39,18 @@ d-article {
   table td {
     border-bottom-color: var(--global-divider-color) !important;
   }
-  a {
-    color: var(--global-theme-color) !important;
+  p a,
+  li a,
+  h1 a,
+  h2 a,
+  h3 a,
+  h4 a,
+  h5 a,
+  h6 a,
+  table a {
+    color: var(--global-text-color) !important;
     &:hover {
-      color: var(--global-theme-color) !important;
+      color: var(--global-hover-color) !important;
     }
   }
   b i {
@@ -95,20 +103,23 @@ d-article {
     nav {
       grid-column: toc;
       a {
+        color: var(--global-theme-color) !important;
         border-bottom: none !important;
         &:hover {
+          color: var(--global-hover-color) !important;
           border-bottom: 1px solid var(--global-text-color) !important;
         }
       }
       h3 {
         margin-top: 0;
         margin-bottom: 1em;
+        color: var(--global-theme-color) !important;
       }
       div {
         display: block;
         outline: none;
         margin-bottom: 0.8em;
-        color: rgba(0, 0, 0, 0.8);
+        color: var(--global-theme-color) !important;
         font-weight: bold;
       }
       ul {

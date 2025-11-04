@@ -20,28 +20,28 @@ mjx-container[jax="CHTML"][display="true"] {
   // Prevent the container from breaking the page layout
   box-sizing: border-box;
 
-  // Custom scrollbar for better UX
+  // Custom scrollbar for better UX (neutral gray, not theme color)
   &::-webkit-scrollbar {
     height: 6px;
   }
 
   &::-webkit-scrollbar-track {
-    background: var(--global-bg-color, rgba(0, 0, 0, 0.05));
+    background: rgba(0, 0, 0, 0.05);
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--global-theme-color, rgba(0, 0, 0, 0.3));
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 3px;
 
     &:hover {
-      background: var(--global-hover-color, rgba(0, 0, 0, 0.4));
+      background: rgba(0, 0, 0, 0.4);
     }
   }
 
-  // Firefox scrollbar styling
+  // Firefox scrollbar styling (neutral gray)
   scrollbar-width: thin;
-  scrollbar-color: var(--global-theme-color, rgba(0, 0, 0, 0.3)) var(--global-bg-color, rgba(0, 0, 0, 0.05));
+  scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.05);
 }
 
 // Inline math optimization
@@ -66,17 +66,17 @@ mjx-container[jax="CHTML"][display="false"] {
   }
 
   &::-webkit-scrollbar-track {
-    background: var(--global-bg-color, rgba(0, 0, 0, 0.05));
+    background: rgba(0, 0, 0, 0.05);
     border-radius: 3px;
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--global-theme-color, rgba(0, 0, 0, 0.3));
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 3px;
   }
 
   scrollbar-width: thin;
-  scrollbar-color: var(--global-theme-color, rgba(0, 0, 0, 0.3)) var(--global-bg-color, rgba(0, 0, 0, 0.05));
+  scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.05);
 }
 
 // Ensure equation environment doesn't break layout
@@ -128,12 +128,12 @@ mjx-container[jax="CHTML"][display="false"] {
     }
 
     &::-webkit-scrollbar-track {
-      background: var(--global-bg-color, rgba(0, 0, 0, 0.05));
+      background: rgba(0, 0, 0, 0.05);
       border-radius: 3px;
     }
 
     &::-webkit-scrollbar-thumb {
-      background: var(--global-theme-color, rgba(0, 0, 0, 0.3));
+      background: rgba(0, 0, 0, 0.3);
       border-radius: 3px;
     }
   }

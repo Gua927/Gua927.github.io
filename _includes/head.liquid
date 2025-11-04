@@ -187,3 +187,58 @@
 {% if page.tikzjax %}
   <link defer rel="stylesheet" type="text/css" href="https://tikzjax.com/v1/fonts.css">
 {% endif %}
+
+{% if site.enable_math %}
+  <!-- MathJax Configuration - MUST load before MathJax library -->
+  <script>
+    window.MathJax = {
+      tex: {
+        tags: "ams",
+        inlineMath: [["$", "$"], ["\\(", "\\)"]],
+        displayMath: [["$$", "$$"], ["\\[", "\\]"]],
+        processEscapes: true,
+        processEnvironments: true,
+        processRefs: true,
+        digits: /^(?:[0-9]+(?:\{,\}[0-9]{3})*(?:\.[0-9]*)?|\.[0-9]+)/,
+        maxBuffer: 5 * 1024,
+      },
+      chtml: {
+        scale: 1,
+        minScale: 0.5,
+        matchFontHeight: true,
+        linebreaks: { automatic: false, width: "container" },
+      },
+      startup: {
+        pageReady: () => {
+          return MathJax.startup.defaultPageReady().then(() => {
+            console.log('MathJax typesetting complete');
+          });
+        }
+      },
+      options: {
+        renderActions: {
+          addCss: [200, function (doc) {
+            const style = document.createElement("style");
+            style.innerHTML = `
+              .mjx-container { color: inherit; }
+              mjx-container[display="true"] {
+                overflow-x: auto; overflow-y: hidden; max-width: 100%;
+              }
+              mjx-container[display="true"]::-webkit-scrollbar { height: 6px; }
+              mjx-container[display="true"]::-webkit-scrollbar-track {
+                background: rgba(0,0,0,0.05); border-radius: 3px;
+              }
+              mjx-container[display="true"]::-webkit-scrollbar-thumb {
+                background: rgba(0,0,0,0.2); border-radius: 3px;
+              }
+              mjx-container[display="true"]::-webkit-scrollbar-thumb:hover {
+                background: rgba(0,0,0,0.3);
+              }
+            `;
+            document.head.appendChild(style);
+          }, ""],
+        },
+      },
+    };
+  </script>
+{% endif %}

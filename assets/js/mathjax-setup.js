@@ -1,9 +1,14 @@
+// MathJax configuration must be set BEFORE MathJax loads
 window.MathJax = {
   tex: {
     tags: "ams",
     inlineMath: [
       ["$", "$"],
       ["\\(", "\\)"],
+    ],
+    displayMath: [
+      ["$$", "$$"],
+      ["\\[", "\\]"],
     ],
     // Enable automatic line breaking for long equations
     processEscapes: true,
@@ -12,6 +17,14 @@ window.MathJax = {
     digits: /^(?:[0-9]+(?:\{,\}[0-9]{3})*(?:\.[0-9]*)?|\.[0-9]+)/,
     // Improve parsing for complex inline math
     maxBuffer: 5 * 1024,
+  },
+  startup: {
+    // Ensure MathJax processes the page when ready
+    pageReady: () => {
+      return MathJax.startup.defaultPageReady().then(() => {
+        console.log('MathJax initial typesetting complete');
+      });
+    }
   },
   chtml: {
     // Enable responsive scaling
