@@ -23,7 +23,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "post-the-unification-of-ddpm-and-score-based-models",
+        },{id: "post-flow-matching-and-continuous-normalizing-flows",
+        
+          title: "Flow Matching and Continuous Normalizing Flows",
+        
+        description: "This post explores Flow-based Models, Continuous Normalizing Flows (CNFs), and Flow Matching (FM). We discuss Normalizing Flows, derive the conditional flow matching objective, and examine special instances including diffusion models and optimal transport.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2025/Note-FM/";
+          
+        },
+      },{id: "post-the-unification-of-ddpm-and-score-based-models",
         
           title: "The Unification of DDPM and Score-based Models",
         
