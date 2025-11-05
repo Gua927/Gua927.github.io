@@ -3,14 +3,14 @@ layout: distill
 title: The Unification of DDPM and Score-based Models
 date: 2025-11-03 14:17:00
 description: This post explores the unification of DDPM and Score-based Models in diffusion generative modeling. We show how x-prediction and score-prediction are fundamentally equivalent, and how both can be viewed through the lens of Stochastic Differential Equations (SDEs).
-tags: diffusion-model image-generation score-matching
+tags: Gen-Model diffusion-model score-matching ImageGen
 categories: Notes
 authors:
   - name: Runze Tian
     url: "https://gua927.github.io"
     affiliations:
-      name: Renmin University of China
-      url: "https://www.ruc.edu.cn"
+      name: GenSI Lab, THU-AIR
+      url: "https://www.gensi-thuair.com/#/portal_home"
 giscus_comments: true
 related_posts: true
 toc:
@@ -113,7 +113,7 @@ Meanwhile, we find that under optimal conditions, $L_t$ cannot reach 0, meaning 
 
 What happens if we extend the finite steps $T$ to infinite steps? Experimental validation shows that larger $T$ can yield more accurate likelihood estimates and better quality results. Thus, continuous-time perturbation of data can be modeled as a stochastic differential equation (SDE).
 
-{% include figure.liquid loading="eager" path="https://yang-song.net/assets/img/score/denoise_vp.gif" class="img-fluid rounded z-depth-1" zoomable=true %}
+{% include figure.liquid loading="eager" path="assets/img/posts/2025-11-03-Note-Diffusion/figure1.gif" class="img-fluid rounded z-depth-1" zoomable=true %}
 
 ### Definition
 
@@ -274,7 +274,7 @@ $$
 \color{blue}dx=\big[f(x_t,t)-g^2(t)\color{red}\nabla_{x_t}\log p(x_t)\color{blue} \big]dt+g(t)dW
 $$
 
-{% include figure.liquid loading="eager" path="https://yang-song.net/assets/img/score/sde_schematic.jpg" class="img-fluid rounded z-depth-1" zoomable=true %}
+{% include figure.liquid loading="eager" path="assets/img/posts/2025-11-03-Note-Diffusion/figure2.jpg" class="img-fluid rounded z-depth-1" zoomable=true %}
 
 Therefore, after we have learned the **_score function_**, the reverse process becomes completely solvable. During generation, we start by sampling $x_T \sim \mathcal{N}(0, 1)$, and gradually obtain $x_0$ using the discrete process above. This discretization method for stochastic differential equations is also called the **Euler–Maruyama method**.
 
@@ -333,15 +333,15 @@ Due to this special connection with KL divergence, and the equivalence between m
 
 Reviewing DDPM and NCSN from an algorithmic implementation perspective, DDPM is based on the Markov assumption, assuming that samples at different times follow conditional probability distributions. Therefore, DDPM uses Ancestral Sampling to solve the SDE equation, with the algorithm shown below:
 
-{% include figure.liquid loading="eager" path="/assets/img/251103-sampling.png" class="img-fluid rounded z-depth-1" zoomable=true %}
+{% include figure.liquid loading="eager" path="assets/img/posts/2025-11-03-Note-Diffusion/figure3.png" class="img-fluid rounded z-depth-1" zoomable=true %}
 
 While NCSN relies on Langevin Dynamics for iterative optimization under the same noise distribution. For different noise magnitudes, there is no dependency relationship between the obtained samples. Its sampling method is shown as follows:
 
-{% include figure.liquid loading="eager" path="/assets/img/251103-ALD.png" class="img-fluid rounded z-depth-1" zoomable=true %}
+{% include figure.liquid loading="eager" path="assets/img/posts/2025-11-03-Note-Diffusion/figure4.png" class="img-fluid rounded z-depth-1" zoomable=true %}
 
 The former can be seen as solving the discrete form of the SDE equation, called the Predictor, while the latter can be seen as a further optimization process, called the Corrector. The author combines these two parts to present the Predictor-Corrector Sampling Method:
 
-{% include figure.liquid loading="eager" path="/assets/img/251103-contrast.png" class="img-fluid rounded z-depth-1" zoomable=true %}
+{% include figure.liquid loading="eager" path="assets/img/posts/2025-11-03-Note-Diffusion/figure5.png" class="img-fluid rounded z-depth-1" zoomable=true %}
 
 ---
 
@@ -355,7 +355,7 @@ $$
 
 The figure below depicts trajectories of stochastic differential equations (SDEs) and probability flow ordinary differential equations (ODEs). It can be seen that ODE trajectories are significantly smoother than SDE trajectories, and they transform the same data distribution into the same prior distribution and vice versa, sharing the same set of marginal distributions $\lbrace p_t(\boldsymbol{x})\rbrace_{t\in[0,T]}$. In other words, trajectories obtained by solving the probability flow ODE have the same marginal distributions as SDE trajectories.
 
-{% include figure.liquid loading="eager" path="https://yang-song.net/assets/img/score/teaser.jpg" class="img-fluid rounded z-depth-1" zoomable=true %}
+{% include figure.liquid loading="eager" path="assets/img/posts/2025-11-03-Note-Diffusion/figure6.jpg" class="img-fluid rounded z-depth-1" zoomable=true %}
 
 Using **_probability flow ODEs_** provides many benefits:
 
