@@ -28,7 +28,7 @@ toc:
 
 ## DDPM from a Score Perspective
 
-In **_DDPM_**, we know that
+In **_DDPM_** ({% cite ho2020denoisingdiffusionprobabilisticmodels %}), we know that
 
 $$
 x_t\sim q(x_t|x_0) = N(x_t; \sqrt{\bar{\alpha}_t} x_0, (1 - \bar{\alpha}_t) I) \tag{1}
@@ -117,7 +117,7 @@ What happens if we extend the finite steps $T$ to infinite steps? Experimental v
 
 ### Definition
 
-There are many forms of SDEs. One form given by Dr. Yang Song in his paper (which can be considered a Diffusion-Type SDE, requiring coefficients to depend only on time `t` and current value `x`) is:
+There are many forms of SDEs. One form given by Dr. Yang Song in his paper {% cite song2021scorebasedgenerativemodelingstochastic %} (which can be considered a Diffusion-Type SDE, requiring coefficients to depend only on time `t` and current value `x`) is:
 
 $$
 \mathrm{d}\boldsymbol{x} = f(\boldsymbol{x}, t)\mathrm{d}t + g(t)\mathrm{d}\boldsymbol{w}
@@ -310,7 +310,7 @@ Solving the reverse SDE requires us to know the terminal distribution $p_T(\bold
 
 To estimate $\nabla_{\boldsymbol{x}} \log p_t(\boldsymbol{x})$, we train a **time-dependent score-based model** $s_\theta(\boldsymbol{x}, t)$ such that $s_\theta(\boldsymbol{x}, t) \approx \nabla_{\boldsymbol{x}} \log p_t(\boldsymbol{x})$. This is similar to NCSN's $s_\theta(\boldsymbol{x}, i)$, which after training satisfies $s_\theta(\boldsymbol{x}, i) \approx \nabla_{\boldsymbol{x}} \log p_{\sigma_i}(\boldsymbol{x})$.
 
-Our training objective for $s_\theta(\boldsymbol{x}, t)$ is a continuous weighted combination of Fisher divergences, given by:
+Our training objective for $s_\theta(\boldsymbol{x}, t)$ is a continuous weighted combination of Fisher divergences, given by (see {% cite song2019slicedscorematchingscalable %}; {% cite song2021scorebasedgenerativemodelingstochastic %}):
 
 $$
 \mathbb{E}_{t \in \mathcal{U}(0,T)} \mathbb{E}_{p_t(\mathbf{x})} \left[ \lambda(t) \left\| \nabla_{\mathbf{x}} \log p_t(\mathbf{x}) - \mathbf{s}_\theta(\mathbf{x}, t) \right\|_2^2 \right]
@@ -383,3 +383,9 @@ $$
 Both latter terms are **_score functions_** that we can estimate. Therefore, we can generate
 $p(x|y)$
 by solving the reverse SDE.
+
+## 参考文献
+
+{% cite ho2020denoisingdiffusionprobabilisticmodels song2021scorebasedgenerativemodelingstochastic song2019slicedscorematchingscalable %}
+
+{% bibliography --cited %}
