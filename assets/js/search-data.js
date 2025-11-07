@@ -23,7 +23,18 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "post-flow-matching-and-continuous-normalizing-flows",
+        },{id: "post-",
+        
+          title: "",
+        
+        description: "",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2025/2025-11-07-Note-AR2Diff/";
+          
+        },
+      },{id: "post-flow-matching-and-continuous-normalizing-flows",
         
           title: "Flow Matching and Continuous Normalizing Flows",
         
@@ -42,7 +53,7 @@ ninja.data = [{
         section: "Posts",
         handler: () => {
           
-            window.location.href = "/blog/2025/Note-Diffusion-DDPM&NCSN/";
+            window.location.href = "/blog/2025/Note-Diffusion-DDPM-and-NCSN/";
           
         },
       },{id: "books-the-godfather",
