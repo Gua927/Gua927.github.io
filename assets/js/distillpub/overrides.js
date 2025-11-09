@@ -23,5 +23,17 @@ $(window).on("load", function () {
       .querySelector("d-hover-box")
       .shadowRoot.querySelector("style")
       .sheet.insertRule(".panel {border-color: var(--global-divider-color) !important;}");
+    // Enhanced tooltip styling for citations (shadow, spacing, readable line-height)
+    cite.shadowRoot
+      .querySelector("d-hover-box")
+      .shadowRoot.querySelector("style")
+      .sheet.insertRule(
+        ".panel {box-shadow: 0 4px 16px rgba(0,0,0,0.15); padding: 10px 14px; line-height: 1.35; width: 100% !important; max-width: 100% !important; font-size: 0.9rem;}"
+      );
+    cite.shadowRoot
+      .querySelector("d-hover-box")
+      .shadowRoot.querySelector("style")
+      .sheet.insertRule(".panel b, .panel strong {color: var(--global-theme-color); font-weight: 600;}");
+    cite.shadowRoot.querySelector("d-hover-box").shadowRoot.querySelector("style").sheet.insertRule(".container {max-width: 100%; width: 704px;}");
   });
 });

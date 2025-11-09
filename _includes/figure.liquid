@@ -81,6 +81,10 @@
   </picture>
 
   {% if include.caption %}
-    <figcaption class="caption">{{ include.caption }}</figcaption>
+    {% assign caption_class = 'caption' %}
+    {% if include.caption_class %}
+      {% assign caption_class = caption_class | append: ' ' | append: include.caption_class %}
+    {% endif %}
+    <figcaption class="{{ caption_class }}">{{ include.caption | markdownify | strip | replace: '<p>', '' | replace: '</p>', '' }}</figcaption>
   {% endif %}
 </figure>
