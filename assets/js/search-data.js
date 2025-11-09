@@ -23,15 +23,15 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "post-",
+        },{id: "post-training-free-method-for-parallel-decoding-of-autoregressive-models",
         
-          title: "",
+          title: "Training-Free Method for Parallel Decoding of Autoregressive Models",
         
-        description: "",
+        description: "This blog post investigates the possibility of parallel decoding for autoregressive models. The author notes that autoregressive and diffusion models both fundamentally model data probability distributions, and that each has advantages—autoregressive models in training and diffusion models in sampling. The goal is to achieve a training-free way to perform parallel decoding with a pretrained autoregressive model, enabling low-cost accelerated generation.",
         section: "Posts",
         handler: () => {
           
-            window.location.href = "/blog/2025/2025-11-07-Note-AR2Diff/";
+            window.location.href = "/blog/2025/Note-AR2Diff/";
           
         },
       },{id: "post-flow-matching-and-continuous-normalizing-flows",
