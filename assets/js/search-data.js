@@ -23,15 +23,26 @@ ninja.data = [{
           handler: () => {
             window.location.href = "/cv/";
           },
-        },{id: "post-training-free-method-for-parallel-decoding-of-autoregressive-models",
+        },{id: "post-掩码扩散模型中的掩码调度",
         
-          title: "Training-Free Method for Parallel Decoding of Autoregressive Models",
+          title: "掩码扩散模型中的掩码调度",
         
-        description: "This blog post investigates the possibility of parallel decoding for autoregressive models. The author notes that autoregressive and diffusion models both fundamentally model data probability distributions, and that each has advantages—autoregressive models in training and diffusion models in sampling. The goal is to achieve a training-free way to perform parallel decoding with a pretrained autoregressive model, enabling low-cost accelerated generation.",
+        description: "在扩散模型（Diffusion Models）尤其是掩码扩散模型（Mask Diffusion Models, MDM）的研究中，Noise Scheduler 的设计是决定模型学习上限与采样质量的核心枢纽。本文对 MDM 中的 Noise Scheduler 进行了全面而深入的统一分析，系统性地探讨了当前主流的调度策略，通过对比分析各策略的优缺点，本文揭示了精细化调度策略如何重塑 Token 间的依赖动力学，并在最后对未来突破底层逻辑缺陷的发展方向进行了展望。",
         section: "Posts",
         handler: () => {
           
-            window.location.href = "/blog/2025/Note-AR2Diff/";
+            window.location.href = "/blog/2026/masking-schedulers-cn/";
+          
+        },
+      },{id: "post-masking-schedulers-of-mask-diffusion-model",
+        
+          title: "Masking Schedulers of Mask Diffusion Model",
+        
+        description: "In Mask Diffusion Models (MDM), the Noise Scheduler is pivotal for learning capacity and sampling quality. This paper presents a unified analysis addressing three core challenges —— Exposure Bias induced by Absorb mechanisms, efficiency bottlenecks from Intrinsic Order, and joint probability deviations from Independence Assumptions. We systematically review mainstream strategies, comparing their efficacy in semantic capture, remasking, and efficiency to elucidate how refined scheduling reshapes token dependencies. Finally, we outline future directions for overcoming these underlying logical defects.",
+        section: "Posts",
+        handler: () => {
+          
+            window.location.href = "/blog/2026/Note-Masking-Schedulers-of-Mask-Diffusion-Model-EN/";
           
         },
       },{id: "post-flow-matching-and-continuous-normalizing-flows",
