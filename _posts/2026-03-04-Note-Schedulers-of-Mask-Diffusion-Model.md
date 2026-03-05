@@ -1,0 +1,459 @@
+---
+layout: distill
+title: Schedulers of Mask Diffusion Model
+date: 2026-03-04 05:09:27
+description: 对 Mask Diffusion Model 中 Noise Scheduler 的统一分析，讨论随机、置信度、规划器、RL 与手工块级调度器的优缺点及未来方向。
+tags: Masked-Diffusion-Model scheduler Intrinsic-Order
+categories: Notes
+authors:
+  - name: Runze Tian
+    url: "https://gua927.github.io"
+    affiliations:
+      name: GenSI Lab, THU-AIR
+      url: "https://www.gensi-thuair.com/#/portal_home"
+giscus_comments: true
+related_posts: true
+bibliography: papers.bib
+toc:
+  - name: Introduction
+  -
+---
+
+## Introduction
+
+在扩散模型（Diffusion Models）的研究中，Noise Scheduler 的选取不仅决定了采样的轨迹，更直接关系到模型对复杂分布的学习上限。相比于连续域的高斯扩散，掩码扩散模型（Mask Diffusion Models, MDM） 在离散数据建模中展现了独特的潜力。然而，MDM 普遍采用的 Absorb Transition Kernel 在赋予模型简洁逻辑的同时，也引入了三个关键的理论与工程挑战：
+
+首先，曝光偏差（Exposure Bias）在 MDM 中尤为严峻。由于 Absorb 机制导致生成的 Token 具有“不可修改”的特性，采样过程中的任何微小偏离都会因缺乏纠错机制而随时间步迅速累积，导致生成序列的崩塌。
+
+其次，数据内在序（Intrinsic Order）的复杂性限制了训练效率。现实数据（如自然语言或代码）往往存在多样的依赖顺序，而 MDM 试图在有限的参数空间内捕捉所有可能的生成路径。由于无法在多项式时间内穷举并对每一种生成顺序都实现最优学习，模型往往面临训练效率不足的问题，难以在复杂的结构化数据上达到收敛。
+最根本的挑战在于 独立性假设带来的概率偏离。MDM 在建模阶段往往假设各 Token 之间是条件独立的，这与离散数据强耦合的本质相悖，导致模型估计的边缘分布乘积严重偏离真实的联合概率分布。
+
+因此，设计精密的 Noise Scheduler 不再仅仅是掩码比例的简单伸缩，而是弥补 MDM 底层逻辑缺陷的关键枢纽。一个优化的调度器不仅需要通过精细的掩码率平衡来缓解曝光偏差，更核心的在于通过时间轨迹的演变来重塑 Token 间的依赖动力学。
+
+除了寻求 “零全相关路径” 以在统计上近似独立分布外，更具前瞻性的修正方案在于打破单一 Token 的处理范式。例如，通过引入Block-wise Masking，Scheduler 可以强制模型捕捉局部强耦合的语义簇，从物理层面缓解独立性假设带来的联合概率偏离。同时，引入Iterative Remasking 赋予了模型在推理轨迹上的“反悔”与修正能力，打破了 Absorb Kernel 的单向不可逆性。这些策略通过 Scheduler 的动态协调，不仅在统计意义上降低了信息熵损失，更在本质上充当了独立性假设与结构化依赖之间的校准器，从而在保证计算效率的前提下，实现对离散数据深层联合概率分布的精准还原。
+
+基于以上观察，本文调研并总结了当前 Mask Diffusion Model 领域针对Noise Scheduler的改进方案，重点探讨如何通过调度的精细化设计来突破上述瓶颈。
+
+## Background
+
+### Masked diffusion model
+
+#### Forward Process
+
+设token共有 $C$ 种，加上mask，则每个token的状态空间为$\{0,1,...,C\}$。设token sequence表示为 $x=x^1x^2...x^L$,$x_0\sim p_{data}$,那么条件概率 $$q(x_t\mid x_0)=\prod_{i=1}^Lq(x_t^i\mid x_0^i)$$，其中
+$q(x_t^i\mid x_0^i)=(1-\alpha_t)\delta_m(x_t^i)+\alpha_t\delta_{x_0^i}(x_t^i)$
+表示token在 $t$ 时刻，以$1-α_t$ 概率变为mask，以 $α_t$ 概率保持不变，且各token的变化是独立的。
+
+#### Reverse Precess
+
+设 $ 0\leq s\le t\leq 1$，在反向过程中，为了计算 $p(x_s^i\mid x_t^i)$，我们首先计算 $p(x_t^i\mid x_s^i)$：
+
+$$
+q(x_t^i \mid x_s^i) =
+\begin{cases}
+\frac{\alpha_s - \alpha_t}{\alpha_s} \delta_{\text{m}}(x_t^i) + \frac{\alpha_t}{\alpha_s} \delta_{x_s^i}(x_t^i) & \text{if } x_s^i \in \mathcal{X}, \\
+\delta_{x_s^i}(x_t^i) & \text{if } x_s^i = \text{m}.
+\end{cases}
+$$
+
+并由贝叶斯公式得：
+
+$$
+q(x_s^i \mid x_t^i, x_0^i) =
+\begin{cases}
+\delta_{x_t^i}(x_s^i) & \text{if } x_t^i \in \mathcal{X}, \\
+\frac{1 - \alpha_s}{1 - \alpha_t} \delta_{\text{m}}(x_s^i) + \frac{\alpha_s - \alpha_t}{1 - \alpha_t} \delta_{x_0^i}(x_s^i) & \text{if } x_t^i = \text{m}.
+\end{cases}
+$$
+
+这表明，当token $x_t^i$ 是mask时，以 $\frac{1 - \alpha_s}{1 - \alpha_t} $的概率保持为 mask，以 $ \frac{\alpha_s - \alpha_t}{1 - \alpha_t}
+$ 的概率变为 $x_0^i$，而当token unmask后，则不再参与更新。
+
+#### Model and Loss
+
+由于 $p(x_s\mid x_t)=\mathbb E_{p(x_0\mid x_t)}[q(x_s\mid x_t,x_0)]$，反向过程可以通过先采样 $x_0\sim p(\cdot\mid x_t)$，然后再采样 $x_s\sim q(\cdot\mid x_t,x_0)$来实现。由于 $x_0$ 是未知的，通过 $p_{\theta}(x_0\mid x_t)=\prod_{i=1}^Lp_{\theta}(x_0^i\mid x_t)$来建模，并以如下损失函数来优化：
+
+$$
+\mathcal{L}_{\text{vb}}(\mathbf{x}_0; \theta) = \int_0^1 \frac{\alpha_t'}{1 - \alpha_t} \mathbb{E}_{q(\mathbf{x}_t \mid \mathbf{x}_0)} \left[ \sum_{i=1}^{L} \log p_\theta(x_0^i \mid x_t^i) \right] dt,
+$$
+
+#### Inference
+
+在推理阶段，给定一个完全被掩码的序列 $\mathbf{x_L} = \left[\text{m}, \text{m}, \dots, \text{m}\right]$ ，我们需要通过 $T$ 步去噪得到 $\mathbf{x_0}$。根据之前的讨论，每一时刻 $t$ 的状态转移不仅取决于模型的预测能力 $p_\theta(x_0^i \mid \mathbf{x_t})$，更取决于采样路径（Sampling Path)的选择。
+
+我们将时间 $t+1\rightarrow t$ 的推理建模为两步，首先根据某种策略 $\pi(i\mid x_{t+1}),i=1,2,\cdots L$ 选出被unmask的位置，记为 $M_{t+1}$，然后对 $M_{t+1}$ 中的位置，按照模型预测的logist进行采样，即 $x^i_t\sim p_{\theta}(x_t^i\mid x_{t+1})$。那么一次推理即为：
+
+$$x_t^i = \begin{cases}  \sim p_{\theta}(x^i \mid \mathbf{x}_{t+1}), & \text{if } i \in M_{t+1} \quad \text{(在当前步被选中Unmask)} \\ x_{t+1}^i, & \text{if } i \notin M_{t+1} \quad \text{(保持上一时刻状态)} \end{cases}$$
+
+也即：
+
+$$[\mathbf{T}_{t+1 \rightarrow t}^M](\mathbf{x}_{t+1}, \mathbf{x}_t) =  \begin{cases}   \underbrace{\pi(M \mid \mathbf{x}_{t+1})}_{\text{Selection}} \cdot \underbrace{\prod_{i \in M} p_\theta(x_t^i \mid \mathbf{x}_{t+1})}_{\text{Generation}} & \text{if } \mathbf{x}_t^{-M} = \mathbf{x}_{t+1}^{-M} \\  0 & \text{otherwise}  \end{cases}$$
+
+### Exposure Bias
+
+首先，我们定义两个核心概率测度，它们存在于相同的状态空间 $\mathcal{X}^L$ 上：
+
+- 训练状态分布 ($P_{t}$)： 真实数据经前向过程 $q$ 投影后的边际分布。
+
+$$P_{t}(\mathbf{x_t}) = \int p_{\text{data}}(\mathbf{x_0}) q(\mathbf{x_t} \mid \mathbf{x_0}) d\mathbf{x_0}$$
+
+- 推理状态分布 ($\hat{P}_{t}$)： 由全掩码状态 $\mathbf{x}_L$ 出发，经推理算子 $\mathbf{T}^M$ 迭代生成的分布。
+
+$$\hat{P}_{t}(\hat{\mathbf{x}}_t) = \sum_{\hat{\mathbf{x}}_{t+1}} \hat{P}_{t+1}(\hat{\mathbf{x}}_{t+1}) \mathbf{T}_{t+1 \to t}^M(\hat{\mathbf{x}}_t \mid \hat{\mathbf{x}}_{t+1})$$
+
+我们关注的目标是时刻 $t$ 的总分布偏移：$\Delta_t = D_{KL}(P_t \Vert \hat{P_t})$。
+
+利用 KL 散度的链式法则，我们可以建立 $\Delta_t$ 的演化关系。
+
+设 $\mathcal{Q}\_{t+1 \to t}$ 为真实数据分布诱导的最优反向转移算子。显然有 $P_t = \mathcal{Q}_{t+1 \to t} P\_{t+1}$。则：
+
+$$\Delta_t = D_{KL}\left( \mathcal{Q}_{t+1 \to t} P_{t+1} \big\| \mathbf{T}_{t+1 \to t}^M \hat{P}_{t+1} \right)$$
+
+通过引入中间项 $\mathbf{T}\_{t+1 \to t}^M P_{t+1}$ 并利用散度的三角形性质，可推导出如下上界：
+
+$$\Delta_t \le \underbrace{D_{KL}(\mathcal{Q}_{t+1 \to t} P_{t+1} \| \mathbf{T}_{t+1 \to t}^M P_{t+1})}_{\text{单步局部误差 } \mathcal{E}_{\text{loc}}} + \underbrace{D_{KL}(\mathbf{T}_{t+1 \to t}^M P_{t+1} \| \mathbf{T}_{t+1 \to t}^M \hat{P}_{t+1})}_{\text{历史误差传播}}\leq \mathcal{E}_{\text{loc}}+\Delta_{t+1}$$
+
+通过优化 $\mathbf{T}\_{t+1 \to t}^M$ ，我们可以同时减小单步局部误差从而减少 $\Delta_t$。
+
+### Intrinsic Order
+
+我们首先形式化“数据内在序”这一概念。设完整序列为
+
+$$
+\mathbf{x}_0 = (x_0^1, x_0^2, \dots, x_0^L) \sim p_{\text{data}}
+$$
+
+对于任意子集 $S \subset \{1,\dots,L\}$，定义其条件生成难度为：
+
+$$
+\mathcal{H}(S)
+\;\triangleq\;
+\mathbb{E}_{\mathbf{x}_0 \sim p_{\text{data}}}
+\left[
+H\big( \mathbf{x}_0^S \mid \mathbf{x}_0^{\bar S} \big)
+\right]
+$$
+
+该量刻画：在其余 token 已知的条件下，集合 $S$ 中 token 的不确定性。
+
+于是数据分布 $p_{\text{data}}$ 诱导了一族等价的最优生成序：
+
+$$
+\mathcal{O}^*
+=
+\arg\min_{\pi \in \mathfrak{S}_L}
+\sum_{k=1}^L
+\mathcal{H}\big(\{\pi_k\} \mid \{\pi_1,\dots,\pi_{k-1}\}\big)
+$$
+
+其中 $\pi$ 为 token 的一个排列（生成顺序）。
+
+但在分布层面定义单一或固定的最优生成顺序在实践中是不合理的，不同样本 $\boldsymbol{x}\_0$ 往往对应不同的 $\pi^*(\boldsymbol{x}\_0)$。这一现象反映了真实离散数据中普遍存在的生成顺序多样性。对于具体的样本 $x_0\sim p_{data}$，其最优生成顺序一般依赖于所体现的局部结构与依赖关系，可以形式化为：
+
+$$\pi^*(\boldsymbol{x}_0)=\operatorname*{arg\,min}_{\pi\in \mathfrak{S}_L }\sum_{k=1}^LH\bigg(x_0^{\pi_k}\mid \boldsymbol{x}_0^{\{\pi_1,\cdots,\pi_{k-1}\}}\bigg)$$
+
+#### Impact on Training Complexity
+
+在标准的 MDM 训练中，噪声调度器通常采用均匀采样策略，即假设所有 Token 被掩码的概率是均等的。这意味着模型被迫在训练过程中学习所有可能的生成排列 $\pi \in \mathfrak{S}_L$ 的平均。
+
+然而，对于具有强结构依赖的数据，不同生成路径的学习难度存在巨大差异。我们可以将训练过程中的期望损失分解为基于排列的加权和：
+
+$$\mathcal{L}_{\text{total}} \approx \mathbb{E}_{\mathbf{x}_0} \mathbb{E}_{\pi \sim U(\mathfrak{S}_L)} \left[ \sum_{k=1}^L -\log p_\theta(x_0^{\pi_k} \mid \mathbf{x}_0^{\{\pi_1, \dots, \pi_{k-1}\}}) \right]$$
+
+由于参数空间的限制，模型无法在多项式时间内拟合所有 $L!$ 种路径的边缘分布。均匀调度强迫模型在早期时间步去预测那些高熵、高依赖性的 Token，这导致了优化目标中的梯度冲突。
+
+这种冲突不仅拖慢了收敛速度，更在理论上降低了模型所能达到的性能上界。我们可以定义Optimization Gap，即 $\Delta \mathcal{L}_{\text{order}}$，来量化由于忽略数据内在序而引入的额外复杂性：
+
+$$
+\begin{aligned}
+\Delta \mathcal{L}_{\text{order}} = \mathbb{E}_{\mathbf{x}_0} \left[ \sum_{k=1}^L \left( \underbrace{\mathbb{E}_{\pi \sim U} [H(x_0^{\pi_k} \mid \mathbf{x}_0^{\pi_{\lt k}})]}_{\text{Avg. Complexity (Uniform)}} - \underbrace{H(x_0^{\pi^*_k} \mid \mathbf{x}_0^{\pi^*_{\lt k}})}_{\text{Min. Complexity (Optimal)}} \right) \right]
+\end{aligned}
+$$
+
+其中 $\pi^*$ 代表使得序列条件熵和最小的最优生成序。$\Delta \mathcal{L}_{\text{order}}$ 的存在揭示了一个核心矛盾：模型不仅要学习符合因果律的“易学路径”（$P(\text{Result}\mid\text{Cause})$），还被迫消耗大量参数去拟合违反直觉的逆向或乱序路径 $P(\text{Cause}\mid\text{Result})$。
+
+这一现象引发了容量稀释问题。根据 Rate-Distortion Theory，如果我们将模型参数 $\theta$ 视为容量有限的信息信道 $C_\theta$，那么均匀采样策略人为地将任务所需的信息编码率从 $R_{\text{opt}}$ 提升到了 $R_{\text{uni}}$。当 $R_{\text{uni}} > C_\theta$ 时，模型无法完美拟合这一高熵混合分布，必然产生不可约减的失真。
+
+换言之，$\Delta \mathcal{L}\_{\text{order}}$ 实质上度量了有多少模型容量被浪费在了拟合无效的噪音路径上。这种资源的被动分散，导致模型在处理真正重要的正向依赖时可用参数减少，从而迫使模型学到的联合分布 $P_\theta(\mathbf{x}_0)$ 呈现出一种平滑化的特征，难以捕捉数据分布中原本尖锐的多模态结构。因此，设计能逼近 $\pi^*$ 的 Scheduler，本质上是在进行一种课程学习，旨在消除 $\Delta \mathcal{L}\_{\text{order}}$ 带来的熵增，从而在有限的参数规模下逼近更高的性能上限。
+
+#### Impact on Inference Accuracy
+
+在推理阶段，当噪声调度器 $\pi$ 选取的去噪路径违背数据的内在序 $\pi^*$ 时，会引发级联式的精度崩塌。
+
+当调度器强迫模型在缺乏Context的情况下优先预测下游 Token 时，模型面临的是一个高熵分布。
+
+设 $x^A \to x^B$ 为真实因果依赖，若 $\pi$ 优先揭露 $x^B$，则模型需从边缘分布采样：
+
+$$
+x^B \sim p_\theta(x^B \mid \emptyset) = \sum_{x^A} p(x^B \mid x^A)p(x^A)
+$$
+
+相比于条件分布 $p(x^B\mid x^A)$，该分布极其平坦，导致采样极易命中低概率或错误的token。
+
+### Token Independence
+
+让 $\mathcal{M}\_t$ 表示 $t$ 时刻被 Mask 的集合，$c = x\_{t+1}$ 为当前上下文。我们需要在 $t+1 \to t$ 这一步解开一个子集 $\mathcal{U} \subset \mathcal{M}\_{t+1}$。模型使用独立分布 $Q_\theta(x_\mathcal{U} \mid c) = \prod_{i \in \mathcal{U}} Q_\theta(x_i \mid c)$ 来近似真实分布 $P(x_\mathcal{U} \mid c)$。我们要最小化的目标是 $D_{\text{KL}}(P \Vert Q_\theta)$。通过引入真实的边缘分布乘积 $\prod\_{i \in \mathcal{U}} P(x_i \mid c)$ 作为中间项，我们可以将这个 KL 散度完美分解：
+
+$$\begin{aligned} D_{\text{KL}}(P \| Q_\theta) &= \mathbb{E}_{x \sim P} \left[ \log \frac{P(x_\mathcal{U}\mid c)}{\prod_{i \in \mathcal{U}} Q_\theta(x_i\mid c)} \right] \\ &= \mathbb{E}_{x \sim P} \left[ \log \left( \frac{P(x_\mathcal{U}\mid c)}{\color{blue}{\prod_{i \in \mathcal{U}} P(x_i\mid c)}} \cdot \frac{\color{blue}{\prod_{i \in \mathcal{U}} P(x_i\mid c)}}{\prod_{i \in \mathcal{U}} Q_\theta(x_i\mid c)} \right) \right] \\ &= \underbrace{\mathbb{E}_{x \sim P} \left[ \log \frac{\prod_{i \in \mathcal{U}} P(x_i\mid c)}{\prod_{i \in \mathcal{U}} Q_\theta(x_i\mid c)} \right]}_{\text{Term 1: Sum of Marginal Errors}} + \underbrace{\mathbb{E}_{x \sim P} \left[ \log \frac{P(x_\mathcal{U}\mid c)}{\prod_{i \in \mathcal{U}} P(x_i\mid c)} \right]}_{\text{Term 2: Total Correlation (Dependency)}} \end{aligned}$$
+
+- Term 1: 边缘误差之和 (对应标准 CE Loss)
+
+  $$\text{Term 1} = \sum_{i \in \mathcal{U}} D_{\text{KL}}(P(x_i\mid c) \| Q_\theta(x_i\mid c))$$
+
+  由于 $D_{\text{KL}}(P_i \| Q_i) = \text{CrossEntropy}(P_i, Q_i) - H(P_i)$，且 $H(P_i)$ 对于模型参数 $\theta$ 是常数，最小化这一项完全等价于最小化标准 Cross Entropy Loss。
+
+- Term 2: 全相关误差
+
+  $$\text{Term 2} = D_{\text{KL}}\left( P(x_\mathcal{U}\mid c) \bigg\| \prod_{i \in \mathcal{U}} P(x_i\mid c) \right) = \text{TC}(x_\mathcal{U}\mid c)=\left( \sum_{i \in \mathcal{U}} H(x_i\mid c) \right) - H(x_\mathcal{U}\mid c)$$
+
+  这衡量了变量之间偏离独立性的程度。如果 $x_\mathcal{U}$ 中的 token 在给定 $c$ 下是完全条件独立的，则此项为 0。依赖关系越强，此项越大。
+
+基于上述 Total Correlation (TC) 的数学分解，我们可以深刻理解 Noise Scheduler 在推理阶段的核心使命。由于模型参数 $\theta$ 在推理时是固定的，Term 1 (Marginal Errors) 的上限在训练结束时即已确定。因此，推理质量的提升完全取决于能否通过 Scheduler 的策略性选择，将 Term 2 (Total Correlation) 最小化。
+
+换言之，在推理过程中，Scheduler 不再仅仅是一个简单的进度条控制者（决定 Unmask 多少个 Token），而是扮演了 “依赖解耦器” 的角色。
+
+### Remark
+
+回顾前文关于 Exposure Bias 的推导，总误差 $\Delta*t$ 的累积源于每一步的局部误差 $\mathcal{E}\_{\text{loc}}$。在推理的 $t+1 \to t$ 阶段，给定上下文 $c = \mathbf{x}\_{t+1}$，Scheduler $\pi$ 首先决定unmask的子集 $\mathcal{U} \sim \pi(\cdot\mid c)$，随后模型 $p_\theta$ 对其进行填充。
+我们将单步局部误差 $\mathcal{E}\_{\text{loc}}$ 重新形式化为关于策略 $\pi$ 的期望形式：
+
+$$\mathcal{E}_{\text{loc}}(\pi, \theta) = \mathbb{E}_{\mathcal{U} \sim \pi(\cdot \mid c)} \left[ D_{KL}\Big(~P(x_\mathcal{U} \mid c) ~\Big\| \underbrace{\prod_{i \in \mathcal{U}} p_\theta(x_i \mid c)}_{\text{Independence Assumption}} \Big) \right]$$
+
+我们可以将这一误差进一步拆解为两部分，从而清晰地分离 Intrinsic Order 和 Independence 的影响：
+
+$$\mathcal{E}_{\text{loc}}(\pi, \theta) = \mathbb{E}_{\mathcal{U} \sim \pi} \left[ \underbrace{\sum_{i \in \mathcal{U}} D_{KL}(P(x_i\mid c) \| p_\theta(x_i\mid c))}_{\text{(I) Marginal Precision Error}} + \underbrace{\mathbb{I}(\lvert\mathcal{U}\rvert > 1) \cdot \text{TC}(x_\mathcal{U} \mid c)}_{\text{(II) Structural Dependency Error}} \right]$$
+
+其中 $\mathbb{I}(\cdot)$ 为示性函数，强调项 (II) 仅在一步解开多个 Token 时存在。
+
+总结而言，数据的内在序以及独立性同时影响了训练与推理，当单步解码数 $\mathcal U$ 较大时，独立性会显著制约模型精度，但同时也降低了对数据内在序的违背；而当单步解码数 $\mathcal U$ 很小时，独立性的影响大大减弱，但数据内在序的制约增强。通过设计合理的mask/unmask策略 $\pi$，使得模型训练和推理能够顺应数据的内在序，并尽可能缓解Independence 的影响，我们可以大大提高模型的训练效率、模型容量并缓解exposure bias。
+
+## Current Schedulers
+
+### Random Schedulers
+
+随机策略是 MDM 的基准实现（MDLM, MD4, SEDD）<d-cite key="sahoo2024simpleeffectivemaskeddiffusion,shi2025simplifiedgeneralizedmaskeddiffusion,lou2023discretediffusionestimating"></d-cite>，它假设所有 token 的地位是平等的，忽略了数据的内在序（Intrinsic Order）。
+
+- Training
+  在训练时，时间步 $t \in [0, 1]$ 均匀采样，对应的 mask 比例为 $1 - \alpha_t$。对于序列中的任意位置 $i
+$，其被选中的概率是独立的：
+  $$\pi(M \mid \mathbf{x}_0) = \binom{L}{k}^{-1}, \quad \text{where } k \approx (1-\alpha_t)L$$
+
+  此时，损失函数 $\mathcal{L}_{\text{vb}}$ 退化为对所有可能排列 $\mathfrak{S}_L$ 的均匀期望。
+
+- Inference
+  在每一推理步 $t+1 \to t$，策略 $\pi$ 随机从当前 mask 集合中挑出固定比例（由 scheduler 决定）的位置进行 unmask：
+  $$M_{t+1} \subset \{i \mid x_{t+1}^i = \text{m}\}, \quad \text{s.t. } \lvert M_{t+1} \rvert = \lfloor (\alpha_t - \alpha_{s})L \rfloor$$
+
+  选择过程与上下文 $c$ 无关，即 $\pi(M \mid \mathbf{x}_{t+1}) = \pi(M)$。模型在每一步独立预测所有被掩码位置的概率分布：
+  $$x_t^i \sim p_\theta(x^i \mid \mathbf{x}_{t+1}) \quad \forall i \in M_{t+1}$$
+
+### Confidence-based Schedulers
+
+与随机策略不同，基于置信度（Confidence-based）的策略 (Train for the worst, Plan for the best, MGDM )<d-cite key="kim2025trainworstplanbest,ye2024beyondautoregressiondiscretediffusion"></d-cite> 试图通过模型的预测结果动态地寻找“易学路径”。其核心逻辑是：模型越有把握（置信度越高）的 token，越倾向于先被解开（Unmask），以此顺应数据的内在序 $\pi^*$。在该框架下，策略 $\pi$ 不再是均匀分布，而是取决于模型输出的概率分布 $p_\theta(x^i \mid \mathbf{x}_{t+1})$。
+
+{% include figure.liquid loading="eager" path="assets/img/posts/2026-03-04-Note-Schedulers-of-Mask-Diffusion-Model/figure1.png" figure_class="my-1" class="img-fluid rounded z-depth-1 float-right float-end ml-3 ms-3 mb-2" zoomable=true caption="图示比较了不同 Sampling Steps 下的生成困惑度（左轴）与预测熵（右轴）：置信度驱动的自适应推理在较少步数时即可保持更低困惑度，并以更平滑的熵轨迹逼近高步数性能。" %}
+
+- Selection score ($s_i$):
+  对于每个被掩码的位置 $i \in \{i \mid x_{t+1}^i = \text{m}\}$，计算其得分：
+  - Logit Top-1: $s_i = \max_x \log p_\theta(x^i = x \mid \mathbf{x}\_{t+1})$
+  - Logit Margin: $s_i = \text{logit}\_{max1} - \text{logit}\_{max2}$（衡量类别区分度）
+  - Negative Entropy: $s_i = -H(p_\theta(x^i \mid \mathbf{x}\_{t+1}))$（衡量预测的确定性）
+- Inference ($\pi_{\text{inf}}$):
+
+  在 $t+1 \to t$ 步，计算所有 mask 位置的 $s_i$，并选择得分最高的前 $k$ 个位置：
+
+  $$M_{t+1} = \text{arg-topk}_{i} \{s_i\}, \quad \text{where } k = \lfloor (\alpha_t - \alpha_s)L \rfloor$$
+
+  对应的生成过程为：
+
+  $$\pi(M \mid \mathbf{x}\_{t+1}) = \begin{cases} 1 & \text{if } M = M_{t+1} \\ 0 & \text{otherwise} \end{cases}$$
+
+  为了保留一定的随机性，也可以设计 topk ratio 来控制topk选择的比例，即将一部分的topk和一部分随机选出的token放入 $M_{t+1}$ 中。
+
+- Training
+
+  当前的工作中，并没有在训练中显式实现使用confidence-based Policy进行mask的，当有一些工作通过对损失函数的重加权来实现对特定token或者说对特定生成序的偏好训练，如在 MGDM<d-cite key="ye2024beyondautoregressiondiscretediffusion"></d-cite> 中，通过对损失函数进行 Token-level Reweighting 来隐式地调整模型对不同生成路径的偏好。其训练目标函数定义为：
+
+  $$L_{\text{MGDM}} = \sum_{n=1}^N \sum_{t=1}^T w(t)v(\mathbf{x}_{t,n})u(\mathbf{x}_0, \mathbf{x}_t, n; \theta)$$
+
+  其中，$v(\mathbf{x}\_{t,n}) = \alpha(1 - \exp(-u(\cdot)))^\beta$ 是自适应令牌级重加权项。当 $\beta > 0$ 时，该项会减小易学 Token（低 Loss）的权重，并放大难学 Token（高 Loss）的权重。从优化目标上看，这种训练策略旨在通过“强迫”模型关注那些当前预测不准确的难样本，从而提高整体训练效率。
+
+- Advantage：
+
+  - 充分学习数据后denoiser输出的logist可以看作是对token难度的良好估计，logist 引导下的生成路径可以自适应不同的输入，得到合适的生成序。
+
+- Shrotage：
+
+  - 训练数据有偏，或者训练不充分下的logist估计是不够优秀的
+  - 词表很大情况下（30k+），很多token的logist接近，token间的排序不合理
+  - 此方法对于小步数采样下的 Token Independence 缓解并无作用。
+
+### Planer-based Schedulers
+
+这一部分我们介绍一些通过模型学习得到的scheduler，从而减少归纳偏置，得到更好的泛化性。
+
+#### Noise Predict Planer
+
+_Paper: THINK WHILE YOU GENERATE: DISCRETE DIFFUSION WITH PLANNED DENOISING (ICLR 2025)<d-cite key="liu2024thinkwhilegeneratediscretediffusion"></d-cite>_
+
+DDPD 由两个独立的神经网络组成：
+
+- 规划器 ($p_\theta(z_t^d \mid x_t)$)：执行二分类任务，预测序列中每个维度 $d$ 是否被损坏（即处于噪声状态 $z_t^d = N$）。它仅为每个维度输出 1 个 Logit。
+
+- 去噪器 ($p_{1\mid t}^\theta(x_1^d \mid x_t, z_t^d = N)$)：在给定位置被判定为噪声的条件下，预测其真实的数据分布。
+  DDPD 不再依赖预设的时间步长，而是通过规划器估计的全局噪声水平来反推实际时间: $\tilde{t} = \alpha_t^{-1}(1 - \sum_{d'} p_\theta(z_t^{d'} = N \mid x_t) / D)$ 并将实际时间作为denoiser的时间嵌入。
+
+{% include figure.liquid loading="eager" path="assets/img/posts/2026-03-04-Note-Schedulers-of-Mask-Diffusion-Model/figure2.png" figure_class="my-1" class="img-fluid rounded z-depth-1 float-right float-end ml-3 ms-3 mb-2" zoomable=true caption="DDPD（Discrete Diffusion with Planned Denoising）框架示意图：模型由 Planner 与 Denoiser 两部分组成。Planner 先对每个位置输出噪声状态概率 $p_\theta(z_t^d\mid x_t)$，识别当前最需要修复的 token；随后 Denoiser 在被选中的噪声位置上进行条件预测 $p_{1\mid t}^\theta(x_1^d\mid x_t,z_t^d=N)$。与固定步长调度不同，DDPD 通过估计全局噪声比例反推实际时间嵌入 $\tilde t=\alpha_t^{-1}\!\left(1-\frac{1}{D}\sum_{d'}p_\theta(z_t^{d'}=N\mid x_t)\right)$，从而按“先规划、后去噪”的顺序迭代生成，提高采样效率与最终质量。" %}
+
+- Advantage:
+
+  - 额外训练了planer，避免模型容量的限制
+  - 实现remask
+  - 由于单步采样一个token，不存在 Token Independence 的影响
+
+- Shortage：
+
+  - planer输出的logist的rank不一定是数据内在序的良好估计
+  - 单步采样一个token+remask迭代，生成速度太慢
+
+### RL-Policy Planer
+
+RL-Policy Planer 旨在将离散扩散模型的去噪过程建模为一个马尔可夫决策过程，通过强化学习来学习最优的去噪轨迹或 Unmask 策略。与基于启发式的调度器（如随机或置信度采样）不同，RL-Policy 能够根据下游任务的最终奖励（如数学题的准确率、推理的逻辑正确性）自适应地调整生成路径，从而在更复杂的生成场景中展现出优越性。
+
+#### Freeze backbone with trainable Policy head
+
+_Paper: IMPROVING DISCRETE DIFFUSION UNMASKING POLICIES BEYOND EXPLICIT REFERENCE POLICIES (ICLR 2026)_<d-cite key="hong2026improvingdiscreteunmasking"></d-cite>
+
+这种架构的核心思想是分工明确：底层的 Backbone已经具备了强大的条件概率建模能力，而 Policy Head 则作为一个scheduler，专门负责根据当前上下文评估各位置的解掩码优先级。
+
+{% include figure.liquid loading="eager" path="assets/img/posts/2026-03-04-Note-Schedulers-of-Mask-Diffusion-Model/figure3.png" figure_class="my-1" class="img-fluid rounded z-depth-1 float-right float-end ml-3 ms-3 mb-2" zoomable=true caption="冻结 Backbone、仅训练 Policy Head 的 RL-Policy Planner 架构示意：在每一步 $t+1\to t$，策略网络基于当前序列状态输出各位置的解掩码优先级 $\pi_\phi(i\mid x_{t+1})$，选择需要优先去噪的 token，再由冻结的基础 MDM 执行条件生成。该设计将“位置决策”与“内容生成”解耦，在保持训练开销较低的同时，通过奖励信号优化采样顺序以提升推理质量。" %}
+
+- 实现：
+
+  - 架构解耦： 冻结预训练的离散扩散模型参数 $\theta$，额外设计一个轻量级的 Policy Head $\phi$（通常是多层感知机或小的 Transformer 层）。
+  - 策略参数化： 给定当前含有 Mask 的序列 $x_{t+1}$，Policy Head 输出一个分数向量 $s = h_\phi(x_{t+1})$，通过 Softmax 转化为选取位置 $i$ 的概率分布 $\pi_\phi(i \mid x_{t+1})$。
+  - 奖励引导： 如果最终生成的序列 $x_0$ 正确，则奖励该路径上的所有决策。
+
+- Advanteage:
+
+  - 轻量化，学出来的policy head可能具有泛化潜力，并支持迁移
+
+- Shortage:
+  - 仅仅训练轻量化head,能力提升有限
+
+#### Trainable backbone with fixed path
+
+_Paper: MDPO: OVERCOMING THE TRAINING-INFERENCE DIVIDE OF MASKED DIFFUSION LANGUAGE MODELS_<d-cite key="he2025mdpoovercomingtraininginference"></d-cite>
+
+{% include figure.liquid loading="eager" path="assets/img/posts/2026-03-04-Note-Schedulers-of-Mask-Diffusion-Model/figure4.png" figure_class="my-1" class="img-fluid rounded z-depth-1 float-right float-end ml-3 ms-3 mb-2" zoomable=true caption="" %}
+
+与上述方案不同，MDPO 并不改变位置选择的逻辑（依然沿用 Confidence-based 启发式），而是通过 RL 训练直接优化 Backbone 自身，使其输出的 Logit 能够更完美地适配推理时的调度轨迹。
+
+- 实现
+
+  - 端到端优化： Backbone 参数 $\theta$ 是可训练的。在 RL 阶段，模型按照推理时的 Confidence-based 策略进行采样生成。
+
+  - RL 模拟推理过程中的“递进式解掩码”路径。通过对比不同轨迹的累积奖励（如使用组相对优势估计 GRPO），强制模型在当前推理分布下产生更准确的预测。
+
+    RL 目标会拉大正确路径上 Token 的 Logit 值，并压低错误/干扰路径的值。这使得模型在推理时的 Confidence 评分不再仅仅是训练损失的副产品，而是真正具备了导航能力的启发式函数。
+
+- Advantage:
+
+  - 可以直接奖励小步数采样，得到更好的加速效果
+  - 直接在confidence-based基础上更新策略，训推一致并且避免模型容量稀释
+  - backbone训练后，上限更高
+
+- Shortage:
+  - 由于将路径压缩为一条，模型的泛化性可能大大降低
+
+## Manual/Block Schedulers
+
+这一类方法不依赖额外可训练的 planner，而是用人为设计的结构先验去塑造更合理的采样路径，从而在“内在序”和“全相关误差”之间获得更稳定的折中。
+
+### Subsequence-based Schedulers (SPMDM)
+
+**SPMDM: Enhancing Masked Diffusion Models through Simplifing Sampling Path** 的核心假设是：高效采样路径应具备**局部优先**（优先解开已解 token 附近的掩码）和**逻辑顺序优先**（优先解开推理链条中靠前的子序列）。
+
+**Insight**
+
+- Block 内部噪声相同 → 学习邻近 token 关系更稳定
+- Block 之间噪声不同 → 训练时自然偏向某些子序列“更先恢复”
+
+**Training Method：子序列划分与非均匀噪声**
+
+- Data Prepare：将长度为 $L$ 的输入序列 $oldsymbol{x}$ 划分为 $K$ 个长度为 $L/K$ 的非重叠子序列
+- Mask schedule：在训练过程中，不再对全序列应用统一的噪声水平 $eta_t$，而是为每个子序列分配独立的噪声尺度 $eta_t^{(k)}$
+- Time embedding：每个子序列有自己的时间嵌入，因此 Transformer 输入中加入 $K$ 组 time embedding
+- Target：通过子序列级的 NELBO 进行优化，强制模型在给定上下文下预测特定的子序列
+
+**Sampling method**（概念）：
+
+- 采样从全 mask 开始
+- 每一步对每个子序列估计已恢复 token 数并更新时间步
+- 在子序列内进行局部解掩码（可概率式或自适应 oracle）
+
+**Advantage**
+
+- 训推一致，减小全相关误差
+- 子序列设置符合直观的“局部依赖”假设
+- 轻量化，无额外计算负担
+
+**Shortage**
+
+- 子序列边界固定，可能与数据的真实依赖结构不完全一致
+
+### Block Diffusion Language Model
+
+**BLOCK DIFFUSION: INTERPOLATING BETWEEN AUTOREGRESSIVE AND DIFFUSION LANGUAGE MODELS** 通过块级结构在 AR 与 MDM 间插值：
+
+- 将长度为 $L$ 的序列划分为 $K$ 个长度为 $B$ 的块
+- 块之间用自回归分解，块内部用离散扩散过程
+
+**Advantage**
+
+- 符合文本的顺序先验
+- 训推一致，显著降低全相关误差
+- 便于利用 KV cache，加速推理
+
+**Shortage**
+
+- 固定块划分仍可能偏离复杂非线性依赖
+
+## Remark: Unified View
+
+从统一视角看，Mask Diffusion Model 中的 Noise Scheduler 本质上是一个**结构约束器（Structural Regulator）**，而非传统意义上的时间控制器。它通过决定“何时、解开什么、以及一次解多少 Token”，直接塑造了模型在训练与推理中面对的条件分布，从而调节三类核心误差的权衡：
+
+- **Exposure Bias** 的时间传播误差（由单步局部偏差累积而来）
+- **Intrinsic Order** 被违背所引入的优化复杂度与容量稀释
+- **Token Independence** 假设下不可避免的 Total Correlation 偏离
+
+三者并非独立问题，而是通过 Scheduler 的策略性选择在同一条误差曲线上被共同调节：
+
+- 大步解码缓解顺序违背，却放大结构依赖误差
+- 小步解码削弱独立性偏差，却对内在序和推理稳定性提出更高要求
+- 随机调度在理论上无偏，却在有限容量下引入显著的优化冗余
+- 基于置信度或策略学习的调度尝试逼近样本级最优生成序，但受模型不完备性与估计噪声制约
+
+综合来看，**RL-Policy Scheduler** 通过 reward 同时兼顾内在序与全相关误差，且采样路径遵循 policy，训推一致性最好，理论上具有更高上限。
+
+## About Z-mask
+
+在 Z-mask 中，我们同样需要权衡 exploration 与 exploitation：
+
+- 一方面通过 Z-mask 构造数据，从而在内在序上专注训练
+- 另一方面对数据随机采样来获得更准确的内在序估计
+
+这也与经验发现的 **down-k** 通常优于 **top-k** 相吻合，但 down-k 仍是一种全局固定的探索策略，或许可以引入退火或 RL 来进一步优化。
+
+同时，Z-mask 对小步数采样没有明显优化，其原因在于该机制并未直接减少全相关误差。因此可考虑：
+
+- 用动态退火优化 Z-mask 对内在序的估计与遵循
+- 在较大的 Z-mask step 下，引入额外策略以降低全相关误差
+
+## About Optimal Unmask Schedule & RL
+
+在 MDM 中，$	ilde{\pi}$ 代表一种显式的全局规划 —— 通过优先生成低熵（高确定性）的结构锚点，从而降低剩余生成的条件熵。
+
+而在 AR 模型中，受限于从左到右的刚性拓扑约束，模型无法物理地调整生成顺序。RL 的引入，实际上是利用 Value Function 作为未来的代理，将 $	ilde{\pi}$ 所带来的全局一致性收益折现回当前的 Token 概率分布中。
+
+换言之，RL 迫使 AR 模型在 $t$ 时刻不仅考虑局部语法连贯，还隐式模拟了 $	ilde{\pi}$ 的规划能力。**RL 的 CoT 可以被视作 AR 模型为在线性时间内模拟非线性思维路径所付出的计算代价**。
