@@ -147,9 +147,11 @@ $$
 where
 
 $$
-dx\to x_{t+\Delta t}-x_t\\
-dt\to \Delta t\\
-dw\to w(t+\Delta t)-w(t)\sim\mathcal N(0,\Delta t)=\sqrt{\Delta t}\epsilon
+\begin{aligned}
+dx &\to x_{t+\Delta t}-x_t\\
+dt &\to \Delta t\\
+dw &\to w(t+\Delta t)-w(t)\sim\mathcal N(0,\Delta t)=\sqrt{\Delta t}\epsilon
+\end{aligned}
 $$
 
 Thus, the discrete form of the SDE is represented as:
@@ -165,15 +167,19 @@ where $\epsilon\sim\mathcal N(0,1)$.
 For NCSN, the forward process (adding noise) is shown as follows:
 
 $$
-x_t=x_0+\sigma_t\epsilon\\
-x_{t+\Delta t}=x_t+\underbrace{\sqrt{\sigma_{t+\Delta t}^2-\sigma_t^2}}_{\color{red}\sqrt{\frac{\sigma_{t+\Delta t}^2-\sigma_t^2}{\Delta t}}\sqrt{\Delta t}}\epsilon
+\begin{aligned}
+x_t &= x_0+\sigma_t\epsilon\\
+x_{t+\Delta t} &= x_t+\underbrace{\sqrt{\sigma_{t+\Delta t}^2-\sigma_t^2}}_{\color{red}\sqrt{\frac{\sigma_{t+\Delta t}^2-\sigma_t^2}{\Delta t}}\sqrt{\Delta t}}\epsilon
+\end{aligned}
 $$
 
 Therefore, in the corresponding SDE representation
 
 $$
-f(x_t,t)=0\\
-g(t)=\lim\limits_{\Delta\to 0}\sqrt{\frac{\sigma_{t+\Delta t}^2-\sigma_t^2}{\Delta t}}=\sqrt{2\sigma_t\dot\sigma_t}
+\begin{aligned}
+f(x_t,t) &= 0\\
+g(t) &= \lim\limits_{\Delta\to 0}\sqrt{\frac{\sigma_{t+\Delta t}^2-\sigma_t^2}{\Delta t}}=\sqrt{2\sigma_t\dot\sigma_t}
+\end{aligned}
 $$
 
 The corresponding continuous **SDE** for the **VE** process is:
@@ -187,15 +193,19 @@ $$
 For DDPM, its forward process is represented as follows:
 
 $$
-x_t=\sqrt{\bar{\alpha}_t}x_0+\sqrt{1-\bar{\alpha}_t}\epsilon\\
-x_{t+1}=\sqrt{1-\beta_{t+1}}x_t+\sqrt{\beta_{t+1}}\epsilon
+\begin{aligned}
+x_t &= \sqrt{\bar{\alpha}_t}x_0+\sqrt{1-\bar{\alpha}_t}\epsilon\\
+x_{t+1} &= \sqrt{1-\beta_{t+1}}x_t+\sqrt{\beta_{t+1}}\epsilon
+\end{aligned}
 $$
 
 We continualize the discrete time $1,2,\cdots,t,\cdots T$ to $[0,1]$, i.e., let
 
 $$
-t\to\frac{t}{T}=t'\\
-1\to\frac{1}{T}=\Delta t
+\begin{aligned}
+t &\to\frac{t}{T}=t'\\
+1 &\to\frac{1}{T}=\Delta t
+\end{aligned}
 $$
 
 We can also let $\beta_{t'}=T\beta_t$, thus
@@ -211,8 +221,10 @@ $$
 Therefore, in the corresponding SDE representation, we have
 
 $$
-f(x_t,t)=-\frac{1}{2}\beta_{t'}x_t\\
-g(t)=\sqrt{\beta_{t'}}
+\begin{aligned}
+f(x_t,t) &= -\frac{1}{2}\beta_{t'}x_t\\
+g(t) &= \sqrt{\beta_{t'}}
+\end{aligned}
 $$
 
 The corresponding continuous **SDE** for the **VP** process is:
@@ -260,8 +272,10 @@ $x_t|x_{t+\Delta t}$
 follows a Gaussian distribution with mean and variance as follows:
 
 $$
-\mu=x_{t+\Delta t}-\big[f(x_t,t)-g^2(t)\nabla_{x_t}\log p(x_t) \big]\Delta t\\
-\sigma^2=g^2(t)\Delta t
+\begin{aligned}
+\mu &= x_{t+\Delta t}-\big[f(x_t,t)-g^2(t)\nabla_{x_t}\log p(x_t) \big]\Delta t\\
+\sigma^2 &= g^2(t)\Delta t
+\end{aligned}
 $$
 
 Thus, we can obtain both the discrete and continuous forms of the reverse SDE process:

@@ -1,8 +1,10 @@
 ---
 layout: distill
-title: Schedulers of Mask Diffusion Model
+title: 掩码扩散模型中的掩码调度
 date: 2026-03-04 05:09:27
-description: 对 Mask Diffusion Model 中 Noise Scheduler 的统一分析，讨论随机、置信度、规划器、RL 与手工块级调度器的优缺点及未来方向。
+blog_hidden: true
+permalink: /blog/2026/masking-schedulers-cn/
+description: 在扩散模型（Diffusion Models）尤其是掩码扩散模型（Mask Diffusion Models, MDM）的研究中，Noise Scheduler 的设计是决定模型学习上限与采样质量的核心枢纽。本文对 MDM 中的 Noise Scheduler 进行了全面而深入的统一分析，系统性地探讨了当前主流的调度策略，通过对比分析各策略的优缺点，本文揭示了精细化调度策略如何重塑 Token 间的依赖动力学，并在最后对未来突破底层逻辑缺陷的发展方向进行了展望。
 tags: Masked-Diffusion-Model scheduler Intrinsic-Order
 categories: Notes
 authors:
@@ -16,7 +18,21 @@ related_posts: true
 bibliography: papers.bib
 toc:
   - name: Introduction
-  -
+  - name: Background
+    subsections:
+      - name: Masked diffusion model
+      - name: Exposure Bias
+      - name: Intrinsic Order
+      - name: Token Independence
+      - name: Remark
+  - name: Current Schedulers
+    subsections:
+      - name: Random Schedulers
+      - name: Confidence-based Schedulers
+      - name: Planer-based Schedulers
+      - name: RL-Policy Planer
+      - name: Manual Selected Schedulers
+  - name: Final Remark
 ---
 
 ## Introduction
@@ -214,7 +230,7 @@ $$\begin{aligned} D_{\text{KL}}(P \| Q_\theta) &= \mathbb{E}_{x \sim P} \left[ \
 
 ### Remark
 
-回顾前文关于 Exposure Bias 的推导，总误差 $\Delta*t$ 的累积源于每一步的局部误差 $\mathcal{E}\_{\text{loc}}$。在推理的 $t+1 \to t$ 阶段，给定上下文 $c = \mathbf{x}\_{t+1}$，Scheduler $\pi$ 首先决定unmask的子集 $\mathcal{U} \sim \pi(\cdot\mid c)$，随后模型 $p_\theta$ 对其进行填充。
+回顾前文关于 Exposure Bias 的推导，总误差 $\Delta_t$ 的累积源于每一步的局部误差 $\mathcal{E}\_{\text{loc}}$。在推理的 $t+1 \to t$ 阶段，给定上下文 $c = \mathbf{x}\_{t+1}$，Scheduler $\pi$ 首先决定unmask的子集 $\mathcal{U} \sim \pi(\cdot\mid c)$，随后模型 $p_\theta$ 对其进行填充。
 我们将单步局部误差 $\mathcal{E}\_{\text{loc}}$ 重新形式化为关于策略 $\pi$ 的期望形式：
 
 $$\mathcal{E}_{\text{loc}}(\pi, \theta) = \mathbb{E}_{\mathcal{U} \sim \pi(\cdot \mid c)} \left[ D_{KL}\Big(~P(x_\mathcal{U} \mid c) ~\Big\| \underbrace{\prod_{i \in \mathcal{U}} p_\theta(x_i \mid c)}_{\text{Independence Assumption}} \Big) \right]$$
@@ -236,15 +252,18 @@ $$\mathcal{E}_{\text{loc}}(\pi, \theta) = \mathbb{E}_{\mathcal{U} \sim \pi} \lef
 - Training
   在训练时，时间步 $t \in [0, 1]$ 均匀采样，对应的 mask 比例为 $1 - \alpha_t$。对于序列中的任意位置 $i
 $，其被选中的概率是独立的：
+
   $$\pi(M \mid \mathbf{x}_0) = \binom{L}{k}^{-1}, \quad \text{where } k \approx (1-\alpha_t)L$$
 
   此时，损失函数 $\mathcal{L}_{\text{vb}}$ 退化为对所有可能排列 $\mathfrak{S}_L$ 的均匀期望。
 
 - Inference
   在每一推理步 $t+1 \to t$，策略 $\pi$ 随机从当前 mask 集合中挑出固定比例（由 scheduler 决定）的位置进行 unmask：
+
   $$M_{t+1} \subset \{i \mid x_{t+1}^i = \text{m}\}, \quad \text{s.t. } \lvert M_{t+1} \rvert = \lfloor (\alpha_t - \alpha_{s})L \rfloor$$
 
   选择过程与上下文 $c$ 无关，即 $\pi(M \mid \mathbf{x}_{t+1}) = \pi(M)$。模型在每一步独立预测所有被掩码位置的概率分布：
+
   $$x_t^i \sim p_\theta(x^i \mid \mathbf{x}_{t+1}) \quad \forall i \in M_{t+1}$$
 
 ### Confidence-based Schedulers
@@ -294,7 +313,7 @@ $，其被选中的概率是独立的：
 
 #### Noise Predict Planer
 
-_Paper: THINK WHILE YOU GENERATE: DISCRETE DIFFUSION WITH PLANNED DENOISING (ICLR 2025)<d-cite key="liu2024thinkwhilegeneratediscretediffusion"></d-cite>_
+**_Paper: THINK WHILE YOU GENERATE: DISCRETE DIFFUSION WITH PLANNED DENOISING (ICLR 2025)<d-cite key="liu2024thinkwhilegeneratediscretediffusion"></d-cite>_**
 
 DDPD 由两个独立的神经网络组成：
 
@@ -322,7 +341,7 @@ RL-Policy Planer 旨在将离散扩散模型的去噪过程建模为一个马尔
 
 #### Freeze backbone with trainable Policy head
 
-_Paper: IMPROVING DISCRETE DIFFUSION UNMASKING POLICIES BEYOND EXPLICIT REFERENCE POLICIES (ICLR 2026)_<d-cite key="hong2026improvingdiscreteunmasking"></d-cite>
+**_Paper: IMPROVING DISCRETE DIFFUSION UNMASKING POLICIES BEYOND EXPLICIT REFERENCE POLICIES (ICLR 2026)_**<d-cite key="hong2026improvingdiscreteunmasking"></d-cite>
 
 这种架构的核心思想是分工明确：底层的 Backbone已经具备了强大的条件概率建模能力，而 Policy Head 则作为一个scheduler，专门负责根据当前上下文评估各位置的解掩码优先级。
 
@@ -343,9 +362,9 @@ _Paper: IMPROVING DISCRETE DIFFUSION UNMASKING POLICIES BEYOND EXPLICIT REFERENC
 
 #### Trainable backbone with fixed path
 
-_Paper: MDPO: OVERCOMING THE TRAINING-INFERENCE DIVIDE OF MASKED DIFFUSION LANGUAGE MODELS_<d-cite key="he2025mdpoovercomingtraininginference"></d-cite>
+**_Paper: MDPO: OVERCOMING THE TRAINING-INFERENCE DIVIDE OF MASKED DIFFUSION LANGUAGE MODELS_**<d-cite key="he2025mdpoovercomingtraininginference"></d-cite>
 
-{% include figure.liquid loading="eager" path="assets/img/posts/2026-03-04-Note-Schedulers-of-Mask-Diffusion-Model/figure4.png" figure_class="my-1" class="img-fluid rounded z-depth-1 float-right float-end ml-3 ms-3 mb-2" zoomable=true caption="" %}
+{% include figure.liquid loading="eager" path="assets/img/posts/2026-03-04-Note-Schedulers-of-Mask-Diffusion-Model/figure4.png" figure_class="my-1" class="img-fluid rounded z-depth-1 float-right float-end ml-3 ms-3 mb-2" zoomable=true caption="MDPO generates a group of answers given a query for RL rollouts. Then all completions at intermediate and final steps are verified with a reward model. Based on verified rewards, MDPO estimates the advantage of step t by considering rewards of the other steps in the current rollout and step t from other rollouts in the group. These estimated advantages are used for policy optimization." %}
 
 与上述方案不同，MDPO 并不改变位置选择的逻辑（依然沿用 Confidence-based 启发式），而是通过 RL 训练直接优化 Backbone 自身，使其输出的 Logit 能够更完美地适配推理时的调度轨迹。
 
@@ -366,94 +385,148 @@ _Paper: MDPO: OVERCOMING THE TRAINING-INFERENCE DIVIDE OF MASKED DIFFUSION LANGU
 - Shortage:
   - 由于将路径压缩为一条，模型的泛化性可能大大降低
 
-## Manual/Block Schedulers
+### Manual Selected Schedulers
 
-这一类方法不依赖额外可训练的 planner，而是用人为设计的结构先验去塑造更合理的采样路径，从而在“内在序”和“全相关误差”之间获得更稳定的折中。
+我们在这一部分介绍一些人为选定的scheduler
 
-### Subsequence-based Schedulers (SPMDM)
+#### Subsequence-based Schedulers (SPMDM)
 
-**SPMDM: Enhancing Masked Diffusion Models through Simplifing Sampling Path** 的核心假设是：高效采样路径应具备**局部优先**（优先解开已解 token 附近的掩码）和**逻辑顺序优先**（优先解开推理链条中靠前的子序列）。
+**_Paper: SPMDM: Enhancing Masked Diffusion Models through Simplifying Sampling Path_**<d-cite key="zhu2025spmdmenhancingmaskeddiffusion"></d-cite>
 
-**Insight**
+与传统的全局随机调度不同，SPMDM 认为高效的采样路径应具备两个特征：局部优先（优先解开已解 token 附近的掩码）和逻辑顺序优先（优先解开推理链条中靠前的子序列）。
 
-- Block 内部噪声相同 → 学习邻近 token 关系更稳定
-- Block 之间噪声不同 → 训练时自然偏向某些子序列“更先恢复”
+{% include figure.liquid loading="eager" path="assets/img/posts/2026-03-04-Note-Schedulers-of-Mask-Diffusion-Model/figure5.png" figure_class="my-1" class="img-fluid rounded z-depth-1 float-right float-end ml-3 ms-3 mb-2" zoomable=true caption="SPMDM partitions the input sequence x into K subsequences and introduces noise with varying magnitudes to each of them. Compared to MDLM, our method not only models token-level dependencies but also explicitly encourages the learning of inter-subsequence relationships. In contrast to BDLM, SP" %}
 
-**Training Method：子序列划分与非均匀噪声**
+- Insight
 
-- Data Prepare：将长度为 $L$ 的输入序列 $oldsymbol{x}$ 划分为 $K$ 个长度为 $L/K$ 的非重叠子序列
-- Mask schedule：在训练过程中，不再对全序列应用统一的噪声水平 $eta_t$，而是为每个子序列分配独立的噪声尺度 $eta_t^{(k)}$
-- Time embedding：每个子序列有自己的时间嵌入，因此 Transformer 输入中加入 $K$ 组 time embedding
-- Target：通过子序列级的 NELBO 进行优化，强制模型在给定上下文下预测特定的子序列
+  - Block 内部 noise 相同 → 学习邻近 token 关系更稳定；
+  - Block 之间 noise 不同 → 训练时自然偏向某些子序列“更先恢复”。
 
-**Sampling method**（概念）：
+- Training Method：子序列划分与非均匀噪声
 
-- 采样从全 mask 开始
-- 每一步对每个子序列估计已恢复 token 数并更新时间步
-- 在子序列内进行局部解掩码（可概率式或自适应 oracle）
+  - Data Prepare：将长度为 $N$ 的输入序列 $x$ 划分为 $K$ 个长度为 $L$ 的非重叠子序列 $\{x^1, x^2, \dots, x^K\}$
+  - Mask schedule：在训练过程中，不再对全序列应用统一的噪声水平 $t$，而是为每个子序列 $x^k$ 分配独立的噪声尺度 $t_k$。
+  - Time embedding: 每个子序列有自己的 $t_k$，因此 Transformer 输入中加入 $K$ 组 time embedding：
+  - Target：通过子序列级的 NELBO 进行优化，强制模型在给定的上下文 $x_t^{-k}$ 下预测特定的子序列 $x^k$：
 
-**Advantage**
+    $$\mathcal{L}_{NELBO}=\sum_{k=1}^{K}\mathbb{E}_{t_{k}\sim[0,1],q_{t_{k}/0}}\left[\frac{\alpha_{t_{k}}^{\prime}}{1-\alpha_{t_{k}}}\log p_{\theta}(x^{k}\mid x_{t_{k}}^{k},{x_{t}}^{-k})\right]$$
 
-- 训推一致，减小全相关误差
-- 子序列设置符合直观的“局部依赖”假设
-- 轻量化，无额外计算负担
+- Sampling method:
+  采样从 $x^1 = [m, m, \dots, m]$ 开始，在每一步：
+  1. 对每个子序列计算已恢复 token 数 $n_k$；
+  2. 更新该子序列时间：$t_k = 1 - \frac{n_k}{L};$
+  3. 使用模型预测：$\hat{x}^0_k = p_\theta(x_k \mid x^{t_k}_k, x^{-k}_t, t_k);$
+  4. 按一定策略从 mask → token（可用概率式或 adaptive oracle）。
+- Advantage:
+  - 训推一致，减小了全相关误差
+  - subsequence的设置符合直观
+  - 轻量化，无额外负担
+- Shortage:
+  - 不同subsequence的 $t_k$ 是随机的得到的，可以进一步优化。
 
-**Shortage**
+#### Block Diffusion Language Model
 
-- 子序列边界固定，可能与数据的真实依赖结构不完全一致
+**_Paper: BLOCK DIFFUSION: INTERPOLATING BETWEEN AUTOREGRESSIVE AND DIFFUSION LANGUAGE MODELS_<d-cite key="arriola2025blockdiffusion"></d-cite>**
 
-### Block Diffusion Language Model
+BD3-LMs 提出了一种在自回归（AR）建模与离散扩散建模之间进行插值的新范式。其核心动机在于通过引入块级（Block-wise）的结构，克服标准扩散模型在生成任意长度序列、推理效率（KV Caching）以及似然建模质量（Perplexity）上的局限性。
 
-**BLOCK DIFFUSION: INTERPOLATING BETWEEN AUTOREGRESSIVE AND DIFFUSION LANGUAGE MODELS** 通过块级结构在 AR 与 MDM 间插值：
+{% include figure.liquid loading="eager" path="assets/img/posts/2026-03-04-Note-Schedulers-of-Mask-Diffusion-Model/figure6.png" figure_class="my-1" class="img-fluid rounded z-depth-1 float-right float-end ml-3 ms-3 mb-2" zoomable=true caption="Block diffusion sequentially generates blocks of tokens by performing diffusion within each
+block and conditioning on previous blocks. By combining strength from autoregressive and diffusion
+models, block diffusion overcomes the limitations of both approaches by supporting variable-length,
+higher-quality generation and improving inference efficiency with KV caching and parallel sampling." %}
 
-- 将长度为 $L$ 的序列划分为 $K$ 个长度为 $B$ 的块
-- 块之间用自回归分解，块内部用离散扩散过程
+BD3-LM 将长度为 $L$ 的序列划分为 $B$ 个长度为 $L'$ 的块。模型在块之间遵循自回归分解，而在每个块内部执行离散扩散过程：
 
-**Advantage**
+$$\log p_{\theta}(x) = \sum_{b=1}^{B} \log p_{\theta}(x^{b} \mid x^{\lt b})$$
 
-- 符合文本的顺序先验
-- 训推一致，显著降低全相关误差
-- 便于利用 KV cache，加速推理
+- Advantage:
+  - 符合人类对文本的顺序先验
+  - 训推一致，减小了全相关误差
+  - 方便利用kv-cach
 
-**Shortage**
+## Final Remark
 
-- 固定块划分仍可能偏离复杂非线性依赖
+<style>
+  .remark-table-center {
+    overflow-x: auto;
+    width: 100%;
+    margin-left: 0%;
+  }
 
-## Remark: Unified View
+  .remark-table-center table {
+    width: 100%;
+    min-width: 980px;
+    margin: 0;
+    table-layout: fixed;
+  }
 
-从统一视角看，Mask Diffusion Model 中的 Noise Scheduler 本质上是一个**结构约束器（Structural Regulator）**，而非传统意义上的时间控制器。它通过决定“何时、解开什么、以及一次解多少 Token”，直接塑造了模型在训练与推理中面对的条件分布，从而调节三类核心误差的权衡：
+  .remark-table-center th,
+  .remark-table-center td {
+    text-align: center;
+    vertical-align: middle;
+    white-space: normal;
+    word-break: break-word;
+    line-height: 1.55;
+  }
 
-- **Exposure Bias** 的时间传播误差（由单步局部偏差累积而来）
-- **Intrinsic Order** 被违背所引入的优化复杂度与容量稀释
-- **Token Independence** 假设下不可避免的 Total Correlation 偏离
+  .remark-table-center th:nth-child(1),
+  .remark-table-center td:nth-child(1) {
+    width: 17%;
+  }
 
-三者并非独立问题，而是通过 Scheduler 的策略性选择在同一条误差曲线上被共同调节：
+  .remark-table-center th:nth-child(2),
+  .remark-table-center td:nth-child(2) {
+    width: 26%;
+  }
 
-- 大步解码缓解顺序违背，却放大结构依赖误差
-- 小步解码削弱独立性偏差，却对内在序和推理稳定性提出更高要求
-- 随机调度在理论上无偏，却在有限容量下引入显著的优化冗余
-- 基于置信度或策略学习的调度尝试逼近样本级最优生成序，但受模型不完备性与估计噪声制约
+  .remark-table-center th:nth-child(3),
+  .remark-table-center td:nth-child(3) {
+    width: 20%;
+  }
 
-综合来看，**RL-Policy Scheduler** 通过 reward 同时兼顾内在序与全相关误差，且采样路径遵循 policy，训推一致性最好，理论上具有更高上限。
+  .remark-table-center th:nth-child(4),
+  .remark-table-center td:nth-child(4) {
+    width: 20%;
+  }
 
-## About Z-mask
+  .remark-table-center th:nth-child(5),
+  .remark-table-center td:nth-child(5) {
+    width: 20%;
+  }
 
-在 Z-mask 中，我们同样需要权衡 exploration 与 exploitation：
+  @media (max-width: 900px) {
+    .remark-table-center {
+      width: 100%;
+      margin-left: 0;
+    }
+  }
+</style>
 
-- 一方面通过 Z-mask 构造数据，从而在内在序上专注训练
-- 另一方面对数据随机采样来获得更准确的内在序估计
+<div class="remark-table-center" markdown="1">
 
-这也与经验发现的 **down-k** 通常优于 **top-k** 相吻合，但 down-k 仍是一种全局固定的探索策略，或许可以引入退火或 RL 来进一步优化。
+|         Schedulers          |                                                                                                              Policy $\pi(M \mid c)$                                                                                                               |                                     Sampler $p_{\theta}$                                      |                                 Advantage                                  |                                     Shortage                                     |
+| :-------------------------: | :-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------: | :------------------------------------------------------------------------: | :------------------------------------------------------------------------------: |
+|      Random Schedulers      |                                                                               $\pi(\mathcal{U}) = \displaystyle\frac{1}{\binom{ \vert \mathcal{M}_{t+1}\vert}{k}}$                                                                                |                        所有可能的置换路径 $\mathfrak{S}_L$ 的平均分布                         | 前向过程有闭式解;<br>无需在采样过程中进行额外的 Logit 排序或规划器前向计算 |                    训练资源浪费;<br>无视内在序，误差累积严重                     |
+| Confidence-based Schedulers | $\mathcal{U} = \text{arg-topk}\_{i \in \mathcal{M}\_{t+1}} \{ s_i \mid s_i = \max_{x \in \mathcal{X}} \log p_\theta(x^i = x \mid \mathbf{x}\_{t+1}) \}$<br> $\pi(\mathcal{U} \mid \mathbf{x}\_{t+1}) = \mathbb{1}(\mathcal{U} = \text{arg-topk})$ |       通常在训练时引入 Token-level 重加权，使模型对低置信度（难样本）的边界刻画更清晰。       |                    能根据不同的输入样本动态调整生成顺序                    | 模型训练不充分或词表过大，Logit 排序是嘈杂的;<br>无法解决 Total Correlation 误差 |
+|   Planer-based Schedulers   |                                                                                     $\mathcal{U} = \{ i \mid p_\phi(z^i = N \mid \mathbf{x}_{t+1}) < \tau \}$                                                                                     | $p_\theta$ 只负责被 $p_\phi$ 选中的维度，其输入通常包含由规划器估计的实时时间步 $\tilde{t}$。 |                      支持 Remasking;<br>避免容量稀释;                      |                     逐个 token 生成，且有 remask，效率低下;                      |
+|    RL-Policy Schedulers     |                                                                                  $\pi_\phi(i \mid \mathbf{x}\_{t+1}) = \text{Softmax}(h_\phi(\mathbf{x}_{t+1}))$                                                                                  |                        训练目标从简单的最大似然转向对高奖励路径的偏好                         |                          训推一致;<br>性能上限高                           |                                     训练复杂                                     |
+|   Manual/Block Schedulers   |                                                           $\pi(\mathcal{U}) \implies \mathcal{U} \subset \text{Block}_k,\ \text{其中 } k \text{ 由预设顺序或块噪声 } t_k \text{ 决定}$                                                            |                                      学习局部强耦合语义                                       |                显著降低了 $\text{TC}(x_\mathcal{U} \mid c)$                |                 固定的块划分可能无法完全契合数据的非线性逻辑依赖                 |
 
-同时，Z-mask 对小步数采样没有明显优化，其原因在于该机制并未直接减少全相关误差。因此可考虑：
+</div>
 
-- 用动态退火优化 Z-mask 对内在序的估计与遵循
-- 在较大的 Z-mask step 下，引入额外策略以降低全相关误差
+\
+\
+从统一视角看，Mask Diffusion Model 中的 Noise Scheduler 本质上是一个“**结构约束器（Structural Regulator）**”，而非传统意义上的时间控制器。它通过决定 何时、解开什么、以及 一次解多少 Token，**直接塑造了模型在训练与推理中所面对的条件分布**，从而决定了三类核心误差的权衡关系：
 
-## About Optimal Unmask Schedule & RL
+1. Exposure Bias 的时间传播误差（由单步局部偏差累积而来）；
+2. Intrinsic Order 被违背所引入的优化复杂度与容量稀释；
+3. Token Independence 假设下不可避免的 Total Correlation 偏离。
 
-在 MDM 中，$	ilde{\pi}$ 代表一种显式的全局规划 —— 通过优先生成低熵（高确定性）的结构锚点，从而降低剩余生成的条件熵。
+分析表明，这三者并非独立问题，而是通过 Scheduler 的策略性选择在同一条误差曲线上被共同调节：
 
-而在 AR 模型中，受限于从左到右的刚性拓扑约束，模型无法物理地调整生成顺序。RL 的引入，实际上是利用 Value Function 作为未来的代理，将 $	ilde{\pi}$ 所带来的全局一致性收益折现回当前的 Token 概率分布中。
+- 大步解码缓解顺序违背，却放大结构依赖误差；
+- 小步解码削弱独立性偏差，却对内在序和推理稳定性提出更高要求；
+- 随机调度在理论上无偏，却在有限容量下引入显著的优化冗余；
+- 基于置信度或策略学习的调度尝试逼近样本级的最优生成序，但又受到模型自身不完备性与估计噪声的制约。
 
-换言之，RL 迫使 AR 模型在 $t$ 时刻不仅考虑局部语法连贯，还隐式模拟了 $	ilde{\pi}$ 的规划能力。**RL 的 CoT 可以被视作 AR 模型为在线性时间内模拟非线性思维路径所付出的计算代价**。
+综合来看，RL-Policy Scheduler 通过reward，同时兼顾了内在序与全相关误差的制约，并且其采样路径始终是遵循policy的，更加训推一致，生成效果趋于最好。

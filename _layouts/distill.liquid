@@ -14,12 +14,18 @@
     {% endif %}
   </head>
 
+  {% assign read_time = page.reading_time %}
+  {% if read_time == null %}
+    {% assign read_time = page.content | strip_html | number_of_words | divided_by: 180 | plus: 1 %}
+  {% endif %}
+
   <d-front-matter>
     <script async type="text/json">
       {
             "title": "{{ page.title }}",
             "description": "{{ page.description }}",
             "published": "{{ page.date | date: '%B %d, %Y' }}",
+            "readingTime": "{{ read_time }} min",
             "authors": [
               {% for author in page.authors %}
               {
@@ -33,21 +39,7 @@
                 ]
               }{% if forloop.last == false %},{% endif %}
               {% endfor %}
-            ],
-            "katex": {
-              "delimiters": [
-                {
-                  "left": "$",
-                  "right": "$",
-                  "display": false
-                },
-                {
-                  "left": "$$",
-                  "right": "$$",
-                  "display": true
-                }
-              ]
-            }
+            ]
           }
     </script>
   </d-front-matter>

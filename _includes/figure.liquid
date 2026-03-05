@@ -3,6 +3,13 @@
 {% assign ext = parts.last %}
 
 <figure
+  markdown="0"
+  {% if include.figure_class %}
+    class="{{ include.figure_class }}"
+  {% endif %}
+  {% if include.figure_style %}
+    style="{{ include.figure_style }}"
+  {% endif %}
   {% if include.slot %}
     slot="{{ include.slot }}"
   {% endif %}
@@ -79,12 +86,22 @@
       onerror="this.onerror=null; $('.responsive-img-srcset').remove();"
     >
   </picture>
-
   {% if include.caption %}
     {% assign caption_class = 'caption' %}
+    {% if include.numbered %}
+      {% assign caption_class = caption_class | append: ' numbered' %}
+    {% endif %}
     {% if include.caption_class %}
       {% assign caption_class = caption_class | append: ' ' | append: include.caption_class %}
     {% endif %}
-    <figcaption class="{{ caption_class }}">{{ include.caption | markdownify | strip | replace: '<p>', '' | replace: '</p>', '' }}</figcaption>
+    {% assign caption_text = include.caption | strip | split: '<' | first %}
+    <div
+      class="{{ caption_class }}"
+      {% if include.label_prefix %}
+        data-label-prefix="{{ include.label_prefix }}"
+      {% endif %}
+    >
+      {{ caption_text }}
+    </div>
   {% endif %}
 </figure>

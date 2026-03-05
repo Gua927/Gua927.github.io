@@ -104,6 +104,7 @@
       }
     }
     target.description = source.description;
+    target.readingTime = source.readingTime || source.reading_time;
     target.authors = source.authors.map((authorObject) => new Author(authorObject));
     target.katex = source.katex;
     target.password = source.password;
@@ -1065,6 +1066,10 @@
           : `
         <p><em>Not published yet.</em></p>`
       }
+    </div>
+    <div>
+      <h3>Reading Time</h3>
+      <p>${frontMatter.readingTime || "—"}</p>
     </div>
   </div>
 `;

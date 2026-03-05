@@ -23,6 +23,41 @@ window.MathJax = {
     pageReady: () => {
       return MathJax.startup.defaultPageReady().then(() => {
         console.log("MathJax initial typesetting complete");
+
+        const rerenderMath = () => {
+          if (window.MathJax && typeof MathJax.typesetPromise === "function") {
+            MathJax.typesetPromise()
+              .then(() => {
+                console.log("MathJax re-typesetting complete");
+              })
+              .catch((err) => {
+                console.error("MathJax re-typeset error:", err);
+              });
+          }
+        };
+
+        // Distill content may finish rendering after initial pageReady
+        setTimeout(rerenderMath, 100);
+        setTimeout(rerenderMath, 600);
+        setTimeout(rerenderMath, 1500);
+
+        // Re-typeset if dynamic content in distill article changes
+        const article = document.querySelector("d-article") || document.querySelector(".post");
+        if (article && window.MutationObserver) {
+          let scheduled = false;
+          const observer = new MutationObserver(() => {
+            if (scheduled) return;
+            scheduled = true;
+            setTimeout(() => {
+              scheduled = false;
+              rerenderMath();
+            }, 150);
+          });
+          observer.observe(article, { childList: true, subtree: true, characterData: true });
+
+          // Stop observing after initial hydration window to avoid overhead
+          setTimeout(() => observer.disconnect(), 10000);
+        }
       });
     },
   },

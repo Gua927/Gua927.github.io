@@ -171,6 +171,21 @@ ul.task-list input[type="checkbox"] {
   line-height: 1.4;
 }
 
+main {
+  counter-reset: figure-counter;
+}
+
+figure > .caption.numbered::before {
+  counter-increment: figure-counter;
+  content: attr(data-label-prefix) " " counter(figure-counter) ". ";
+  font-weight: 600;
+}
+
+figure > .caption.numbered:not([data-label-prefix])::before,
+figure > .caption.numbered[data-label-prefix=""]::before {
+  content: "Figure " counter(figure-counter) ". ";
+}
+
 // Card
 
 .card {

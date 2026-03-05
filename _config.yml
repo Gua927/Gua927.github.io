@@ -86,8 +86,8 @@ bing_site_verification: # out your bing-site-verification ID (Bing Webmaster)
 # Blog
 # -----------------------------------------------------------------------------
 
-blog_name: Generate Universe # blog_name will be displayed in your blog page
-blog_description: Something about GenAI. # blog_description will be displayed in your blog page
+blog_name: Thinking GenAI # blog_name will be displayed in your blog page
+blog_description: Something fancy about generative models. # blog_description will be displayed in your blog page
 permalink: /blog/:year/:title/
 lsi: false # produce an index for related posts
 
@@ -510,8 +510,8 @@ third_party_libraries:
     local:
       fonts: "output/chtml/fonts/woff-v2/"
     url:
-      fonts: "https://cdn.jsdelivr.net/npm/mathjax@{{version}}/es5/output/chtml/fonts/woff-v2/"
-      js: "https://cdn.jsdelivr.net/npm/mathjax@{{version}}/es5/tex-mml-chtml.js"
+      fonts: "https://unpkg.com/mathjax@{{version}}/es5/output/chtml/fonts/woff-v2/"
+      js: "https://unpkg.com/mathjax@{{version}}/es5/tex-mml-chtml.js"
     version: "3.2.2"
   masonry:
     integrity:

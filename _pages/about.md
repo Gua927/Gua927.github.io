@@ -23,7 +23,7 @@ latest_posts:
   limit: 3 # leave blank to include all the blog posts
 ---
 
-Hi there, I am Tian Runze! I am from China **CN** and I am passionate about **Mathematics** and **AI Technologies**. I am an individual who enjoys experimenting, thinking, learning, and creating.
+Hi there, I am Tian Runze! I come from China and I am passionate about **Mathematics** and **AI Technologies**. I am an individual who enjoys experimenting, thinking, learning, and creating.
 
 I am currently a graduate student in the elite statistics program at the School of Statistics, Renmin University of China. I am also a research intern at **[GenSI Lab](https://www.gensi-thuair.com/#/portal_home)**, THU-AIR, where I work on cutting-edge generative AI research.
 
