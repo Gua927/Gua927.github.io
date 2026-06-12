@@ -1,0 +1,51 @@
+---
+import "katex/dist/katex.min.css";
+import "../styles/global.css";
+
+const {
+  title = "Runze Tian",
+  description = "Runze Tian's personal academic website and generative AI notes.",
+  wide = false,
+} = Astro.props;
+
+const pageTitle = title === "Runze Tian" ? title : `${title} | Runze Tian`;
+const navItems = [
+  { href: "/", label: "About" },
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <meta name="description" content={description} />
+    <link rel="icon" href="/assets/img/moonshot.png" />
+    <title>{pageTitle}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="Runze Tian home">
+        <span class="brand-mark">RZ</span>
+        <span>Runze Tian</span>
+      </a>
+      <nav class="nav" aria-label="Primary">
+        {
+          navItems.map((item) => (
+            <a class:list={{ active: Astro.url.pathname === item.href }} href={item.href}>
+              {item.label}
+            </a>
+          ))
+        }
+      </nav>
+    </header>
+    <main class:list={["page-shell", { wide }]}>
+      <slot />
+    </main>
+    <footer class="site-footer">
+      <span>Built with Astro, Markdown, and KaTeX.</span>
+      <span>© {new Date().getFullYear()} Runze Tian</span>
+    </footer>
+  </body>
+</html>

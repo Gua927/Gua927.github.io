@@ -1,0 +1,25 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { Content, frontmatter } from "../content/about.md";
+---
+
+<BaseLayout title="Runze Tian" description="Runze Tian's academic profile and generative AI notes.">
+  <section class="profile-hero">
+    <div class="profile-copy">
+      <p class="eyebrow">Generative Models · Diffusion · AI Research</p>
+      <h1>Tian Runze</h1>
+      <div class="subtitle" set:html={frontmatter.subtitle} />
+    </div>
+    <img
+      class="profile-photo"
+      src={`/assets/img/${frontmatter.profile?.image ?? "prof_pic.jpg"}`}
+      alt="Runze Tian"
+      width="280"
+      height="280"
+    />
+  </section>
+
+  <article class="markdown-content about-content">
+    <Content />
+  </article>
+</BaseLayout>
