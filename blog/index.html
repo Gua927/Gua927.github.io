@@ -1,66 +1,158 @@
-<!DOCTYPE html> <html lang="en"> <head> <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="X-UA-Compatible" content="IE=edge"> <title> blog | Runze Tian </title> <meta name="author" content="R. Z. Tian"> <meta name="description" content="A simple, whitespace theme for academics. Based on [*folio](https://github.com/bogoli/-folio) design. "> <meta name="keywords" content="jekyll, jekyll-theme, academic-website, portfolio-website"> <link rel="stylesheet" href="/assets/css/bootstrap.min.css?a4b3f509e79c54a512b890d73235ef04"> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/css/mdb.min.css" integrity="sha256-jpjYvU3G3N6nrrBwXJoVEYI/0zw8htfFnhT9ljN3JJw=" crossorigin="anonymous"> <link defer rel="stylesheet" href="/assets/css/academicons.min.css?f0b7046b84e425c55f3463ac249818f5"> <link defer rel="stylesheet" href="/assets/css/scholar-icons.css?62b2ac103a88034e6882a5be5f3e2772"> <link defer rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Roboto+Slab:100,300,400,500,700|Material+Icons&amp;display=swap"> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-github.css?591dab5a4e56573bf4ef7fd332894c99" media="" id="highlight_theme_light"> <link rel="shortcut icon" href="/assets/img/moonshot.png?ac494055d0715958a4a25e163d4405f7"> <link rel="stylesheet" href="/assets/css/main.css?d41d8cd98f00b204e9800998ecf8427e"> <link rel="canonical" href="https://gua927.github.io/blog/"> <script src="/assets/js/theme.js?8a9658bcfd3c4d23968422c4b9dc98ec"></script> <link defer rel="stylesheet" href="/assets/css/jekyll-pygments-themes-native.css?5847e5ed4a4568527aa6cfab446049ca" media="none" id="highlight_theme_dark"> <script>
-    initTheme();
-  </script> <script>
-    window.MathJax = {
-      tex: {
-        packages: { '[+]': ['color'] },
-        tags: 'ams',
-        inlineMath: [
-          ['$', '$'],
-          ['\\(', '\\)'],
-        ],
-        displayMath: [
-          ['$$', '$$'],
-          ['\\[', '\\]'],
-        ],
-        processEscapes: true,
-        processEnvironments: true,
-        processRefs: true,
-        digits: /^(?:[0-9]+(?:\{,\}[0-9]{3})*(?:\.[0-9]*)?|\.[0-9]+)/,
-        maxBuffer: 5 * 1024,
-      },
-      chtml: {
-        scale: 1,
-        minScale: 0.5,
-        matchFontHeight: true,
-        linebreaks: { automatic: false, width: 'container' },
-      },
-      startup: {
-        pageReady: () => {
-          return MathJax.startup.defaultPageReady().then(() => {
-            console.log('MathJax typesetting complete');
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="Astro v6.4.6"><meta name="description" content="Runze Tian's notes, essays, and experiments."><meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)"><link rel="icon" type="image/png" href="/assets/img/moonshot.png"><link rel="apple-touch-icon" href="/assets/img/moonshot.png"><title>Blog | Runze Tian</title><script>
+      (function () {
+        const theme = localStorage.getItem("theme");
+        if (theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.Cd4OnluV.css"></head> <body> <div class="site-frame"> <aside class="site-sidebar" aria-label="Site sidebar"> <div class="sidebar-top"> <a class="brand" href="/" aria-label="Runze Tian home"> <span>Runze Tian</span> </a> <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"> <span class="theme-icon-light" aria-hidden="true">🌕</span> <span class="theme-icon-dark" aria-hidden="true">🌑</span> </button> </div> <nav class="nav" aria-label="Primary"> <a href="/timeline/"> <span>[</span> Timeline <span>]</span> </a><a href="/publication/"> <span>[</span> Publication <span>]</span> </a><a class="active" href="/blog/"> <span>[</span> Blog <span>]</span> </a><a href="/podcast/"> <span>[</span> Podcast <span>]</span> </a><a href="/project/"> <span>[</span> Projects <span>]</span> </a> </nav> <div class="sidebar-nav-divider" aria-hidden="true"></div> <div class="social-links" aria-label="Social links"> <a href="https://github.com/Gua927" target="_blank" rel="noopener noreferrer" aria-label="GitHub"> <svg viewBox="0 0 24 24" aria-hidden="true"> <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.79-.26.79-.58v-2.03c-3.34.73-4.04-1.42-4.04-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.21.09 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.66-.31-5.46-1.34-5.46-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23.96-.27 1.98-.4 3-.4s2.05.13 3 .4c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.19.69.8.58A12.01 12.01 0 0 0 24 12c0-6.63-5.37-12-12-12Z"></path> </svg> </a> <a href="/blog/" aria-label="Blog">Blog</a> </div> <div class="sidebar-bottom"> <button class="pixel-pet" id="pixel-pet" type="button" aria-label="Play with Empira Gua"> <span class="pixel-pet-bubble" id="pixel-pet-bubble">Empira Gua</span> <span class="pixel-pet-sprite" aria-hidden="true"> <span class="pixel-pet-crown"> <span></span> <span></span> <span></span> </span> <span class="pixel-pet-leaf"></span> <span class="pixel-pet-arm left"></span> <span class="pixel-pet-arm right"></span> <span class="pixel-pet-body"> <span class="pixel-pet-eye left"></span> <span class="pixel-pet-eye right"></span> <span class="pixel-pet-blush left"></span> <span class="pixel-pet-blush right"></span> <span class="pixel-pet-mouth"></span> <span class="pixel-pet-shine"></span> <span class="pixel-pet-drool"></span> </span> <span class="pixel-pet-snore">z</span> <span class="pixel-pet-foot left"></span> <span class="pixel-pet-foot right"></span> <span class="pixel-pet-shadow"></span> </span> <span class="pixel-pet-name">Empira Gua</span> <span class="pixel-pet-affinity-wrap"> <span class="pixel-pet-affinity" id="pixel-pet-affinity">Affinity 0</span> <span class="pixel-pet-plus" id="pixel-pet-plus" aria-hidden="true">+1</span> </span> </button> </div> </aside> <main id="main-content" class="page-shell" tabindex="-1">  <section class="notes-index-page" aria-label="Blog posts"> <header class="notes-index-header"> <h1>Blog</h1> <p>1 entries · personal notes and working ideas</p> </header> <div class="note-kind-filters" aria-label="Blog filters"> <button type="button" data-kind="all" class="note-kind active" aria-pressed="true">
+[ All <span>1</span> ]
+</button> <button type="button" data-kind="pub-note" class="note-kind" aria-pressed="false">
+[ PUB-NOTE <span>1</span> ]
+</button> </div> <div id="note-entries"> <a href="/blog/sat-mask-diffusion-language-model-training/" class="note-entry" data-kind="pub-note"> <div> <span>PUB-NOTE</span> <div> <h3>SAT-Mask: Self-Aligned Trajectory Masking for Diffusion Language Models</h3> <div> <span>pub-note</span><span>research</span><span>generative-ai</span> </div> </div> <time datetime="2026-06-13T00:00:00.000Z">2026-06-13</time> </div> </a> </div>  </section> <script>
+    (function () {
+      let cleanupFn = null;
+
+      function init() {
+        if (cleanupFn) {
+          cleanupFn();
+          cleanupFn = null;
+        }
+
+        const filters = document.querySelectorAll(".note-kind");
+        const entries = document.querySelectorAll(".note-entry");
+        if (!filters.length) return;
+
+        function applyFilter(filter) {
+          filters.forEach((item) => {
+            var active = item.dataset.kind === filter;
+            item.classList.toggle("active", active);
+            item.setAttribute("aria-pressed", active ? "true" : "false");
           });
-        },
-      },
-      options: {
-        renderActions: {
-          addCss: [
-            200,
-            function (doc) {
-              const style = document.createElement('style');
-              style.innerHTML = `
-              .mjx-container { color: inherit; }
-              mjx-container[display="true"] {
-                overflow-x: auto; overflow-y: hidden; max-width: 100%;
-              }
-              mjx-container[display="true"]::-webkit-scrollbar { height: 6px; }
-              mjx-container[display="true"]::-webkit-scrollbar-track {
-                background: rgba(0,0,0,0.05); border-radius: 3px;
-              }
-              mjx-container[display="true"]::-webkit-scrollbar-thumb {
-                background: rgba(0,0,0,0.2); border-radius: 3px;
-              }
-              mjx-container[display="true"]::-webkit-scrollbar-thumb:hover {
-                background: rgba(0,0,0,0.3);
-              }
-            `;
-              document.head.appendChild(style);
-            },
-            '',
-          ],
-        },
-      },
-    };
-  </script> </head> <body class="fixed-top-nav "> <header> <nav id="navbar" class="navbar navbar-light navbar-expand-sm fixed-top" role="navigation"> <div class="container"> <a class="navbar-brand title font-weight-lighter" href="/"> Runze Tian </a> <button class="navbar-toggler collapsed ml-auto" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation"> <span class="sr-only">Toggle navigation</span> <span class="icon-bar top-bar"></span> <span class="icon-bar middle-bar"></span> <span class="icon-bar bottom-bar"></span> </button> <div class="collapse navbar-collapse text-right" id="navbarNav"> <ul class="navbar-nav ml-auto flex-nowrap"> <li class="nav-item "> <a class="nav-link" href="/">about </a> </li> <li class="nav-item active"> <a class="nav-link" href="/blog/">blog <span class="sr-only">(current)</span> </a> </li> <li class="nav-item "> <a class="nav-link" href="/cv/">cv </a> </li> <li class="nav-item"> <button id="search-toggle" title="Search" onclick="openSearchModal()"> <span class="nav-link"><i class="ti ti-search"></i></span> </button> </li> <li class="toggle-container"> <button id="light-toggle" title="Change theme"> <i class="ti ti-sun-moon" id="light-toggle-system"></i> <i class="ti ti-moon-filled" id="light-toggle-dark"></i> <i class="ti ti-sun-filled" id="light-toggle-light"></i> </button> </li> </ul> </div> </div> </nav> <progress id="progress" value="0"> <div class="progress-container"> <span class="progress-bar"></span> </div> </progress> </header> <div class="container mt-5" role="main"> <div class="post"> <div class="header-bar"> <h1>Thinking GenAI</h1> <h2>Something fancy about generative models.</h2> </div> <div class="tag-category-list"> <ul class="p-0 m-0"> <li> <i class="fa-solid fa-hashtag fa-sm"></i> <a href="/blog/tag/diffusion-model">diffusion-model</a> </li> <p>•</p> <li> <i class="fa-solid fa-hashtag fa-sm"></i> <a href="/blog/tag/gen-model">Gen-Model</a> </li> <p>•</p> <li> <i class="fa-solid fa-hashtag fa-sm"></i> <a href="/blog/tag/score-matching">score-matching</a> </li> <p>•</p> <li> <i class="fa-solid fa-tag fa-sm"></i> <a href="/blog/category/notes">Notes</a> </li> </ul> </div> <ul class="post-list"> <li> <h3> <a class="post-title" href="/blog/2026/Note-Masking-Schedulers-of-Mask-Diffusion-Model-EN/">Masking Schedulers of Mask Diffusion Model</a> </h3> <p>In Mask Diffusion Models (MDM), the Noise Scheduler is pivotal for learning capacity and sampling quality. This paper presents a unified analysis addressing three core challenges —— Exposure Bias induced by Absorb mechanisms, efficiency bottlenecks from Intrinsic Order, and joint probability deviations from Independence Assumptions. We systematically review mainstream strategies, comparing their efficacy in semantic capture, remasking, and efficiency to elucidate how refined scheduling reshapes token dependencies. Finally, we outline future directions for overcoming these underlying logical defects.</p> <p class="post-meta"> 33 min read   ·   February 01, 2026 </p> <p class="post-tags"> <a href="/blog/2026"> <i class="fa-solid fa-calendar fa-sm"></i> 2026 </a>   ·   <a href="/blog/tag/masked-diffusion-model"> <i class="fa-solid fa-hashtag fa-sm"></i> Masked-Diffusion-Model</a>   <a href="/blog/tag/scheduler"> <i class="fa-solid fa-hashtag fa-sm"></i> scheduler</a>   <a href="/blog/tag/intrinsic-order"> <i class="fa-solid fa-hashtag fa-sm"></i> Intrinsic-Order</a>   ·   <a href="/blog/category/notes"> <i class="fa-solid fa-tag fa-sm"></i> Notes</a> </p> </li> <li> <h3> <a class="post-title" href="/blog/2025/Note-FM/">Flow Matching and Continuous Normalizing Flows</a> </h3> <p>This post explores Flow-based Models, Continuous Normalizing Flows (CNFs), and Flow Matching (FM). We discuss Normalizing Flows, derive the conditional flow matching objective, and examine special instances including diffusion models and optimal transport.</p> <p class="post-meta"> 19 min read   ·   November 05, 2025 </p> <p class="post-tags"> <a href="/blog/2025"> <i class="fa-solid fa-calendar fa-sm"></i> 2025 </a>   ·   <a href="/blog/tag/gen-model"> <i class="fa-solid fa-hashtag fa-sm"></i> Gen-Model</a>   <a href="/blog/tag/flow-matching"> <i class="fa-solid fa-hashtag fa-sm"></i> flow-matching</a>   <a href="/blog/tag/imagegen"> <i class="fa-solid fa-hashtag fa-sm"></i> ImageGen</a>   ·   <a href="/blog/category/notes"> <i class="fa-solid fa-tag fa-sm"></i> Notes</a> </p> </li> <li> <h3> <a class="post-title" href="/blog/2025/Note-Diffusion-DDPM-and-NCSN/">The Unification of DDPM and Score-based Models</a> </h3> <p>This post explores the unification of DDPM and Score-based Models in diffusion generative modeling. We show how x-prediction and score-prediction are fundamentally equivalent, and how both can be viewed through the lens of Stochastic Differential Equations (SDEs).</p> <p class="post-meta"> 11 min read   ·   November 03, 2025 </p> <p class="post-tags"> <a href="/blog/2025"> <i class="fa-solid fa-calendar fa-sm"></i> 2025 </a>   ·   <a href="/blog/tag/gen-model"> <i class="fa-solid fa-hashtag fa-sm"></i> Gen-Model</a>   <a href="/blog/tag/diffusion-model"> <i class="fa-solid fa-hashtag fa-sm"></i> diffusion-model</a>   <a href="/blog/tag/score-matching"> <i class="fa-solid fa-hashtag fa-sm"></i> score-matching</a>   <a href="/blog/tag/imagegen"> <i class="fa-solid fa-hashtag fa-sm"></i> ImageGen</a>   ·   <a href="/blog/category/notes"> <i class="fa-solid fa-tag fa-sm"></i> Notes</a> </p> </li> </ul> </div> </div> <footer class="fixed-bottom" role="contentinfo"> <div class="container mt-0"> © Copyright 2026 R. Z. Tian. Powered by <a href="https://jekyllrb.com/" target="_blank" rel="external nofollow noopener">Jekyll</a> with <a href="https://github.com/alshedivat/al-folio" rel="external nofollow noopener" target="_blank">al-folio</a> theme. Hosted by <a href="https://pages.github.com/" target="_blank" rel="external nofollow noopener">GitHub Pages</a>. Photos from <a href="https://unsplash.com" target="_blank" rel="external nofollow noopener">Unsplash</a>. </div> </footer> <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script> <script src="/assets/js/bootstrap.bundle.min.js"></script> <script src="https://cdn.jsdelivr.net/npm/mdbootstrap@4.20.0/js/mdb.min.js" integrity="sha256-NdbiivsvWt7VYCt6hYNT3h/th9vSTL4EDWeGs5SN3DA=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/masonry-layout@4.2.2/dist/masonry.pkgd.min.js" integrity="sha256-Nn1q/fx0H7SNLZMQ5Hw5JLaTRZp0yILA/FRexe19VdI=" crossorigin="anonymous"></script> <script defer src="https://cdn.jsdelivr.net/npm/imagesloaded@5.0.0/imagesloaded.pkgd.min.js" integrity="sha256-htrLFfZJ6v5udOG+3kNLINIKh2gvoKqwEhHYfTTMICc=" crossorigin="anonymous"></script> <script defer src="/assets/js/masonry.js?a0db7e5d5c70cc3252b3138b0c91dcaf" type="text/javascript"></script> <script defer src="https://cdn.jsdelivr.net/npm/medium-zoom@1.1.0/dist/medium-zoom.min.js" integrity="sha256-ZgMyDAIYDYGxbcpJcfUnYwNevG/xi9OHKaR/8GK+jWc=" crossorigin="anonymous"></script> <script defer src="/assets/js/zoom.js?85ddb88934d28b74e78031fd54cf8308"></script> <script src="/assets/js/no_defer.js?2781658a0a2b13ed609542042a859126"></script> <script defer src="/assets/js/common.js?e0514a05c5c95ac1a93a8dfd5249b92e"></script> <script defer src="/assets/js/copy_code.js?c8a01c11a92744d44b093fc3bda915df" type="text/javascript"></script> <script defer src="/assets/js/jupyter_new_tab.js?d9f17b6adc2311cbabd747f4538bb15f"></script> <script async src="https://d1bxh8uas1mnw7.cloudfront.net/assets/embed.js"></script> <script async src="https://badge.dimensions.ai/badge.js"></script> <script defer type="text/javascript" id="MathJax-script" src="https://unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js"></script> <script defer src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6" crossorigin="anonymous"></script> <script defer src="/assets/js/progress-bar.js?2f30e0e6801ea8f5036fa66e1ab0a71a" type="text/javascript"></script> <script src="/assets/js/vanilla-back-to-top.min.js?f40d453793ff4f64e238e420181a1d17"></script> <script>
-    addBackToTop();
-  </script> <script type="module" src="/assets/js/search/ninja-keys.min.js?a3446f084dcaecc5f75aa1757d087dcf"></script> <ninja-keys hidebreadcrumbs noautoloadmdicons placeholder="Type to start searching"></ninja-keys> <script src="/assets/js/search-setup.js?6c304f7b1992d4b60f7a07956e52f04a"></script> <script src="/assets/js/search-data.js"></script> <script src="/assets/js/shortcut-key.js?6f508d74becd347268a7f822bca7309d"></script> </body> </html>
+
+          entries.forEach((entry) => {
+            entry.style.display = filter === "all" || entry.dataset.kind === filter ? "" : "none";
+          });
+        }
+
+        function onClick(e) {
+          applyFilter(e.currentTarget.dataset.kind);
+        }
+
+        filters.forEach((filter) => filter.addEventListener("click", onClick));
+
+        var urlKind = new URLSearchParams(window.location.search).get("kind");
+        if (urlKind) applyFilter(urlKind.toLowerCase());
+
+        cleanupFn = function () {
+          filters.forEach((filter) => filter.removeEventListener("click", onClick));
+        };
+      }
+
+      document.addEventListener("DOMContentLoaded", init);
+      document.addEventListener("astro:page-load", init);
+    })();
+  </script>  </main> </div> <script>
+      (function () {
+        const toggle = document.getElementById("theme-toggle");
+        const html = document.documentElement;
+        function updateIcons() {
+          const isDark = html.classList.contains("dark");
+          document.querySelector(".theme-icon-light").style.display = isDark ? "none" : "inline";
+          document.querySelector(".theme-icon-dark").style.display = isDark ? "inline" : "none";
+        }
+        updateIcons();
+        if (toggle) {
+          toggle.addEventListener("click", function () {
+            html.classList.toggle("dark");
+            localStorage.setItem("theme", html.classList.contains("dark") ? "dark" : "light");
+            updateIcons();
+          });
+        }
+
+        const pet = document.getElementById("pixel-pet");
+        const bubble = document.getElementById("pixel-pet-bubble");
+        const affinity = document.getElementById("pixel-pet-affinity");
+        const plus = document.getElementById("pixel-pet-plus");
+        const lines = ["Empira Gua", "holding court", "pdf -> md", "tiny reign", "long press!"];
+        let index = 0;
+        let holdTimer = null;
+        let longPressed = false;
+        const affinityKey = "empira-gua-affinity";
+        let affinityCount = Number(localStorage.getItem(affinityKey) || "0");
+        function applyPetClock() {
+          if (!pet || !bubble) return;
+          const hour = new Date().getHours();
+          const isNight = hour >= 22 || hour < 7;
+          pet.classList.toggle("is-night", isNight);
+          pet.classList.toggle("is-day", !isNight);
+          if (isNight) {
+            bubble.textContent = "sleep mode";
+          } else if (bubble.textContent === "sleep mode") {
+            bubble.textContent = lines[index];
+          }
+        }
+
+        if (affinity) affinity.textContent = "Affinity " + affinityCount;
+        if (pet && bubble) {
+          function addAffinity() {
+            affinityCount += 1;
+            localStorage.setItem(affinityKey, String(affinityCount));
+            if (affinity) affinity.textContent = "Affinity " + affinityCount;
+            if (plus) {
+              plus.classList.remove("is-showing");
+              window.requestAnimationFrame(function () {
+                plus.classList.add("is-showing");
+              });
+            }
+          }
+
+          function restartAnimation(className) {
+            pet.classList.remove("is-hopping", "is-leaping");
+            window.requestAnimationFrame(function () {
+              pet.classList.add(className);
+            });
+          }
+
+          pet.addEventListener("pointerdown", function () {
+            longPressed = false;
+            holdTimer = window.setTimeout(function () {
+              longPressed = true;
+              bubble.textContent = "big jump!";
+              addAffinity();
+              restartAnimation("is-leaping");
+            }, 420);
+          });
+
+          pet.addEventListener("pointerup", function () {
+            if (holdTimer) window.clearTimeout(holdTimer);
+          });
+
+          pet.addEventListener("pointerleave", function () {
+            if (holdTimer) window.clearTimeout(holdTimer);
+          });
+
+          pet.addEventListener("click", function () {
+            if (longPressed) return;
+            index = (index + 1) % lines.length;
+            bubble.textContent = lines[index];
+            addAffinity();
+            restartAnimation("is-hopping");
+          });
+
+          pet.addEventListener("animationend", function (event) {
+            if (!event.target.classList.contains("pixel-pet-sprite")) return;
+            pet.classList.remove("is-hopping", "is-leaping");
+          });
+
+          if (plus) {
+            plus.addEventListener("animationend", function () {
+              plus.classList.remove("is-showing");
+            });
+          }
+
+          applyPetClock();
+          window.setInterval(applyPetClock, 60000);
+        }
+      })();
+    </script> </body> </html>
