@@ -1,11 +1,69 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+
+import { getCollection } from "astro:content";
+
+const publications = (await getCollection("publications")).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime(),
+);
+
+function formatDate(date: Date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}.${m}.${d}`;
+}
 ---
 
 <BaseLayout title="Publication" description="Runze Tian's publications and research outputs.">
-  <section class="page-title subpage-title">
-    <p class="eyebrow">Publication</p>
-    <h1>Publication</h1>
-    <p>Research papers, preprints, and selected technical writing will be collected here.</p>
+  <section class="publication-page" aria-label="Publications">
+    <header class="publication-header">
+      <h1>Publication</h1>
+      <p>{publications.length} papers · research outputs and selected technical writing</p>
+    </header>
+
+    <div class="publication-list">
+      {
+        publications.map((paper) => (
+          <article class="publication-item" id={paper.id}>
+            <time datetime={paper.data.date.toISOString()}>{formatDate(paper.data.date)}</time>
+
+            <div class="publication-content">
+              <a class="publication-figure" href={`#${paper.id}`} aria-label={`${paper.data.title} figure`}>
+                <span class="publication-figure-panel">
+                  <img src={paper.data.image} alt={paper.data.imageAlt} loading="lazy" />
+                </span>
+              </a>
+
+              <div class="publication-body">
+                <h2>{paper.data.title}</h2>
+                <p class="publication-authors">
+                  {paper.data.authors.map((author, index) => (
+                    <>
+                      {author.highlight ? <strong>{author.name}</strong> : author.name}
+                      {index < paper.data.authors.length - 1 && <span>, </span>}
+                    </>
+                  ))}
+                </p>
+                <p class="publication-venue">{paper.data.venue}</p>
+                <p class="publication-status">{paper.data.status}</p>
+
+                <div class="publication-actions" aria-label={`${paper.data.title} links`}>
+                  <details class="publication-abstract">
+                    <summary>ABSTRACT</summary>
+                    <p>{paper.data.abstract}</p>
+                  </details>
+                  {paper.data.pdf && <a href={paper.data.pdf}>PDF</a>}
+                  {paper.data.blog && <a href={paper.data.blog}>Blog</a>}
+                  {paper.data.code && <a href={paper.data.code}>Code</a>}
+                </div>
+              </div>
+            </div>
+          </article>
+        ))
+      }
+    </div>
+
+    {publications.length === 0 && <div class="publication-empty">No publications yet.</div>}
   </section>
 </BaseLayout>

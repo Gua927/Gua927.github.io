@@ -1,11 +1,127 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+
+const posts = (await getCollection("blog"))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const categoryOrder = ["pub-note", "paper", "notes", "methods", "ideas", "essays", "experiments"];
+const categoryCounts = new Map<string, { label: string; count: number }>();
+for (const post of posts) {
+  const label = post.data.category ?? "notes";
+  const key = label.toLowerCase();
+  const current = categoryCounts.get(key);
+  categoryCounts.set(key, { label, count: (current?.count ?? 0) + 1 });
+}
+const filters = [
+  ...categoryOrder.filter((category) => categoryCounts.has(category)),
+  ...Array.from(categoryCounts.keys()).filter((category) => !categoryOrder.includes(category)),
+].map((category) => ({ key: category, ...categoryCounts.get(category)! }));
+
+function formatDate(date: Date) {
+  return date.toISOString().split("T")[0];
+}
+
+function tagsFor(post: (typeof posts)[number]) {
+  return [post.data.category ?? "notes", "research", "generative-ai"];
+}
+
+function categoryKey(post: (typeof posts)[number]) {
+  return (post.data.category ?? "notes").toLowerCase();
+}
 ---
 
 <BaseLayout title="Blog" description="Runze Tian's notes, essays, and experiments.">
-  <section class="page-title subpage-title">
-    <p class="eyebrow">Blog</p>
-    <h1>Blog</h1>
-    <p>Notes on mathematics, generative models, research practice, and experiments in progress.</p>
+  <section class="notes-index-page" aria-label="Blog posts">
+    <header class="notes-index-header">
+      <h1>Blog</h1>
+      <p>{posts.length} entries · personal notes and working ideas</p>
+    </header>
+
+    <div class="note-kind-filters" aria-label="Blog filters">
+      <button type="button" data-kind="all" class="note-kind active" aria-pressed="true">
+        [ All <span>{posts.length}</span> ]
+      </button>
+      {
+        filters.map(({ key, label, count }) => (
+          <button type="button" data-kind={key} class="note-kind" aria-pressed="false">
+            [ {label} <span>{count}</span> ]
+          </button>
+        ))
+      }
+    </div>
+
+    <div id="note-entries">
+      {
+        posts.map((post) => (
+          <a
+            href={`/blog/${post.id}/`}
+            class="note-entry"
+            data-kind={categoryKey(post)}
+          >
+            <div>
+              <span>{post.data.category ?? "notes"}</span>
+              <div>
+                <h3>{post.data.title}</h3>
+                <div>
+                  {tagsFor(post).map((tag) => (
+                    <span>{tag.toLowerCase()}</span>
+                  ))}
+                </div>
+              </div>
+              <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+            </div>
+          </a>
+        ))
+      }
+    </div>
+
+    {posts.length === 0 && <div class="notes-empty">No entries yet.</div>}
   </section>
+
+  <script is:inline>
+    (function () {
+      let cleanupFn = null;
+
+      function init() {
+        if (cleanupFn) {
+          cleanupFn();
+          cleanupFn = null;
+        }
+
+        const filters = document.querySelectorAll(".note-kind");
+        const entries = document.querySelectorAll(".note-entry");
+        if (!filters.length) return;
+
+        function applyFilter(filter) {
+          filters.forEach((item) => {
+            var active = item.dataset.kind === filter;
+            item.classList.toggle("active", active);
+            item.setAttribute("aria-pressed", active ? "true" : "false");
+          });
+
+          entries.forEach((entry) => {
+            entry.style.display = filter === "all" || entry.dataset.kind === filter ? "" : "none";
+          });
+        }
+
+        function onClick(e) {
+          applyFilter(e.currentTarget.dataset.kind);
+        }
+
+        filters.forEach((filter) => filter.addEventListener("click", onClick));
+
+        var urlKind = new URLSearchParams(window.location.search).get("kind");
+        if (urlKind) applyFilter(urlKind.toLowerCase());
+
+        cleanupFn = function () {
+          filters.forEach((filter) => filter.removeEventListener("click", onClick));
+        };
+      }
+
+      document.addEventListener("DOMContentLoaded", init);
+      document.addEventListener("astro:page-load", init);
+    })();
+  </script>
 </BaseLayout>

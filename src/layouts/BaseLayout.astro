@@ -10,18 +10,15 @@ const {
 
 const pageTitle = title === "Runze Tian" ? title : `${title} | Runze Tian`;
 const navItems = [
-  { href: "/", label: "Home" },
+  { href: "/timeline/", label: "Timeline" },
   { href: "/publication/", label: "Publication" },
   { href: "/blog/", label: "Blog" },
-  { href: "/postcast/", label: "Postcast" },
-  { href: "/project/", label: "Project" },
+  { href: "/podcast/", label: "Podcast" },
+  { href: "/project/", label: "Projects" },
 ];
 
 const pathname = Astro.url.pathname;
 const isHome = pathname === "/";
-
-// TODO: Add /guashen/ when the site-search/summarization AI page is ready.
-// const guaShenNavItem = { href: "/guashen/", label: "GuaShen" };
 ---
 
 <!doctype html>
@@ -31,10 +28,19 @@ const isHome = pathname === "/";
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
     <meta name="description" content={description} />
-    <meta name="theme-color" content="#141414" />
+    <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
     <link rel="icon" type="image/png" href="/assets/img/moonshot.png" />
     <link rel="apple-touch-icon" href="/assets/img/moonshot.png" />
     <title>{pageTitle}</title>
+    <script is:inline>
+      (function () {
+        const theme = localStorage.getItem("theme");
+        if (theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
   </head>
   <body class:list={{ "home-page": isHome }}>
     <div class="site-frame">
@@ -43,7 +49,10 @@ const isHome = pathname === "/";
           <a class="brand" href="/" aria-label="Runze Tian home">
             <span>Runze Tian</span>
           </a>
-          <span class="moon-icon" aria-hidden="true"></span>
+          <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+            <span class="theme-icon-light" aria-hidden="true">🌕</span>
+            <span class="theme-icon-dark" aria-hidden="true">🌑</span>
+          </button>
         </div>
 
         <nav class="nav" aria-label="Primary">
@@ -58,21 +67,49 @@ const isHome = pathname === "/";
           }
         </nav>
 
-        <div class="sidebar-bottom">
-          <div class="social-links" aria-label="Social links">
-            <a href="https://github.com/Gua927" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.79-.26.79-.58v-2.03c-3.34.73-4.04-1.42-4.04-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.21.09 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.66-.31-5.46-1.34-5.46-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23.96-.27 1.98-.4 3-.4s2.05.13 3 .4c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.19.69.8.58A12.01 12.01 0 0 0 24 12c0-6.63-5.37-12-12-12Z"></path>
-              </svg>
-            </a>
-            <a href="/blog/" aria-label="Blog">Blog</a>
-          </div>
+        <div class="sidebar-nav-divider" aria-hidden="true"></div>
 
-          <div class="status-card">
-            <span>Current focus</span>
-            <strong>Generative AI</strong>
-            <small><span aria-hidden="true"></span> Researching</small>
-          </div>
+        <div class="social-links" aria-label="Social links">
+          <a href="https://github.com/Gua927" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.79-.26.79-.58v-2.03c-3.34.73-4.04-1.42-4.04-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.21.09 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.66-.31-5.46-1.34-5.46-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23.96-.27 1.98-.4 3-.4s2.05.13 3 .4c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.19.69.8.58A12.01 12.01 0 0 0 24 12c0-6.63-5.37-12-12-12Z"></path>
+            </svg>
+          </a>
+          <a href="/blog/" aria-label="Blog">Blog</a>
+        </div>
+
+        <div class="sidebar-bottom">
+          <button class="pixel-pet" id="pixel-pet" type="button" aria-label="Play with Empira Gua">
+            <span class="pixel-pet-bubble" id="pixel-pet-bubble">Empira Gua</span>
+            <span class="pixel-pet-sprite" aria-hidden="true">
+              <span class="pixel-pet-crown">
+                <span></span>
+                <span></span>
+                <span></span>
+              </span>
+              <span class="pixel-pet-leaf"></span>
+              <span class="pixel-pet-arm left"></span>
+              <span class="pixel-pet-arm right"></span>
+              <span class="pixel-pet-body">
+                <span class="pixel-pet-eye left"></span>
+                <span class="pixel-pet-eye right"></span>
+                <span class="pixel-pet-blush left"></span>
+                <span class="pixel-pet-blush right"></span>
+                <span class="pixel-pet-mouth"></span>
+                <span class="pixel-pet-shine"></span>
+                <span class="pixel-pet-drool"></span>
+              </span>
+              <span class="pixel-pet-snore">z</span>
+              <span class="pixel-pet-foot left"></span>
+              <span class="pixel-pet-foot right"></span>
+              <span class="pixel-pet-shadow"></span>
+            </span>
+            <span class="pixel-pet-name">Empira Gua</span>
+            <span class="pixel-pet-affinity-wrap">
+              <span class="pixel-pet-affinity" id="pixel-pet-affinity">Affinity 0</span>
+              <span class="pixel-pet-plus" id="pixel-pet-plus" aria-hidden="true">+1</span>
+            </span>
+          </button>
         </div>
       </aside>
 
@@ -80,5 +117,110 @@ const isHome = pathname === "/";
         <slot />
       </main>
     </div>
+
+    <script is:inline>
+      (function () {
+        const toggle = document.getElementById("theme-toggle");
+        const html = document.documentElement;
+        function updateIcons() {
+          const isDark = html.classList.contains("dark");
+          document.querySelector(".theme-icon-light").style.display = isDark ? "none" : "inline";
+          document.querySelector(".theme-icon-dark").style.display = isDark ? "inline" : "none";
+        }
+        updateIcons();
+        if (toggle) {
+          toggle.addEventListener("click", function () {
+            html.classList.toggle("dark");
+            localStorage.setItem("theme", html.classList.contains("dark") ? "dark" : "light");
+            updateIcons();
+          });
+        }
+
+        const pet = document.getElementById("pixel-pet");
+        const bubble = document.getElementById("pixel-pet-bubble");
+        const affinity = document.getElementById("pixel-pet-affinity");
+        const plus = document.getElementById("pixel-pet-plus");
+        const lines = ["Empira Gua", "holding court", "pdf -> md", "tiny reign", "long press!"];
+        let index = 0;
+        let holdTimer = null;
+        let longPressed = false;
+        const affinityKey = "empira-gua-affinity";
+        let affinityCount = Number(localStorage.getItem(affinityKey) || "0");
+        function applyPetClock() {
+          if (!pet || !bubble) return;
+          const hour = new Date().getHours();
+          const isNight = hour >= 22 || hour < 7;
+          pet.classList.toggle("is-night", isNight);
+          pet.classList.toggle("is-day", !isNight);
+          if (isNight) {
+            bubble.textContent = "sleep mode";
+          } else if (bubble.textContent === "sleep mode") {
+            bubble.textContent = lines[index];
+          }
+        }
+
+        if (affinity) affinity.textContent = "Affinity " + affinityCount;
+        if (pet && bubble) {
+          function addAffinity() {
+            affinityCount += 1;
+            localStorage.setItem(affinityKey, String(affinityCount));
+            if (affinity) affinity.textContent = "Affinity " + affinityCount;
+            if (plus) {
+              plus.classList.remove("is-showing");
+              window.requestAnimationFrame(function () {
+                plus.classList.add("is-showing");
+              });
+            }
+          }
+
+          function restartAnimation(className) {
+            pet.classList.remove("is-hopping", "is-leaping");
+            window.requestAnimationFrame(function () {
+              pet.classList.add(className);
+            });
+          }
+
+          pet.addEventListener("pointerdown", function () {
+            longPressed = false;
+            holdTimer = window.setTimeout(function () {
+              longPressed = true;
+              bubble.textContent = "big jump!";
+              addAffinity();
+              restartAnimation("is-leaping");
+            }, 420);
+          });
+
+          pet.addEventListener("pointerup", function () {
+            if (holdTimer) window.clearTimeout(holdTimer);
+          });
+
+          pet.addEventListener("pointerleave", function () {
+            if (holdTimer) window.clearTimeout(holdTimer);
+          });
+
+          pet.addEventListener("click", function () {
+            if (longPressed) return;
+            index = (index + 1) % lines.length;
+            bubble.textContent = lines[index];
+            addAffinity();
+            restartAnimation("is-hopping");
+          });
+
+          pet.addEventListener("animationend", function (event) {
+            if (!event.target.classList.contains("pixel-pet-sprite")) return;
+            pet.classList.remove("is-hopping", "is-leaping");
+          });
+
+          if (plus) {
+            plus.addEventListener("animationend", function () {
+              plus.classList.remove("is-showing");
+            });
+          }
+
+          applyPetClock();
+          window.setInterval(applyPetClock, 60000);
+        }
+      })();
+    </script>
   </body>
 </html>

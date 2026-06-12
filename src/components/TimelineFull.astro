@@ -1,0 +1,115 @@
+---
+import {
+  formatTimelineDate,
+  getTimelineEntries,
+  getTimelineFilters,
+  timelineLabels,
+} from "../lib/timeline";
+
+const entries = await getTimelineEntries();
+const filters = getTimelineFilters(entries);
+---
+
+<div class="timeline-audiofool">
+  <div class="timeline-filters" aria-label="Timeline filters">
+    <button type="button" data-type="all" class="timeline-filter active" aria-pressed="true">
+      [ All <span>{entries.length}</span> ]
+    </button>
+    {
+      filters.map(({ type, label, count }) => (
+        <button type="button" data-type={type} class="timeline-filter" aria-pressed="false">
+          [ {label} <span>{count}</span> ]
+        </button>
+      ))
+    }
+  </div>
+
+  <div class="timeline-audiofool-list">
+    {
+      entries.map((entry) => {
+        const type = entry.category;
+        return (
+          <a
+            href={entry.href}
+            class="timeline-entry"
+            data-type={type}
+            id={entry.id}
+          >
+            <span class="timeline-dot" aria-hidden="true"></span>
+            <div class="timeline-entry-grid">
+              <time datetime={entry.date.toISOString()}>
+                {formatTimelineDate(entry.date)}
+              </time>
+              <span class="timeline-type">{timelineLabels[type] ?? type}</span>
+              <div class="timeline-entry-content">
+                <h2>{entry.title}</h2>
+                {entry.description && (
+                  <p>{entry.description}</p>
+                )}
+              </div>
+            </div>
+          </a>
+        );
+      })
+    }
+    <div id="timeline-empty" class="timeline-empty hidden">No entries in this lane yet.</div>
+  </div>
+</div>
+
+<script is:inline>
+  (function () {
+    let cleanupFn = null;
+
+    function init() {
+      if (cleanupFn) {
+        cleanupFn();
+        cleanupFn = null;
+      }
+
+      const filters = document.querySelectorAll(".timeline-filter");
+      const entries = document.querySelectorAll(".timeline-entry");
+      const empty = document.getElementById("timeline-empty");
+      if (!filters.length) return;
+
+      function applyFilter(filter) {
+        filters.forEach((item) => {
+          var active = item.dataset.type === filter;
+          item.classList.toggle("active", active);
+          item.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+        var btn = document.querySelector('.timeline-filter[data-type="' + filter + '"]');
+        if (btn) {
+          btn.classList.add("active");
+          btn.setAttribute("aria-pressed", "true");
+        }
+
+        var visible = 0;
+        entries.forEach((entry) => {
+          var show = filter === "all" || entry.dataset.type === filter;
+          entry.style.display = show ? "" : "none";
+          if (show) visible += 1;
+        });
+
+        if (empty) empty.classList.toggle("hidden", visible > 0);
+      }
+
+      function onClick(e) {
+        applyFilter(e.currentTarget.dataset.type);
+      }
+
+      filters.forEach((filter) => {
+        filter.addEventListener("click", onClick);
+      });
+
+      var urlType = new URLSearchParams(window.location.search).get("type");
+      if (urlType) applyFilter(urlType.toLowerCase());
+
+      cleanupFn = function () {
+        filters.forEach((filter) => filter.removeEventListener("click", onClick));
+      };
+    }
+
+    document.addEventListener("DOMContentLoaded", init);
+    document.addEventListener("astro:page-load", init);
+  })();
+</script>

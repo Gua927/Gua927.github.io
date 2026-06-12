@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import TimelineList from "../components/TimelineList.astro";
 import { frontmatter } from "../content/about.md";
 ---
 
@@ -13,36 +14,25 @@ import { frontmatter } from "../content/about.md";
       <h1>
         <span>Tian Runze</span>
       </h1>
-      <p class="lead">
-        I study <strong>mathematics</strong> and <strong>generative AI</strong>. My work spans
-        diffusion language models, molecular generation, and protein generation.
-      </p>
       <div class="subtitle" set:html={frontmatter.subtitle} />
       <p class="intro-text">
-        This site collects research notes, experiments, and ideas in progress.
+        I am interested in <strong>mathematics</strong> and <strong>AI</strong>. My current research
+        focuses on <strong>generative AI</strong>, especially the relationship between probabilistic
+        generation paths and the intrinsic structure of data, with work in molecular generation 🧬 and
+        diffusion language models ✍️.
+      </p>
+      <p class="intro-text">
+        This site organizes my Timeline, Publication, Blog, Podcast, and Projects as a compact record
+        of research updates, notes, and work in progress.
       </p>
     </div>
 
-    <section class="index-list" id="notes" aria-label="Site index">
+    <section class="index-list" id="news" aria-label="Latest news">
       <div class="index-list-header">
-        <span>Index</span>
-        <a href="/project/">[ View project ]</a>
+        <span>News</span>
+        <a href="/timeline/">[ View timeline ]</a>
       </div>
-      <a href="/publication/">
-        <span>2026.06.13 · publication</span>
-        <em></em>
-        <strong>Research and papers</strong>
-      </a>
-      <a href="/blog/">
-        <span>2026.06.13 · blog</span>
-        <em></em>
-        <strong>Notes and experiments</strong>
-      </a>
-      <a href="/project/">
-        <span>2026.06.13 · project</span>
-        <em></em>
-        <strong>Generative AI systems</strong>
-      </a>
+      <TimelineList limit={3} />
     </section>
   </section>
 </BaseLayout>

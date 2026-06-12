@@ -1,0 +1,30 @@
+---
+import { formatTimelineDate, getTimelineEntries, timelineLabels } from "../lib/timeline";
+
+interface Props {
+  limit?: number;
+  class?: string;
+}
+
+const { limit, class: className = "" } = Astro.props;
+
+const entries = (await getTimelineEntries()).slice(0, limit);
+---
+
+<ul class:list={["timeline-list", className]}>
+  {
+    entries.map((entry) => {
+      return (
+        <li class="timeline-item">
+          <a href={entry.href}>
+            <span class="timeline-meta">
+              {formatTimelineDate(entry.date)} · {timelineLabels[entry.category] ?? entry.category}
+            </span>
+            <span class="timeline-separator" aria-hidden="true">—</span>
+            <strong>{entry.title}</strong>
+          </a>
+        </li>
+      );
+    })
+  }
+</ul>

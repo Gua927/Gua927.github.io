@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 620" role="img" aria-labelledby="title desc">
+  <title id="title">SAT-Mask trajectory overview</title>
+  <desc id="desc">A schematic showing random masking diverging from self-aligned trajectory masking.</desc>
+  <rect width="960" height="620" fill="#fafafa"/>
+  <rect x="40" y="40" width="880" height="540" fill="none" stroke="#171717" stroke-width="2"/>
+  <line x1="80" y1="170" x2="880" y2="170" stroke="#d4d4d4" stroke-width="2"/>
+  <line x1="80" y1="360" x2="880" y2="360" stroke="#d4d4d4" stroke-width="2"/>
+  <text x="80" y="105" fill="#171717" font-family="JetBrains Mono, Consolas, monospace" font-size="28" font-weight="700">SAT-Mask</text>
+  <text x="80" y="136" fill="#525252" font-family="JetBrains Mono, Consolas, monospace" font-size="14" letter-spacing="2">SELF-ALIGNED TRAJECTORY MASKING</text>
+  <text x="80" y="218" fill="#737373" font-family="JetBrains Mono, Consolas, monospace" font-size="13">RANDOM MASKING</text>
+  <text x="80" y="408" fill="#737373" font-family="JetBrains Mono, Consolas, monospace" font-size="13">ALIGNED TRAJECTORY</text>
+  <g fill="#171717" font-family="JetBrains Mono, Consolas, monospace" font-size="18">
+    <text x="210" y="248">x</text>
+    <text x="300" y="248">[M]</text>
+    <text x="410" y="248">x</text>
+    <text x="500" y="248">[M]</text>
+    <text x="620" y="248">[M]</text>
+    <text x="735" y="248">x</text>
+  </g>
+  <g fill="#171717" font-family="JetBrains Mono, Consolas, monospace" font-size="18">
+    <text x="210" y="438">[M]</text>
+    <text x="315" y="438">[M]</text>
+    <text x="430" y="438">x</text>
+    <text x="535" y="438">x</text>
+    <text x="640" y="438">x</text>
+    <text x="750" y="438">x</text>
+  </g>
+  <g fill="none" stroke="#171717" stroke-width="2">
+    <path d="M190 282 C330 210 460 315 610 250 S805 268 850 225" stroke-dasharray="8 8"/>
+    <path d="M190 472 C335 470 455 448 570 420 S760 375 850 390"/>
+  </g>
+  <g fill="#fafafa" stroke="#171717" stroke-width="2">
+    <circle cx="190" cy="282" r="8"/>
+    <circle cx="360" cy="252" r="8"/>
+    <circle cx="535" cy="278" r="8"/>
+    <circle cx="705" cy="248" r="8"/>
+    <circle cx="850" cy="225" r="8"/>
+    <circle cx="190" cy="472" r="8"/>
+    <circle cx="360" cy="465" r="8"/>
+    <circle cx="535" cy="430" r="8"/>
+    <circle cx="705" cy="385" r="8"/>
+    <circle cx="850" cy="390" r="8"/>
+  </g>
+  <g fill="#171717" font-family="JetBrains Mono, Consolas, monospace" font-size="12">
+    <text x="162" y="535">over-noise</text>
+    <text x="430" y="535">margin denoise</text>
+    <text x="710" y="535">easy to hard</text>
+  </g>
+  <g stroke="#171717" stroke-width="1.5">
+    <line x1="250" y1="520" x2="390" y2="520"/>
+    <line x1="390" y1="520" x2="382" y2="514"/>
+    <line x1="390" y1="520" x2="382" y2="526"/>
+    <line x1="585" y1="520" x2="690" y2="520"/>
+    <line x1="690" y1="520" x2="682" y2="514"/>
+    <line x1="690" y1="520" x2="682" y2="526"/>
+  </g>
+</svg>

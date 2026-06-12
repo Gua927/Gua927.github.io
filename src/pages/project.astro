@@ -1,11 +1,220 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+
+let projects: CollectionEntry<"projects">[] = [];
+try {
+  projects = await getCollection("projects");
+} catch {
+  projects = [];
+}
+
+projects = projects.sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const latestProjects = projects.slice(0, 8);
+const pinnedProjects = projects.filter((project) => project.data.status === "active").slice(0, 2);
+
+function formatDateCompact(date: Date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}.${m}.${d}`;
+}
+
+function projectHref(project: (typeof projects)[number]) {
+  return project.data.href ?? `#${project.id}`;
+}
+
+function projectCategory(project: (typeof projects)[number]) {
+  return project.data.tags[0] ?? "Research";
+}
+
+function projectMeta(project: (typeof projects)[number]) {
+  return [projectCategory(project), project.data.status, "project"].filter(Boolean).join(" / ");
+}
+
+const categorizedProjects = projects.reduce(
+  (acc, project) => {
+    const category = projectCategory(project);
+    if (!acc[category]) acc[category] = [];
+    acc[category].push(project);
+    return acc;
+  },
+  {} as Record<string, typeof projects>,
+);
+
+const sortedCategories = Object.keys(categorizedProjects).sort();
 ---
 
-<BaseLayout title="Project" description="Runze Tian's research and engineering projects.">
-  <section class="page-title subpage-title">
-    <p class="eyebrow">Project</p>
-    <h1>Project</h1>
-    <p>Selected generative AI systems, prototypes, and research engineering work will be listed here.</p>
+<BaseLayout title="Projects" description="Runze Tian's research and engineering projects.">
+  <section class="projects-index-page" aria-label="Projects">
+    <header class="projects-index-header">
+      <h1>Projects</h1>
+      <p>Welcome to the Machine</p>
+    </header>
+
+    {pinnedProjects.length > 0 && (
+      <section class="projects-pinned">
+        <div class="projects-section-heading">
+          <h2>Pinned</h2>
+          <span>{pinnedProjects.length} selected</span>
+        </div>
+
+        <div class="projects-pinned-grid">
+          {pinnedProjects.map((project, index) => (
+            <a href={projectHref(project)} class="project-pinned-card">
+              <div>
+                <span>PIN {String(index + 1).padStart(2, "0")}</span>
+                <time datetime={project.data.date.toISOString()}>{formatDateCompact(project.data.date)}</time>
+              </div>
+              <h2>{project.data.title}</h2>
+              <p>{project.data.description}</p>
+              <div>
+                <span>{projectCategory(project)}</span>
+                <span>/</span>
+                <span>{project.data.status}</span>
+                {project.data.tags[1] && <span>/</span>}
+                {project.data.tags[1] && <span>{project.data.tags[1]}</span>}
+              </div>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {projects.length > 0 ? (
+      <section>
+        <div class="project-index-heading">
+          <div>
+            <h2>Project Index</h2>
+            <p>A compact project browser. Latest is chronological; All keeps the current categorized archive.</p>
+          </div>
+
+          <div class="project-view-filters" aria-label="Project view">
+            <button type="button" data-view="latest" class="project-view-filter active" aria-pressed="true">
+              [ Latest <span>{latestProjects.length}</span> ]
+            </button>
+            <button type="button" data-view="all" class="project-view-filter" aria-pressed="false">
+              [ All <span>{projects.length}</span> ]
+            </button>
+          </div>
+        </div>
+
+        <div data-project-view="latest" class="project-view-panel project-latest-panel">
+          {latestProjects.map((project) => (
+            <a href={projectHref(project)} class="project-timeline-entry" id={project.id}>
+              <span aria-hidden="true"></span>
+
+              <div>
+                <time datetime={project.data.date.toISOString()}>{formatDateCompact(project.data.date)}</time>
+                <span>{projectCategory(project)}</span>
+
+                <div>
+                  <div>
+                    <h3>{project.data.title}</h3>
+                    {pinnedProjects.some((p) => p.id === project.id) && <span>pinned</span>}
+                  </div>
+                  <p>{project.data.description}</p>
+                  <div>
+                    <span>{project.data.status}</span>
+                    <span>project</span>
+                    {project.data.tags.slice(0, 3).map((tag) => (
+                      <span>{tag}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
+
+        <div data-project-view="all" class="project-view-panel project-all-panel hidden">
+          {sortedCategories.map((category) => (
+            <section>
+              <details open>
+                <summary>
+                  <h3>
+                    <span>[{categorizedProjects[category].length}]</span>
+                    {category}
+                  </h3>
+                  <span>↓</span>
+                </summary>
+
+                <div>
+                  {categorizedProjects[category].map((project) => (
+                    <a href={projectHref(project)} class="project-archive-entry">
+                      <span aria-hidden="true"></span>
+
+                      <div>
+                        <time datetime={project.data.date.toISOString()}>{formatDateCompact(project.data.date)}</time>
+
+                        <div>
+                          <div>
+                            <h4>{project.data.title}</h4>
+                            {pinnedProjects.some((p) => p.id === project.id) && <span>pinned</span>}
+                          </div>
+                          <p>{project.data.description}</p>
+                        </div>
+
+                        <span>{projectMeta(project)}</span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </details>
+            </section>
+          ))}
+        </div>
+      </section>
+    ) : (
+      <div class="projects-empty">No projects yet.</div>
+    )}
+
   </section>
+
+  <script is:inline>
+    (function () {
+      let cleanupFn = null;
+
+      function init() {
+        if (cleanupFn) {
+          cleanupFn();
+          cleanupFn = null;
+        }
+
+        const filters = document.querySelectorAll(".project-view-filter");
+        const panels = document.querySelectorAll(".project-view-panel");
+        if (!filters.length || !panels.length) return;
+
+        function applyView(view) {
+          filters.forEach((item) => {
+            var active = item.dataset.view === view;
+            item.classList.toggle("active", active);
+            item.setAttribute("aria-pressed", active ? "true" : "false");
+          });
+
+          panels.forEach((panel) => {
+            panel.classList.toggle("hidden", panel.dataset.projectView !== view);
+          });
+        }
+
+        function onClick(e) {
+          applyView(e.currentTarget.dataset.view || "latest");
+        }
+
+        filters.forEach((filter) => filter.addEventListener("click", onClick));
+
+        var urlView = new URLSearchParams(window.location.search).get("view");
+        if (urlView === "all" || urlView === "latest") applyView(urlView);
+
+        cleanupFn = function () {
+          filters.forEach((filter) => filter.removeEventListener("click", onClick));
+        };
+      }
+
+      document.addEventListener("DOMContentLoaded", init);
+      document.addEventListener("astro:page-load", init);
+    })();
+  </script>
 </BaseLayout>
