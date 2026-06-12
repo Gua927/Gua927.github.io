@@ -1,10 +1,10 @@
 ---
 title: about
 permalink: /
-subtitle: Undergraduate Student @ <a href='https://stat.ruc.edu.cn/'>School of Statistics, Renmin University of China</a>; Intern @ <a href='https://www.gensi-thuair.com/#/portal_home'>GenSI Lab, THU-AIR</a>
+subtitle: Undergraduate Student @ <a href='https://stat.ruc.edu.cn/'>RUC Statistics</a>; Intern @ <a href='https://www.gensi-thuair.com/#/portal_home'>GenSI Lab, THU-AIR</a>
 
 profile:
-  image: prof_pic.jpg
+  image: profile-sea.jpg
 ---
 
 Hi there, I am Tian Runze! I come from China and I am passionate about **Mathematics** and **AI Technologies**. I am an individual who enjoys experimenting, thinking, learning, and creating.

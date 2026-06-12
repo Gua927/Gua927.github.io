@@ -1,25 +1,48 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { Content, frontmatter } from "../content/about.md";
+import { frontmatter } from "../content/about.md";
 ---
 
 <BaseLayout title="Runze Tian" description="Runze Tian's academic profile and generative AI notes.">
-  <section class="profile-hero">
-    <div class="profile-copy">
-      <p class="eyebrow">Generative Models · Diffusion · AI Research</p>
-      <h1>Tian Runze</h1>
-      <div class="subtitle" set:html={frontmatter.subtitle} />
+  <section class="profile-hero" id="about">
+    <div class="hero-background" aria-hidden="true">
+      <img src="/assets/img/profile-sea.jpg" alt="" width="1280" height="1707" />
     </div>
-    <img
-      class="profile-photo"
-      src={`/assets/img/${frontmatter.profile?.image ?? "prof_pic.jpg"}`}
-      alt="Runze Tian"
-      width="280"
-      height="280"
-    />
-  </section>
 
-  <article class="markdown-content about-content">
-    <Content />
-  </article>
+    <div class="profile-copy">
+      <h1>
+        <span>Tian Runze</span>
+      </h1>
+      <p class="lead">
+        I study <strong>mathematics</strong> and <strong>generative AI</strong>. My work spans
+        diffusion language models, molecular generation, and protein generation.
+      </p>
+      <div class="subtitle" set:html={frontmatter.subtitle} />
+      <p class="intro-text">
+        This site collects research notes, experiments, and ideas in progress.
+      </p>
+    </div>
+
+    <section class="index-list" id="notes" aria-label="Site index">
+      <div class="index-list-header">
+        <span>Index</span>
+        <a href="/project/">[ View project ]</a>
+      </div>
+      <a href="/publication/">
+        <span>2026.06.13 · publication</span>
+        <em></em>
+        <strong>Research and papers</strong>
+      </a>
+      <a href="/blog/">
+        <span>2026.06.13 · blog</span>
+        <em></em>
+        <strong>Notes and experiments</strong>
+      </a>
+      <a href="/project/">
+        <span>2026.06.13 · project</span>
+        <em></em>
+        <strong>Generative AI systems</strong>
+      </a>
+    </section>
+  </section>
 </BaseLayout>
