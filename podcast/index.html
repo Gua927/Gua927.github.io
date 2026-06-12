@@ -1,7 +1,7 @@
-<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="Astro v6.4.6"><meta name="description" content="Runze Tian's podcast page."><meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)"><link rel="icon" type="image/png" href="/assets/img/moonshot.png"><link rel="apple-touch-icon" href="/assets/img/moonshot.png"><title>Podcast | Runze Tian</title><script>
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="Astro v6.4.6"><meta name="description" content="Runze Tian's podcast page."><meta name="theme-color" content="#0a0a0a"><meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)"><link rel="icon" type="image/png" href="/assets/img/moonshot.png"><link rel="apple-touch-icon" href="/assets/img/moonshot.png"><title>Podcast | Runze Tian</title><script>
       (function () {
         const theme = localStorage.getItem("theme");
-        if (theme === "dark" || (!theme && window.matchMedia("(prefers-color-scheme: dark)").matches)) {
+        if (theme !== "light") {
           document.documentElement.classList.add("dark");
         }
       })();
