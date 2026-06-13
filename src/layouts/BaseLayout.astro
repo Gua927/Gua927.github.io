@@ -2,6 +2,7 @@
 import "katex/dist/katex.min.css";
 import "../styles/global.css";
 import { ClientRouter } from "astro:transitions";
+import { podcastPlaylist } from "../lib/podcasts";
 
 const {
   title = "Runze Tian",
@@ -170,7 +171,7 @@ const isHome = pathname === "/";
       </main>
     </div>
 
-    <script is:inline>
+    <script is:inline define:vars={{ podcastPlaylist }}>
       (function () {
         let layoutCleanup = null;
 
@@ -488,6 +489,8 @@ const isHome = pathname === "/";
             return playAtIndex(Math.floor(Math.random() * state.playlist.length), { autoplay: false });
           };
 
+          window.setPodcastPlaylist(podcastPlaylist);
+
           if (toggle) {
             toggle.onclick = function () {
               if (!state.currentTrack) return;
@@ -543,16 +546,26 @@ const isHome = pathname === "/";
           }
 
           const saved = localStorage.getItem("podcast:last");
+          let restoredFromStorage = false;
           if (!window.__podcastPlayerHasTrack && saved && saved !== "null") {
             try {
-              renderPodcast(JSON.parse(saved), { autoplay: false });
+              restoredFromStorage = renderPodcast(JSON.parse(saved), { autoplay: false });
+              if (!restoredFromStorage) localStorage.removeItem("podcast:last");
             } catch (_) {
               localStorage.removeItem("podcast:last");
             }
-          } else if (window.__podcastPlayerHasTrack) {
+          }
+
+          if (restoredFromStorage) {
+            return;
+          }
+
+          if (window.__podcastPlayerHasTrack) {
             syncButtons();
             const iframe = document.getElementById("sidebar-podcast-iframe");
             if (iframe && !state.ytPlayer) attachYouTubePlayer(iframe);
+          } else if (state.playlist.length) {
+            playAtIndex(Math.floor(Math.random() * state.playlist.length), { autoplay: false });
           }
         })();
 

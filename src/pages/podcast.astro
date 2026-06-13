@@ -1,36 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-
-const curatedPodcasts = [
-  {
-    number: 1,
-    title: "Whynot TV: Danfei Xu",
-    host: "YouTube",
-    date: "2026",
-    description: "A selected Whynot TV conversation with Danfei Xu.",
-    note: "A recommended long-form video for the Podcast shelf.",
-    youtubeUrl: "https://www.youtube.com/watch?v=__P5yygfRRQ&t=774s",
-    tags: ["selected", "robotics"],
-  },
-];
-
-function youtubeId(url: string) {
-  try {
-    const parsed = new URL(url);
-    if (parsed.hostname.includes("youtu.be")) {
-      return parsed.pathname.split("/").filter(Boolean)[0] || "";
-    }
-    if (parsed.pathname.startsWith("/embed/")) {
-      return parsed.pathname.split("/")[2] || "";
-    }
-    if (parsed.pathname.startsWith("/shorts/")) {
-      return parsed.pathname.split("/")[2] || "";
-    }
-    return parsed.searchParams.get("v") || "";
-  } catch {
-    return "";
-  }
-}
+import { curatedPodcasts, podcastPlaylist, youtubeId } from "../lib/podcasts";
 
 const podcastCards = curatedPodcasts.map((episode) => ({
   ...episode,
@@ -105,7 +75,7 @@ const podcastCards = curatedPodcasts.map((episode) => ({
     </footer>
   </section>
 
-  <script is:inline define:vars={{ curatedPodcasts }}>
+  <script is:inline define:vars={{ podcastPlaylist }}>
     (function () {
       let cleanupFn = null;
 
@@ -125,21 +95,6 @@ const podcastCards = curatedPodcasts.map((episode) => ({
         } catch (_) {
           return "";
         }
-      }
-
-      function playableEpisodes() {
-        return curatedPodcasts
-          .map(function (episode) {
-            return {
-              title: episode.title,
-              url: episode.youtubeUrl,
-              videoId: parseYouTubeId(episode.youtubeUrl),
-              source: episode.host || "YouTube",
-            };
-          })
-          .filter(function (episode) {
-            return episode.videoId;
-          });
       }
 
       function setActive(videoId) {
@@ -195,12 +150,11 @@ const podcastCards = curatedPodcasts.map((episode) => ({
           { signal: abort.signal },
         );
 
-        const playlist = playableEpisodes();
         if (window.setPodcastPlaylist) {
-          window.setPodcastPlaylist(playlist);
+          window.setPodcastPlaylist(podcastPlaylist);
         }
         if (window.seedPodcastPlayer) {
-          window.seedPodcastPlayer(playlist);
+          window.seedPodcastPlayer(podcastPlaylist);
         }
 
         function currentIndex() {
