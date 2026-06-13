@@ -110,6 +110,12 @@ a:hover {
   margin-bottom: 32px;
 }
 
+.sidebar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .brand {
   font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
   font-size: 1.25rem;
@@ -142,6 +148,34 @@ a:hover {
   transition: transform 0.2s ease;
 }
 
+.mobile-menu-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  min-width: 46px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid var(--border-main);
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-main);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.78rem;
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.mobile-menu-toggle:hover,
+.mobile-menu-toggle[aria-expanded="true"] {
+  border-color: var(--text-main);
+  background: var(--text-main);
+  color: var(--bg-body);
+}
+
 .theme-toggle:hover {
   transform: rotate(12deg);
 }
@@ -162,6 +196,10 @@ html.dark .theme-icon-dark {
   display: flex;
   flex-direction: column;
   gap: 20px;
+}
+
+.nav-content {
+  display: block;
 }
 
 .nav a {
@@ -1273,42 +1311,72 @@ html.dark .hero-background::after {
   }
 
   body.home-page {
-    overflow: hidden;
+    height: auto;
+    min-height: 100vh;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .site-frame {
-    display: block;
+    display: flex;
+    flex-direction: column;
     width: 100%;
+    min-height: 100vh;
     border-right: 0;
     border-left: 0;
   }
 
   .home-page .site-frame {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
-    height: 100dvh;
+    display: flex;
+    height: auto;
+    min-height: 100vh;
   }
 
   .site-sidebar {
     position: sticky;
     top: 0;
     height: auto;
-    padding: 16px 18px;
+    padding: max(14px, env(safe-area-inset-top)) 18px 14px;
     border-right: 0;
     border-bottom: 1px solid var(--border-main);
+    box-shadow: 0 14px 30px color-mix(in srgb, var(--bg-body) 72%, transparent);
   }
 
   .sidebar-top {
-    margin-bottom: 14px;
+    margin-bottom: 0;
+  }
+
+  .brand {
+    font-size: 1.06rem;
+    letter-spacing: -0.02em;
+  }
+
+  .mobile-menu-toggle {
+    display: inline-flex;
+  }
+
+  .theme-toggle {
+    width: 32px;
+    height: 32px;
+  }
+
+  .nav-content {
+    display: none;
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border-main);
+  }
+
+  .nav-content.is-open {
+    display: block;
   }
 
   .nav {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 14px;
-    overflow: visible;
-    padding-bottom: 3px;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 0;
+    overflow: hidden;
+    padding-bottom: 0;
     scrollbar-width: none;
   }
 
@@ -1317,17 +1385,38 @@ html.dark .hero-background::after {
   }
 
   .nav a {
-    flex: 0 0 auto;
-    font-size: 0.94rem;
+    display: inline-flex;
+    width: fit-content;
+    min-height: 42px;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.35em;
+    padding: 10px 0;
+    font-size: 0.98rem;
+  }
+
+  .nav a:hover,
+  .nav a.active {
+    text-decoration: none;
   }
 
   .sidebar-bottom {
     display: none;
   }
 
-  .sidebar-nav-divider,
-  .site-sidebar > .social-links {
-    display: none;
+  .sidebar-nav-divider {
+    margin: 12px 0;
+    background: var(--border-subtle);
+  }
+
+  .social-links {
+    justify-content: space-between;
+    gap: 14px;
+  }
+
+  .social-links a {
+    font-size: 0.72rem;
+    opacity: 0.78;
   }
 
   .profile-hero {
@@ -1337,16 +1426,21 @@ html.dark .hero-background::after {
   }
 
   .home-page .page-shell {
-    height: 100%;
+    height: auto;
     min-height: 0;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .home-page .profile-hero {
-    height: 100%;
-    min-height: 0;
-    padding: clamp(26px, 7vh, 64px) 20px clamp(20px, 5vh, 42px);
-    justify-content: center;
+    height: auto;
+    min-height: calc(100vh - 61px);
+    padding: clamp(40px, 8vh, 72px) 20px clamp(48px, 8vh, 72px);
+    justify-content: flex-start;
+  }
+
+  .home-page .profile-copy,
+  .home-page .index-list {
+    transform: none;
   }
 
   .profile-copy,
@@ -1430,15 +1524,11 @@ html.dark .hero-background::after {
 
 @media (max-width: 860px) and (max-height: 760px) {
   .home-page .intro-text {
-    display: none;
-  }
-
-  .home-page .nav {
-    gap: 10px;
+    display: block;
   }
 
   .home-page .nav a {
-    font-size: 0.88rem;
+    font-size: 0.94rem;
   }
 
   .home-page .profile-copy h1 {
