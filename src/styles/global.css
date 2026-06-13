@@ -2,15 +2,15 @@
 
 :root {
   color-scheme: light;
-  --bg-body: #fafafa;
-  --bg-deep: #f5f5f5;
-  --panel: #ffffff;
+  --bg-body: #f6f1e8;
+  --bg-deep: #eee6d8;
+  --panel: #fbf7ef;
   --text-main: #171717;
   --text: #171717;
   --muted: #525252;
   --faint: #737373;
-  --border-main: #d4d4d4;
-  --border-subtle: #e5e5e5;
+  --border-main: #d8cdbb;
+  --border-subtle: #e7dccb;
   --accent: #525252;
   --green: #22c55e;
   --max: 1440px;
@@ -940,8 +940,8 @@ html.dark .theme-icon-dark {
 
 .hero-background::before {
   background:
-    linear-gradient(120deg, var(--bg-body) 0%, rgba(250, 250, 250, 0.72) 26%, transparent 66%),
-    linear-gradient(0deg, var(--bg-body) 0%, rgba(250, 250, 250, 0.14) 22%, rgba(250, 250, 250, 0.05) 54%, var(--bg-body) 100%);
+    linear-gradient(120deg, var(--bg-body) 0%, rgba(246, 241, 232, 0.72) 26%, transparent 66%),
+    linear-gradient(0deg, var(--bg-body) 0%, rgba(246, 241, 232, 0.14) 22%, rgba(246, 241, 232, 0.05) 54%, var(--bg-body) 100%);
 }
 
 html.dark .hero-background::before {
@@ -951,7 +951,7 @@ html.dark .hero-background::before {
 }
 
 .hero-background::after {
-  background: radial-gradient(circle at 56% 52%, transparent 0 14%, rgba(250, 250, 250, 0.42) 46%, rgba(250, 250, 250, 0.86) 88%);
+  background: radial-gradient(circle at 56% 52%, transparent 0 14%, rgba(246, 241, 232, 0.42) 46%, rgba(246, 241, 232, 0.86) 88%);
 }
 
 html.dark .hero-background::after {
@@ -1223,9 +1223,9 @@ html.dark .hero-background::after {
   max-height: min(68vh, calc(100vh - var(--citation-preview-top, 0px) - 16px));
   overflow: auto;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.72);
-  background: rgba(255, 255, 255, 0.34);
-  box-shadow: 0 18px 42px rgba(23, 23, 23, 0.1);
+  border: 1px solid rgba(232, 218, 196, 0.68);
+  background: rgba(244, 235, 220, 0.34);
+  box-shadow: 0 18px 42px rgba(93, 74, 48, 0.11);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   color: var(--text-main);
@@ -1470,9 +1470,9 @@ html:not(.dark) .markdown-content .citation-preview-item + .citation-preview-ite
   max-height: min(68vh, calc(100vh - var(--footnote-preview-top, 0px) - 16px));
   overflow: auto;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.72);
-  background: rgba(255, 255, 255, 0.34);
-  box-shadow: 0 18px 42px rgba(23, 23, 23, 0.1);
+  border: 1px solid rgba(232, 218, 196, 0.68);
+  background: rgba(244, 235, 220, 0.34);
+  box-shadow: 0 18px 42px rgba(93, 74, 48, 0.11);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   color: var(--text-main);
