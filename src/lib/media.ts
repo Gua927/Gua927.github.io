@@ -1,31 +1,46 @@
-export type PodcastEpisode = {
+export type MediaCategory = "Podcast" | "SpaceX";
+
+export type MediaItem = {
   number: number;
   title: string;
   host: string;
-  date: string;
+  addedDate: string;
   description: string;
   note: string;
   youtubeUrl: string;
   tags: string[];
+  category: MediaCategory;
 };
 
-export type PodcastTrack = {
+export type MediaTrack = {
   title: string;
   url: string;
   videoId: string;
   source: string;
 };
 
-export const curatedPodcasts: PodcastEpisode[] = [
+export const curatedMedia: MediaItem[] = [
   {
     number: 1,
     title: "Whynot TV: Danfei Xu",
     host: "YouTube",
-    date: "2026",
+    addedDate: "2026-06-13",
     description: "A selected Whynot TV conversation with Danfei Xu.",
-    note: "A recommended long-form video for the Podcast shelf.",
+    note: "A recommended long-form video for the Media shelf.",
     youtubeUrl: "https://www.youtube.com/watch?v=__P5yygfRRQ&t=774s",
     tags: ["selected", "robotics"],
+    category: "Podcast",
+  },
+  {
+    number: 2,
+    title: "Starship | First Integrated Flight Test",
+    host: "YouTube",
+    addedDate: "2026-06-13",
+    description: "A selected SpaceX video for the Media shelf.",
+    note: "A SpaceX entry in the selected media shelf.",
+    youtubeUrl: "https://www.youtube.com/watch?v=_krgcofiM6M",
+    tags: ["selected", "spacex"],
+    category: "SpaceX",
   },
 ];
 
@@ -47,11 +62,11 @@ export function youtubeId(url: string) {
   }
 }
 
-export const podcastPlaylist: PodcastTrack[] = curatedPodcasts
+export const mediaPlaylist: MediaTrack[] = curatedMedia
   .map((episode) => ({
     title: episode.title,
     url: episode.youtubeUrl,
     videoId: youtubeId(episode.youtubeUrl),
-    source: episode.host || "YouTube",
+    source: episode.category,
   }))
   .filter((episode) => episode.videoId);

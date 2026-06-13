@@ -7,7 +7,7 @@ const timeline = defineCollection({
   schema: z.object({
     date: z.date(),
     title: z.string(),
-    category: z.enum(["publication", "blog", "podcast", "project", "site-update"]),
+    category: z.enum(["publication", "blog", "media", "project", "site-update"]),
     href: z.string().optional(),
     description: z.string().optional(),
   }),

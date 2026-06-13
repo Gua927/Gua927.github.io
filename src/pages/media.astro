@@ -1,0 +1,265 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { curatedMedia, mediaPlaylist, youtubeId } from "../lib/media";
+
+const mediaCategories = ["All", "Podcast", "SpaceX"] as const;
+
+const mediaCards = curatedMedia.map((episode) => ({
+  ...episode,
+  videoId: youtubeId(episode.youtubeUrl),
+}));
+---
+
+<BaseLayout title="Media" description="Runze Tian's selected media shelf: podcasts, talks, and space content.">
+  <section class="media-page" aria-label="Selected media" transition:animate="none">
+    <header class="media-header">
+      <h1>Media</h1>
+      <p>Selected YouTube videos, podcasts, and space content, kept as a compact shelf.</p>
+    </header>
+
+    <div class="media-filters" aria-label="Media category filters">
+      {
+        mediaCategories.map((category) => (
+          <button
+            type="button"
+            class={`media-filter${category === "All" ? " active" : ""}`}
+            data-category={category}
+            aria-pressed={category === "All" ? "true" : "false"}
+          >
+            [ {category} ]
+          </button>
+        ))
+      }
+    </div>
+
+    <section class="media-carousel-wrap" aria-label="Selected media shelf">
+      <div class="media-carousel" id="media-carousel">
+        <div class="media-carousel-spacer" aria-hidden="true"></div>
+
+        {
+          mediaCards.map((episode) => (
+            <article
+              class="media-card"
+              id={`media-${episode.videoId || episode.number}`}
+              data-video-id=""
+              data-category={episode.category}
+            >
+              <button
+                type="button"
+                class="media-card-art"
+                data-media-title={episode.title}
+                data-media-url={episode.youtubeUrl}
+                data-media-source={episode.category}
+                aria-label={`Play ${episode.title}`}
+              >
+                <img
+                  src={`https://img.youtube.com/vi/${episode.videoId}/hqdefault.jpg`}
+                  alt=""
+                  loading="lazy"
+                />
+                <span class="media-card-play" aria-hidden="true">▶</span>
+              </button>
+
+              <div class="media-card-content">
+                <p class="media-card-note">{episode.note}</p>
+                <h2>{episode.title}</h2>
+                <p>{episode.description}</p>
+                <div class="media-card-meta">
+                  <span>#{episode.number}</span>
+                  <span>{episode.host}</span>
+                  <span>{episode.addedDate}</span>
+                </div>
+                <div class="media-card-tags" aria-label="Tags">
+                  {episode.tags.map((tag) => <span>{tag}</span>)}
+                  <span class="media-card-category">{episode.category}</span>
+                </div>
+              </div>
+            </article>
+          ))
+        }
+
+        <div class="media-carousel-spacer" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <div class="media-scroll-nav" aria-label="Media shelf navigation">
+      <button id="media-scroll-left" type="button">← prev</button>
+      <button id="media-scroll-right" type="button">next →</button>
+    </div>
+
+    <footer class="media-stats">
+      <span>{curatedMedia.length} selected items</span>
+      <span>Click a cover to play in the sidebar</span>
+    </footer>
+  </section>
+
+  <script is:inline define:vars={{ mediaPlaylist }}>
+    (function () {
+      let cleanupFn = null;
+
+      function parseYouTubeId(url) {
+        try {
+          var parsed = new URL(url, window.location.href);
+          if (parsed.hostname.includes("youtu.be")) {
+            return parsed.pathname.split("/").filter(Boolean)[0] || "";
+          }
+          if (parsed.pathname.startsWith("/embed/")) {
+            return parsed.pathname.split("/")[2] || "";
+          }
+          if (parsed.pathname.startsWith("/shorts/")) {
+            return parsed.pathname.split("/")[2] || "";
+          }
+          return parsed.searchParams.get("v") || "";
+        } catch (_) {
+          return "";
+        }
+      }
+
+      function setActive(videoId) {
+        document.querySelectorAll(".media-card").forEach(function (card) {
+          card.classList.toggle("active", Boolean(videoId) && card.dataset.videoId === videoId);
+        });
+      }
+
+      function applyCategoryFilter(category) {
+        const filters = document.querySelectorAll(".media-filter");
+        const cards = document.querySelectorAll(".media-card");
+
+        filters.forEach(function (filter) {
+          const active = filter.dataset.category === category;
+          filter.classList.toggle("active", active);
+          filter.setAttribute("aria-pressed", active ? "true" : "false");
+        });
+
+        cards.forEach(function (card) {
+          const show = category === "All" || card.dataset.category === category;
+          card.style.display = show ? "" : "none";
+        });
+      }
+
+      function init() {
+        if (cleanupFn) cleanupFn();
+
+        const abort = new AbortController();
+        const cards = Array.from(document.querySelectorAll(".media-card"));
+        const carousel = document.getElementById("media-carousel");
+        const left = document.getElementById("media-scroll-left");
+        const right = document.getElementById("media-scroll-right");
+        const filters = document.querySelectorAll(".media-filter");
+
+        cards.forEach(function (card) {
+          const button = card.querySelector(".media-card-art");
+          const videoId = parseYouTubeId(button?.dataset.mediaUrl || "");
+          card.dataset.videoId = videoId;
+          const img = card.querySelector("img");
+          if (img && videoId) {
+            img.src = "https://img.youtube.com/vi/" + encodeURIComponent(videoId) + "/hqdefault.jpg";
+          }
+        });
+
+        document.addEventListener(
+          "click",
+          function (event) {
+            const filter = event.target.closest(".media-filter");
+            if (filter) {
+              applyCategoryFilter(filter.dataset.category || "All");
+              return;
+            }
+
+            const button = event.target.closest(".media-card-art");
+            if (!button || !window.playMedia) return;
+
+            const videoId = parseYouTubeId(button.dataset.mediaUrl || "");
+            if (!videoId) return;
+
+            const ok = window.playMedia({
+              title: button.dataset.mediaTitle,
+              url: button.dataset.mediaUrl,
+              videoId,
+              source: button.dataset.mediaSource || "YouTube",
+            });
+            if (ok) setActive(videoId);
+          },
+          { signal: abort.signal },
+        );
+
+        document.addEventListener(
+          "media:playing",
+          function (event) {
+            setActive(event.detail && event.detail.videoId);
+          },
+          { signal: abort.signal },
+        );
+
+        if (window.setMediaPlaylist) {
+          window.setMediaPlaylist(mediaPlaylist);
+        }
+        // BaseLayout handles first-init seeding; media page only replaces the
+        // player when the user explicitly clicks a card.
+
+        // Highlight the card for the currently playing track on entry.
+        const currentTrack = window.__mediaPlayerState && window.__mediaPlayerState.currentTrack;
+        if (currentTrack && currentTrack.videoId) {
+          setActive(currentTrack.videoId);
+        }
+
+        function currentIndex() {
+          if (!carousel) return 0;
+          const visibleCards = cards.filter(function (card) {
+            return card.style.display !== "none";
+          });
+          if (!visibleCards.length) return 0;
+          const rect = carousel.getBoundingClientRect();
+          const targetLine = rect.left + rect.width / 2;
+          return visibleCards.reduce(
+            function (best, card, index) {
+              const cardRect = card.getBoundingClientRect();
+              const distance = Math.abs(cardRect.left + cardRect.width / 2 - targetLine);
+              return distance < best.distance ? { index, distance } : best;
+            },
+            { index: 0, distance: Infinity },
+          ).index;
+        }
+
+        function scrollToCard(index) {
+          if (!carousel || !cards.length) return;
+          const visibleCards = cards.filter(function (card) {
+            return card.style.display !== "none";
+          });
+          if (!visibleCards.length) return;
+          const target = visibleCards[Math.max(0, Math.min(index, visibleCards.length - 1))];
+          const carouselRect = carousel.getBoundingClientRect();
+          const targetRect = target.getBoundingClientRect();
+          carousel.scrollTo({
+            left: carousel.scrollLeft + targetRect.left - carouselRect.left - (carousel.clientWidth - targetRect.width) / 2,
+            behavior: "smooth",
+          });
+        }
+
+        if (left) {
+          left.addEventListener("click", () => scrollToCard(currentIndex() - 1), { signal: abort.signal });
+        }
+        if (right) {
+          right.addEventListener("click", () => scrollToCard(currentIndex() + 1), { signal: abort.signal });
+        }
+
+        cleanupFn = function () {
+          abort.abort();
+        };
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        requestAnimationFrame(init);
+      });
+      document.addEventListener("astro:page-load", function () {
+        requestAnimationFrame(init);
+      });
+      document.addEventListener("astro:before-swap", function () {
+        if (cleanupFn) {
+          cleanupFn();
+          cleanupFn = null;
+        }
+      });
+    })();
+  </script>
+</BaseLayout>

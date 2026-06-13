@@ -1,7 +1,8 @@
 import { getCollection } from "astro:content";
 import type { CollectionEntry } from "astro:content";
+import { curatedMedia, youtubeId } from "./media";
 
-export type TimelineCategory = "publication" | "blog" | "podcast" | "project" | "site-update";
+export type TimelineCategory = "publication" | "blog" | "media" | "project" | "site-update";
 
 export interface TimelineEntry {
   id: string;
@@ -15,7 +16,7 @@ export interface TimelineEntry {
 export const timelineLabels: Record<TimelineCategory, string> = {
   publication: "Publication",
   blog: "Blog",
-  podcast: "Podcast",
+  media: "Media",
   project: "Project",
   "site-update": "Site Update",
 };
@@ -23,7 +24,7 @@ export const timelineLabels: Record<TimelineCategory, string> = {
 export const timelineOrder: TimelineCategory[] = [
   "publication",
   "blog",
-  "podcast",
+  "media",
   "project",
   "site-update",
 ];
@@ -36,6 +37,17 @@ function sortTimeline(a: TimelineEntry, b: TimelineEntry) {
   if (byCategory !== 0) return byCategory;
 
   return a.title.localeCompare(b.title);
+}
+
+function parseMediaDate(value: string) {
+  if (/^\d{4}$/.test(value)) {
+    return new Date(Number(value), 0, 1);
+  }
+
+  const parsed = new Date(value);
+  if (!Number.isNaN(parsed.getTime())) return parsed;
+
+  return new Date();
 }
 
 async function getOptionalProjects(): Promise<CollectionEntry<"projects">[]> {
@@ -92,7 +104,19 @@ export async function getTimelineEntries() {
     description: paper.data.venue,
   }));
 
-  return [...manual, ...blog, ...project, ...publication].sort(sortTimeline);
+  const media: TimelineEntry[] = curatedMedia.map((item) => {
+    const videoId = youtubeId(item.youtubeUrl) || String(item.number);
+    return {
+      id: `media-${videoId}`,
+      date: parseMediaDate(item.addedDate),
+      title: item.title,
+      category: "media",
+      href: `/media/#media-${videoId}`,
+      description: item.description,
+    };
+  });
+
+  return [...manual, ...blog, ...project, ...publication, ...media].sort(sortTimeline);
 }
 
 export function getTimelineFilters(entries: TimelineEntry[]) {
