@@ -36,6 +36,7 @@ const blog = defineCollection({
     tags: z.array(z.string()).default([]),
     author: z.string().default("Runze Tian"),
     affiliation: z.string().default("GenSI Lab, THU-AIR"),
+    bib: z.string().optional(),
     draft: z.boolean().default(false),
   }),
 });

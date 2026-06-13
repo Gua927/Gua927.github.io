@@ -12,7 +12,11 @@ export async function getStaticPaths() {
 
 const { post } = Astro.props;
 const { Content, headings } = await render(post);
-const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3);
+const tocHeadings = headings.filter(
+  (heading) => heading.depth >= 1 && heading.depth <= 3 && heading.slug !== "footnote-label",
+);
+const categoryLabel = post.data.category ?? "notes";
+const categoryHref = `/blog/?kind=${categoryLabel.toLowerCase()}`;
 
 function formatDate(date: Date) {
   return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
@@ -31,11 +35,15 @@ function formatDate(date: Date) {
     <dl class="blog-post-meta" aria-label="Post details">
       <div>
         <dt>Author</dt>
-        <dd>{post.data.author}</dd>
+        <dd><a href="/">{post.data.author}</a></dd>
       </div>
       <div>
         <dt>Affiliation</dt>
-        <dd>{post.data.affiliation}</dd>
+        <dd>
+          <a href="https://www.gensi-thuair.com/#/portal_home" target="_blank" rel="noopener noreferrer">
+            {post.data.affiliation}
+          </a>
+        </dd>
       </div>
       <div>
         <dt>Published</dt>
@@ -45,7 +53,7 @@ function formatDate(date: Date) {
       </div>
       <div>
         <dt>Category</dt>
-        <dd>{post.data.category ?? "notes"}</dd>
+        <dd><a href={categoryHref}>{categoryLabel}</a></dd>
       </div>
     </dl>
 
@@ -72,4 +80,192 @@ function formatDate(date: Date) {
       )
     }
   </div>
+
+  <script>
+    (() => {
+      let tocCleanup: (() => void) | undefined;
+      let citationCleanup: (() => void) | undefined;
+
+      function initBlogToc() {
+        tocCleanup?.();
+
+        const toc = document.querySelector<HTMLElement>(".blog-post-toc");
+        if (!toc) return;
+
+        const links = Array.from(toc.querySelectorAll<HTMLAnchorElement>("a[href^='#']"));
+        const entries = links
+          .map((link) => {
+            const id = decodeURIComponent(link.hash.slice(1));
+            const heading = document.getElementById(id);
+            return heading ? { link, heading } : null;
+          })
+          .filter(Boolean) as Array<{ link: HTMLAnchorElement; heading: HTMLElement }>;
+
+        if (!entries.length) return;
+
+        let frame = 0;
+
+        function setActive(activeLink: HTMLAnchorElement) {
+          for (const { link } of entries) {
+            const isActive = link === activeLink;
+            link.classList.toggle("is-active", isActive);
+            if (isActive) {
+              link.setAttribute("aria-current", "location");
+            } else {
+              link.removeAttribute("aria-current");
+            }
+          }
+        }
+
+        function updateActive() {
+          frame = 0;
+          const marker = window.innerHeight * 0.28;
+          let active = entries[0];
+
+          for (const entry of entries) {
+            if (entry.heading.getBoundingClientRect().top <= marker) {
+              active = entry;
+            } else {
+              break;
+            }
+          }
+
+          setActive(active.link);
+        }
+
+        function queueUpdate() {
+          if (frame) return;
+          frame = window.requestAnimationFrame(updateActive);
+        }
+
+        updateActive();
+        window.addEventListener("scroll", queueUpdate, { passive: true });
+        window.addEventListener("resize", queueUpdate);
+
+        tocCleanup = () => {
+          if (frame) window.cancelAnimationFrame(frame);
+          window.removeEventListener("scroll", queueUpdate);
+          window.removeEventListener("resize", queueUpdate);
+        };
+      }
+
+      function initCitationPreviews() {
+        citationCleanup?.();
+
+        const shells = Array.from(document.querySelectorAll<HTMLElement>(".citation-shell"));
+        if (!shells.length) return;
+
+        let activeShell: HTMLElement | null = null;
+        let closeTimer = 0;
+
+        function positionPreview(shell: HTMLElement) {
+          const preview = shell.querySelector<HTMLElement>(".citation-preview");
+          const content = shell.closest<HTMLElement>(".markdown-content");
+          if (!preview || !content) return;
+
+          const inset = 20;
+          const contentRect = content.getBoundingClientRect();
+          const triggerRect = shell.getBoundingClientRect();
+          const width = Math.min(contentRect.width * 0.9, window.innerWidth - inset * 2);
+          const centeredLeft = contentRect.left + (contentRect.width - width) / 2;
+          const left = Math.min(
+            Math.max(centeredLeft, inset),
+            window.innerWidth - width - inset,
+          );
+
+          preview.style.setProperty("--citation-preview-left", `${left}px`);
+          preview.style.setProperty("--citation-preview-width", `${width}px`);
+
+          let top = triggerRect.bottom + 10;
+          preview.style.setProperty("--citation-preview-top", `${top}px`);
+
+          const previewHeight = preview.offsetHeight;
+          if (top + previewHeight > window.innerHeight - 16) {
+            top = Math.max(16, triggerRect.top - previewHeight - 10);
+            preview.style.setProperty("--citation-preview-top", `${top}px`);
+          }
+        }
+
+        function open(shell: HTMLElement) {
+          window.clearTimeout(closeTimer);
+          if (activeShell && activeShell !== shell) {
+            activeShell.classList.remove("is-open");
+          }
+
+          activeShell = shell;
+          shell.classList.add("is-open");
+          positionPreview(shell);
+        }
+
+        function close(shell: HTMLElement) {
+          shell.classList.remove("is-open");
+          if (activeShell === shell) activeShell = null;
+        }
+
+        function scheduleClose(shell: HTMLElement) {
+          window.clearTimeout(closeTimer);
+          closeTimer = window.setTimeout(() => {
+            const preview = shell.querySelector<HTMLElement>(".citation-preview");
+            if (shell.matches(":hover, :focus-within") || preview?.matches(":hover, :focus-within")) {
+              return;
+            }
+            close(shell);
+          }, 180);
+        }
+
+        function repositionActive() {
+          if (activeShell) positionPreview(activeShell);
+        }
+
+        const removers: Array<() => void> = [];
+
+        for (const shell of shells) {
+          const preview = shell.querySelector<HTMLElement>(".citation-preview");
+          const onEnter = () => open(shell);
+          const onLeave = () => scheduleClose(shell);
+          const onFocus = () => open(shell);
+          const onBlur = () => scheduleClose(shell);
+
+          shell.addEventListener("pointerenter", onEnter);
+          shell.addEventListener("pointerleave", onLeave);
+          shell.addEventListener("focusin", onFocus);
+          shell.addEventListener("focusout", onBlur);
+          preview?.addEventListener("pointerenter", onEnter);
+          preview?.addEventListener("pointerleave", onLeave);
+
+          removers.push(() => {
+            shell.removeEventListener("pointerenter", onEnter);
+            shell.removeEventListener("pointerleave", onLeave);
+            shell.removeEventListener("focusin", onFocus);
+            shell.removeEventListener("focusout", onBlur);
+            preview?.removeEventListener("pointerenter", onEnter);
+            preview?.removeEventListener("pointerleave", onLeave);
+          });
+        }
+
+        window.addEventListener("scroll", repositionActive, { passive: true });
+        window.addEventListener("resize", repositionActive);
+
+        citationCleanup = () => {
+          window.clearTimeout(closeTimer);
+          activeShell?.classList.remove("is-open");
+          removers.forEach((remove) => remove());
+          window.removeEventListener("scroll", repositionActive);
+          window.removeEventListener("resize", repositionActive);
+        };
+      }
+
+      function initBlogPostInteractions() {
+        initBlogToc();
+        initCitationPreviews();
+      }
+
+      document.addEventListener("DOMContentLoaded", initBlogPostInteractions);
+      document.addEventListener("astro:page-load", initBlogPostInteractions);
+      document.addEventListener("astro:before-swap", () => {
+        tocCleanup?.();
+        citationCleanup?.();
+      });
+    })();
+  </script>
 </BaseLayout>
