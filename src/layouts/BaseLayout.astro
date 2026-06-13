@@ -21,6 +21,9 @@ const navItems = [
 
 const pathname = Astro.url.pathname;
 const isHome = pathname === "/";
+const currentSection = navItems.find((item) => pathname === item.href || pathname.startsWith(item.href));
+const parentCrumb = currentSection && pathname !== currentSection.href ? currentSection : null;
+const currentCrumbLabel = title;
 ---
 
 <!doctype html>
@@ -75,7 +78,7 @@ const isHome = pathname === "/";
             {
               navItems.map((item) => (
                 <a
-                  class:list={{ active: pathname === item.href }}
+                  class:list={{ active: pathname === item.href || pathname.startsWith(item.href) }}
                   href={item.href}
                 >
                   <span>[</span>
@@ -174,7 +177,18 @@ const isHome = pathname === "/";
         </section>
       </aside>
 
-      <main id="main-content" class:list={["page-shell", { wide }]} tabindex="-1">
+      <main id="main-content" class:list={["page-shell", { wide, "has-page-topbar": !isHome }]} tabindex="-1">
+        {
+          !isHome && parentCrumb && (
+            <div class="page-topbar" aria-label="Page breadcrumb">
+              <nav class="page-breadcrumb">
+                <a href={parentCrumb.href}>{parentCrumb.label.toUpperCase()}</a>
+                <span aria-hidden="true">/</span>
+                <span aria-current="page">{currentCrumbLabel}</span>
+              </nav>
+            </div>
+          )
+        }
         <slot />
       </main>
     </div>

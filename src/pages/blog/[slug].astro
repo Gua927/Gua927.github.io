@@ -85,6 +85,7 @@ function formatDate(date: Date) {
     (() => {
       let tocCleanup: (() => void) | undefined;
       let citationCleanup: (() => void) | undefined;
+      let footnoteCleanup: (() => void) | undefined;
 
       function initBlogToc() {
         tocCleanup?.();
@@ -255,9 +256,147 @@ function formatDate(date: Date) {
         };
       }
 
+      function initFootnotePreviews() {
+        footnoteCleanup?.();
+
+        const refs = Array.from(document.querySelectorAll<HTMLAnchorElement>(".markdown-content a[data-footnote-ref]"));
+        if (!refs.length) return;
+
+        const shells: HTMLElement[] = [];
+
+        for (const ref of refs) {
+          const targetId = decodeURIComponent(ref.hash.slice(1));
+          const target = document.getElementById(targetId);
+          const shell = ref.closest<HTMLElement>("sup") || ref;
+          if (!target || !shell) continue;
+
+          const clone = target.cloneNode(true) as HTMLElement;
+          clone.querySelectorAll("[data-footnote-backref]").forEach((node) => node.remove());
+          const note = (clone.textContent || "").replace(/\s+/g, " ").trim();
+          if (!note) continue;
+
+          shell.classList.add("footnote-shell");
+          shell.querySelector(".footnote-preview")?.remove();
+
+          const preview = document.createElement("span");
+          const item = document.createElement("span");
+          const body = document.createElement("span");
+          preview.className = "footnote-preview";
+          item.className = "footnote-preview-item";
+          body.className = "footnote-preview-body";
+          body.textContent = note;
+          item.append(body);
+          preview.append(item);
+          shell.append(preview);
+          shells.push(shell);
+        }
+
+        if (!shells.length) return;
+
+        let activeShell: HTMLElement | null = null;
+        let closeTimer = 0;
+
+        function positionPreview(shell: HTMLElement) {
+          const preview = shell.querySelector<HTMLElement>(".footnote-preview");
+          const content = shell.closest<HTMLElement>(".markdown-content");
+          if (!preview || !content) return;
+
+          const inset = 20;
+          const contentRect = content.getBoundingClientRect();
+          const triggerRect = shell.getBoundingClientRect();
+          const width = Math.min(contentRect.width * 0.9, window.innerWidth - inset * 2);
+          const centeredLeft = contentRect.left + (contentRect.width - width) / 2;
+          const left = Math.min(
+            Math.max(centeredLeft, inset),
+            window.innerWidth - width - inset,
+          );
+
+          preview.style.setProperty("--footnote-preview-left", `${left}px`);
+          preview.style.setProperty("--footnote-preview-width", `${width}px`);
+
+          let top = triggerRect.bottom + 10;
+          preview.style.setProperty("--footnote-preview-top", `${top}px`);
+
+          const previewHeight = preview.offsetHeight;
+          if (top + previewHeight > window.innerHeight - 16) {
+            top = Math.max(16, triggerRect.top - previewHeight - 10);
+            preview.style.setProperty("--footnote-preview-top", `${top}px`);
+          }
+        }
+
+        function open(shell: HTMLElement) {
+          window.clearTimeout(closeTimer);
+          if (activeShell && activeShell !== shell) {
+            activeShell.classList.remove("is-open");
+          }
+
+          activeShell = shell;
+          shell.classList.add("is-open");
+          positionPreview(shell);
+        }
+
+        function close(shell: HTMLElement) {
+          shell.classList.remove("is-open");
+          if (activeShell === shell) activeShell = null;
+        }
+
+        function scheduleClose(shell: HTMLElement) {
+          window.clearTimeout(closeTimer);
+          closeTimer = window.setTimeout(() => {
+            const preview = shell.querySelector<HTMLElement>(".footnote-preview");
+            if (shell.matches(":hover, :focus-within") || preview?.matches(":hover, :focus-within")) {
+              return;
+            }
+            close(shell);
+          }, 180);
+        }
+
+        function repositionActive() {
+          if (activeShell) positionPreview(activeShell);
+        }
+
+        const removers: Array<() => void> = [];
+
+        for (const shell of shells) {
+          const preview = shell.querySelector<HTMLElement>(".footnote-preview");
+          const onEnter = () => open(shell);
+          const onLeave = () => scheduleClose(shell);
+          const onFocus = () => open(shell);
+          const onBlur = () => scheduleClose(shell);
+
+          shell.addEventListener("pointerenter", onEnter);
+          shell.addEventListener("pointerleave", onLeave);
+          shell.addEventListener("focusin", onFocus);
+          shell.addEventListener("focusout", onBlur);
+          preview?.addEventListener("pointerenter", onEnter);
+          preview?.addEventListener("pointerleave", onLeave);
+
+          removers.push(() => {
+            shell.removeEventListener("pointerenter", onEnter);
+            shell.removeEventListener("pointerleave", onLeave);
+            shell.removeEventListener("focusin", onFocus);
+            shell.removeEventListener("focusout", onBlur);
+            preview?.removeEventListener("pointerenter", onEnter);
+            preview?.removeEventListener("pointerleave", onLeave);
+          });
+        }
+
+        window.addEventListener("scroll", repositionActive, { passive: true });
+        window.addEventListener("resize", repositionActive);
+
+        footnoteCleanup = () => {
+          window.clearTimeout(closeTimer);
+          activeShell?.classList.remove("is-open");
+          removers.forEach((remove) => remove());
+          window.removeEventListener("scroll", repositionActive);
+          window.removeEventListener("resize", repositionActive);
+        };
+      }
+
       function initBlogPostInteractions() {
         initBlogToc();
         initCitationPreviews();
+        initFootnotePreviews();
       }
 
       document.addEventListener("DOMContentLoaded", initBlogPostInteractions);
@@ -265,6 +404,7 @@ function formatDate(date: Date) {
       document.addEventListener("astro:before-swap", () => {
         tocCleanup?.();
         citationCleanup?.();
+        footnoteCleanup?.();
       });
     })();
   </script>
