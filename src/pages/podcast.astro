@@ -1,11 +1,247 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+
+const curatedPodcasts = [
+  {
+    number: 1,
+    title: "Whynot TV: Danfei Xu",
+    host: "YouTube",
+    date: "2026",
+    description: "A selected Whynot TV conversation with Danfei Xu.",
+    note: "A recommended long-form video for the Podcast shelf.",
+    youtubeUrl: "https://www.youtube.com/watch?v=__P5yygfRRQ&t=774s",
+    tags: ["selected", "robotics"],
+  },
+];
+
+function youtubeId(url: string) {
+  try {
+    const parsed = new URL(url);
+    if (parsed.hostname.includes("youtu.be")) {
+      return parsed.pathname.split("/").filter(Boolean)[0] || "";
+    }
+    if (parsed.pathname.startsWith("/embed/")) {
+      return parsed.pathname.split("/")[2] || "";
+    }
+    if (parsed.pathname.startsWith("/shorts/")) {
+      return parsed.pathname.split("/")[2] || "";
+    }
+    return parsed.searchParams.get("v") || "";
+  } catch {
+    return "";
+  }
+}
+
+const podcastCards = curatedPodcasts.map((episode) => ({
+  ...episode,
+  videoId: youtubeId(episode.youtubeUrl),
+}));
 ---
 
-<BaseLayout title="Podcast" description="Runze Tian's podcast page.">
-  <section class="page-title subpage-title">
-    <p class="eyebrow">Podcast</p>
-    <h1>Podcast</h1>
-    <p>Audio notes and long-form conversations can live here once the format is ready.</p>
+<BaseLayout title="Podcast" description="Runze Tian's selected YouTube podcast shelf.">
+  <section class="podcast-audioshow-page" aria-label="Selected podcasts">
+    <header class="podcast-audioshow-header">
+      <h1>Podcast</h1>
+      <p>Selected YouTube conversations, kept as a compact listening shelf.</p>
+    </header>
+
+    <nav class="podcast-audioshow-nav" aria-label="Podcast views">
+      <span>[ Selected ]</span>
+      <a href="/blog/">[ Related Notes ]</a>
+    </nav>
+
+    <section class="podcast-carousel-wrap" aria-label="Selected podcast shelf">
+      <div class="podcast-carousel" id="podcast-carousel">
+        <div class="podcast-carousel-spacer" aria-hidden="true"></div>
+
+        {
+          podcastCards.map((episode) => (
+            <article class="podcast-card" data-video-id="">
+              <button
+                type="button"
+                class="podcast-card-art"
+                data-podcast-title={episode.title}
+                data-podcast-url={episode.youtubeUrl}
+                data-podcast-source={episode.host}
+                aria-label={`Play ${episode.title}`}
+              >
+                <img
+                  src={`https://img.youtube.com/vi/${episode.videoId}/hqdefault.jpg`}
+                  alt=""
+                  loading="lazy"
+                />
+                <span class="podcast-card-play" aria-hidden="true">▶</span>
+              </button>
+
+              <div class="podcast-card-content">
+                <p class="podcast-card-note">{episode.note}</p>
+                <h2>{episode.title}</h2>
+                <p>{episode.description}</p>
+                <div class="podcast-card-meta">
+                  <span>#{episode.number}</span>
+                  <span>{episode.host}</span>
+                  <span>{episode.date}</span>
+                </div>
+                <div class="podcast-card-tags" aria-label="Tags">
+                  {episode.tags.map((tag) => <span>{tag}</span>)}
+                </div>
+              </div>
+            </article>
+          ))
+        }
+
+        <div class="podcast-carousel-spacer" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <div class="podcast-scroll-nav" aria-label="Podcast shelf navigation">
+      <button id="podcast-scroll-left" type="button">← prev</button>
+      <button id="podcast-scroll-right" type="button">next →</button>
+    </div>
+
+    <footer class="podcast-audioshow-stats">
+      <span>{curatedPodcasts.length} selected episodes</span>
+      <span>Click a cover to play in the sidebar</span>
+    </footer>
   </section>
+
+  <script is:inline define:vars={{ curatedPodcasts }}>
+    (function () {
+      let cleanupFn = null;
+
+      function parseYouTubeId(url) {
+        try {
+          var parsed = new URL(url, window.location.href);
+          if (parsed.hostname.includes("youtu.be")) {
+            return parsed.pathname.split("/").filter(Boolean)[0] || "";
+          }
+          if (parsed.pathname.startsWith("/embed/")) {
+            return parsed.pathname.split("/")[2] || "";
+          }
+          if (parsed.pathname.startsWith("/shorts/")) {
+            return parsed.pathname.split("/")[2] || "";
+          }
+          return parsed.searchParams.get("v") || "";
+        } catch (_) {
+          return "";
+        }
+      }
+
+      function playableEpisodes() {
+        return curatedPodcasts
+          .map(function (episode) {
+            return {
+              title: episode.title,
+              url: episode.youtubeUrl,
+              videoId: parseYouTubeId(episode.youtubeUrl),
+              source: episode.host || "YouTube",
+            };
+          })
+          .filter(function (episode) {
+            return episode.videoId;
+          });
+      }
+
+      function setActive(videoId) {
+        document.querySelectorAll(".podcast-card").forEach(function (card) {
+          card.classList.toggle("active", Boolean(videoId) && card.dataset.videoId === videoId);
+        });
+      }
+
+      function init() {
+        if (cleanupFn) cleanupFn();
+
+        const abort = new AbortController();
+        const cards = Array.from(document.querySelectorAll(".podcast-card"));
+        const carousel = document.getElementById("podcast-carousel");
+        const left = document.getElementById("podcast-scroll-left");
+        const right = document.getElementById("podcast-scroll-right");
+
+        cards.forEach(function (card) {
+          const button = card.querySelector(".podcast-card-art");
+          const videoId = parseYouTubeId(button?.dataset.podcastUrl || "");
+          card.dataset.videoId = videoId;
+          const img = card.querySelector("img");
+          if (img && videoId) {
+            img.src = "https://img.youtube.com/vi/" + encodeURIComponent(videoId) + "/hqdefault.jpg";
+          }
+        });
+
+        document.addEventListener(
+          "click",
+          function (event) {
+            const button = event.target.closest(".podcast-card-art");
+            if (!button || !window.playPodcast) return;
+
+            const videoId = parseYouTubeId(button.dataset.podcastUrl || "");
+            if (!videoId) return;
+
+            const ok = window.playPodcast({
+              title: button.dataset.podcastTitle,
+              url: button.dataset.podcastUrl,
+              videoId,
+              source: button.dataset.podcastSource || "YouTube",
+            });
+            if (ok) setActive(videoId);
+          },
+          { signal: abort.signal },
+        );
+
+        document.addEventListener(
+          "podcast:playing",
+          function (event) {
+            setActive(event.detail && event.detail.videoId);
+          },
+          { signal: abort.signal },
+        );
+
+        const playlist = playableEpisodes();
+        if (window.setPodcastPlaylist) {
+          window.setPodcastPlaylist(playlist);
+        }
+        if (window.seedPodcastPlayer) {
+          window.seedPodcastPlayer(playlist);
+        }
+
+        function currentIndex() {
+          if (!carousel) return 0;
+          const rect = carousel.getBoundingClientRect();
+          const targetLine = rect.left + rect.width / 2;
+          return cards.reduce(
+            function (best, card, index) {
+              const cardRect = card.getBoundingClientRect();
+              const distance = Math.abs(cardRect.left + cardRect.width / 2 - targetLine);
+              return distance < best.distance ? { index, distance } : best;
+            },
+            { index: 0, distance: Infinity },
+          ).index;
+        }
+
+        function scrollToCard(index) {
+          if (!carousel || !cards.length) return;
+          const target = cards[Math.max(0, Math.min(index, cards.length - 1))];
+          const carouselRect = carousel.getBoundingClientRect();
+          const targetRect = target.getBoundingClientRect();
+          carousel.scrollTo({
+            left: carousel.scrollLeft + targetRect.left - carouselRect.left - (carousel.clientWidth - targetRect.width) / 2,
+            behavior: "smooth",
+          });
+        }
+
+        if (left) {
+          left.addEventListener("click", () => scrollToCard(currentIndex() - 1), { signal: abort.signal });
+        }
+        if (right) {
+          right.addEventListener("click", () => scrollToCard(currentIndex() + 1), { signal: abort.signal });
+        }
+
+        cleanupFn = function () {
+          abort.abort();
+        };
+      }
+
+      document.addEventListener("DOMContentLoaded", init);
+      document.addEventListener("astro:page-load", init);
+    })();
+  </script>
 </BaseLayout>

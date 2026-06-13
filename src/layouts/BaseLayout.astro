@@ -1,6 +1,7 @@
 ---
 import "katex/dist/katex.min.css";
 import "../styles/global.css";
+import { ClientRouter } from "astro:transitions";
 
 const {
   title = "Runze Tian",
@@ -33,6 +34,7 @@ const isHome = pathname === "/";
     <link rel="icon" type="image/png" href="/assets/img/moonshot.png" />
     <link rel="apple-touch-icon" href="/assets/img/moonshot.png" />
     <title>{pageTitle}</title>
+    <ClientRouter />
     <script is:inline>
       (function () {
         const theme = localStorage.getItem("theme");
@@ -113,7 +115,54 @@ const isHome = pathname === "/";
               </svg>
             </a>
           </div>
+
         </div>
+
+        <section class="sidebar-podcast-player" id="sidebar-podcast-player" aria-label="Podcast player" transition:persist>
+          <div class="sidebar-podcast-player-header">
+            <span>Podcast</span>
+            <div class="sidebar-podcast-status" aria-label="Podcast player status">
+              <span aria-hidden="true"></span>
+              <strong>Online</strong>
+            </div>
+          </div>
+          <div class="sidebar-podcast-embed" id="sidebar-podcast-embed">
+            <div class="sidebar-podcast-empty">Select a podcast episode.</div>
+          </div>
+          <div class="sidebar-podcast-meta" aria-live="polite" aria-atomic="true">
+            <strong id="sidebar-podcast-title">No episode selected</strong>
+            <span id="sidebar-podcast-source">YouTube</span>
+          </div>
+          <div class="sidebar-podcast-controls" aria-label="Podcast controls">
+            <div
+              class="sidebar-podcast-seek"
+              id="sidebar-podcast-seek"
+              role="slider"
+              tabindex="0"
+              aria-label="Podcast progress"
+              aria-valuemin="0"
+              aria-valuemax="100"
+              aria-valuenow="0"
+            >
+              <div id="sidebar-podcast-progress"></div>
+            </div>
+            <div class="sidebar-podcast-time">
+              <span id="sidebar-podcast-current-time">0:00</span>
+              <span id="sidebar-podcast-duration">0:00</span>
+            </div>
+            <div class="sidebar-podcast-buttons">
+              <button type="button" id="sidebar-podcast-prev" aria-label="Previous podcast" title="Previous">
+                <span aria-hidden="true">‹</span>
+              </button>
+              <button type="button" id="sidebar-podcast-toggle" aria-label="Play podcast" title="Play">
+                <span id="sidebar-podcast-toggle-icon" aria-hidden="true">▶</span>
+              </button>
+              <button type="button" id="sidebar-podcast-next" aria-label="Next podcast" title="Next">
+                <span aria-hidden="true">›</span>
+              </button>
+            </div>
+          </div>
+        </section>
       </aside>
 
       <main id="main-content" class:list={["page-shell", { wide }]} tabindex="-1">
@@ -123,41 +172,394 @@ const isHome = pathname === "/";
 
     <script is:inline>
       (function () {
-        const toggle = document.getElementById("theme-toggle");
-        const menuToggle = document.getElementById("mobile-menu-toggle");
-        const menuIcon = document.getElementById("mobile-menu-icon");
-        const navContent = document.getElementById("nav-content");
-        const html = document.documentElement;
-        function updateIcons() {
-          const isDark = html.classList.contains("dark");
-          document.querySelector(".theme-icon-light").style.display = isDark ? "none" : "inline";
-          document.querySelector(".theme-icon-dark").style.display = isDark ? "inline" : "none";
+        let layoutCleanup = null;
+
+        function applyStoredTheme() {
+          const theme = localStorage.getItem("theme");
+          if (theme !== "light") {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
         }
-        updateIcons();
-        if (toggle) {
-          toggle.addEventListener("click", function () {
-            html.classList.toggle("dark");
-            localStorage.setItem("theme", html.classList.contains("dark") ? "dark" : "light");
-            updateIcons();
-          });
-        }
-        if (menuToggle && menuIcon && navContent) {
-          function closeMenu() {
-            navContent.classList.remove("is-open");
-            menuToggle.setAttribute("aria-expanded", "false");
-            menuIcon.textContent = "[ ≡ ]";
+
+        function initLayout() {
+          if (layoutCleanup) {
+            layoutCleanup();
+            layoutCleanup = null;
           }
 
-          menuToggle.addEventListener("click", function () {
-            const isOpen = navContent.classList.toggle("is-open");
-            menuToggle.setAttribute("aria-expanded", String(isOpen));
-            menuIcon.textContent = isOpen ? "[ × ]" : "[ ≡ ]";
-          });
+          const abort = new AbortController();
+          const toggle = document.getElementById("theme-toggle");
+          const menuToggle = document.getElementById("mobile-menu-toggle");
+          const menuIcon = document.getElementById("mobile-menu-icon");
+          const navContent = document.getElementById("nav-content");
+          const html = document.documentElement;
 
-          navContent.querySelectorAll("a").forEach(function (link) {
-            link.addEventListener("click", closeMenu);
-          });
+          applyStoredTheme();
+
+          function updateIcons() {
+            const isDark = html.classList.contains("dark");
+            const lightIcon = document.querySelector(".theme-icon-light");
+            const darkIcon = document.querySelector(".theme-icon-dark");
+            if (lightIcon) lightIcon.style.display = isDark ? "none" : "inline";
+            if (darkIcon) darkIcon.style.display = isDark ? "inline" : "none";
+          }
+
+          updateIcons();
+
+          if (toggle) {
+            toggle.addEventListener(
+              "click",
+              function () {
+                html.classList.toggle("dark");
+                localStorage.setItem("theme", html.classList.contains("dark") ? "dark" : "light");
+                updateIcons();
+              },
+              { signal: abort.signal },
+            );
+          }
+
+          if (menuToggle && menuIcon && navContent) {
+            function closeMenu() {
+              navContent.classList.remove("is-open");
+              menuToggle.setAttribute("aria-expanded", "false");
+              menuIcon.textContent = "[ ≡ ]";
+            }
+
+            menuToggle.addEventListener(
+              "click",
+              function () {
+                const isOpen = navContent.classList.toggle("is-open");
+                menuToggle.setAttribute("aria-expanded", String(isOpen));
+                menuIcon.textContent = isOpen ? "[ × ]" : "[ ≡ ]";
+              },
+              { signal: abort.signal },
+            );
+
+            navContent.querySelectorAll("a").forEach(function (link) {
+              link.addEventListener("click", closeMenu, { signal: abort.signal });
+            });
+          }
+
+          layoutCleanup = function () {
+            abort.abort();
+          };
         }
+
+        (function setupPodcastPlayer() {
+          const player = document.getElementById("sidebar-podcast-player");
+          const embed = document.getElementById("sidebar-podcast-embed");
+          const title = document.getElementById("sidebar-podcast-title");
+          const source = document.getElementById("sidebar-podcast-source");
+          const progress = document.getElementById("sidebar-podcast-progress");
+          const seek = document.getElementById("sidebar-podcast-seek");
+          const currentTime = document.getElementById("sidebar-podcast-current-time");
+          const duration = document.getElementById("sidebar-podcast-duration");
+          const toggle = document.getElementById("sidebar-podcast-toggle");
+          const toggleIcon = document.getElementById("sidebar-podcast-toggle-icon");
+          const prev = document.getElementById("sidebar-podcast-prev");
+          const next = document.getElementById("sidebar-podcast-next");
+          if (!player || !embed || !title || !source) return;
+
+          const state = window.__podcastPlayerState || {
+            playlist: [],
+            currentIndex: -1,
+            currentTrack: null,
+            isPlaying: false,
+            apiReady: false,
+            ytPlayer: null,
+            progressTimer: null,
+            pendingPlayerResolve: null,
+          };
+          window.__podcastPlayerState = state;
+
+          function parseYouTubeId(url) {
+            try {
+              const parsed = new URL(url, window.location.href);
+              if (parsed.hostname.includes("youtu.be")) {
+                return parsed.pathname.split("/").filter(Boolean)[0] || "";
+              }
+              if (parsed.pathname.startsWith("/embed/")) {
+                return parsed.pathname.split("/")[2] || "";
+              }
+              if (parsed.pathname.startsWith("/shorts/")) {
+                return parsed.pathname.split("/")[2] || "";
+              }
+              return parsed.searchParams.get("v") || "";
+            } catch (_) {
+              return "";
+            }
+          }
+
+          function parseStartSeconds(url) {
+            try {
+              const parsed = new URL(url, window.location.href);
+              const value = parsed.searchParams.get("t") || parsed.searchParams.get("start") || "";
+              if (/^\d+$/.test(value)) return Number(value);
+              const match = value.match(/(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?/);
+              if (!match) return 0;
+              return Number(match[1] || 0) * 3600 + Number(match[2] || 0) * 60 + Number(match[3] || 0);
+            } catch (_) {
+              return 0;
+            }
+          }
+
+          function formatTime(seconds) {
+            if (!seconds || !isFinite(seconds)) return "0:00";
+            const total = Math.max(0, Math.floor(seconds));
+            const mins = Math.floor(total / 60);
+            const secs = total % 60;
+            return `${mins}:${String(secs).padStart(2, "0")}`;
+          }
+
+          function normalizePlaylist(items) {
+            if (!Array.isArray(items)) return [];
+            return items
+              .map(function (episode, index) {
+                const url = episode.url || episode.youtubeUrl || "";
+                const videoId = episode.videoId || parseYouTubeId(url);
+                if (!videoId) return null;
+                return {
+                  title: episode.title || `Podcast ${index + 1}`,
+                  source: episode.source || episode.host || "YouTube",
+                  url: url || `https://www.youtube.com/watch?v=${videoId}`,
+                  videoId,
+                  start: Number(episode.start || parseStartSeconds(url)) || 0,
+                };
+              })
+              .filter(Boolean);
+          }
+
+          function findPlaylistIndex(videoId) {
+            return state.playlist.findIndex(function (episode) {
+              return episode.videoId === videoId;
+            });
+          }
+
+          function syncButtons() {
+            if (toggle) {
+              toggle.disabled = !state.currentTrack;
+              toggle.setAttribute("aria-label", state.isPlaying ? "Pause podcast" : "Play podcast");
+              toggle.title = state.isPlaying ? "Pause" : "Play";
+            }
+            if (toggleIcon) toggleIcon.textContent = state.isPlaying ? "II" : "▶";
+            if (prev) prev.disabled = state.playlist.length === 0;
+            if (next) next.disabled = state.playlist.length === 0;
+          }
+
+          function updateProgressUI(current, total) {
+            const percent = total > 0 && isFinite(total) ? Math.max(0, Math.min(100, (current / total) * 100)) : 0;
+            if (progress) progress.style.width = `${percent}%`;
+            if (seek) seek.setAttribute("aria-valuenow", String(Math.round(percent)));
+            if (currentTime) currentTime.textContent = formatTime(current);
+            if (duration) duration.textContent = formatTime(total);
+          }
+
+          function stopProgressTimer() {
+            if (state.progressTimer) {
+              window.clearInterval(state.progressTimer);
+              state.progressTimer = null;
+            }
+          }
+
+          function startProgressTimer() {
+            stopProgressTimer();
+            state.progressTimer = window.setInterval(function () {
+              if (!state.ytPlayer || typeof state.ytPlayer.getCurrentTime !== "function") return;
+              try {
+                updateProgressUI(state.ytPlayer.getCurrentTime(), state.ytPlayer.getDuration());
+              } catch (_) {}
+            }, 500);
+          }
+
+          function ensureYouTubeApi() {
+            if (window.YT && window.YT.Player) return Promise.resolve();
+            if (window.__youtubeApiPromise) return window.__youtubeApiPromise;
+
+            window.__youtubeApiPromise = new Promise(function (resolve) {
+              const previousReady = window.onYouTubeIframeAPIReady;
+              window.onYouTubeIframeAPIReady = function () {
+                if (typeof previousReady === "function") previousReady();
+                resolve();
+              };
+              const script = document.createElement("script");
+              script.src = "https://www.youtube.com/iframe_api";
+              script.async = true;
+              document.head.appendChild(script);
+            });
+            return window.__youtubeApiPromise;
+          }
+
+          function attachYouTubePlayer(iframe) {
+            if (!iframe) return;
+            ensureYouTubeApi().then(function () {
+              if (state.ytPlayer && typeof state.ytPlayer.destroy === "function") {
+                try {
+                  state.ytPlayer.destroy();
+                } catch (_) {}
+              }
+              state.ytPlayer = new window.YT.Player(iframe, {
+                events: {
+                  onReady: function () {
+                    state.apiReady = true;
+                    startProgressTimer();
+                    syncButtons();
+                  },
+                  onStateChange: function (event) {
+                    state.isPlaying = event.data === window.YT.PlayerState.PLAYING;
+                    if (event.data === window.YT.PlayerState.ENDED) {
+                      playAdjacent(1);
+                    }
+                    syncButtons();
+                  },
+                },
+              });
+            });
+          }
+
+          function renderPodcast(episode, options) {
+            const videoId = episode.videoId || parseYouTubeId(episode.url || "");
+            if (!videoId) return false;
+            const autoplay = options && options.autoplay ? "1" : "0";
+            const start = Number(episode.start || parseStartSeconds(episode.url || "")) || 0;
+            const startParam = start > 0 ? `&start=${start}` : "";
+            const originParam = `&origin=${encodeURIComponent(window.location.origin)}`;
+            const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=${autoplay}&enablejsapi=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&showinfo=0&rel=0&modestbranding=1${startParam}${originParam}`;
+            embed.innerHTML = `<iframe id="sidebar-podcast-iframe" src="${embedUrl}" title="${episode.title || "Podcast episode"}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>`;
+            title.textContent = episode.title || "Untitled podcast";
+            source.textContent = episode.source || "YouTube";
+            player.hidden = false;
+            window.__podcastPlayerHasTrack = true;
+            state.currentTrack = {
+              videoId,
+              url: episode.url || `https://www.youtube.com/watch?v=${videoId}`,
+              start,
+              title: title.textContent,
+              source: source.textContent,
+            };
+            const matchedIndex = findPlaylistIndex(videoId);
+            if (matchedIndex >= 0) state.currentIndex = matchedIndex;
+            state.isPlaying = autoplay === "1";
+            updateProgressUI(start, 0);
+            syncButtons();
+            localStorage.setItem("podcast:last", JSON.stringify({
+              videoId,
+              url: episode.url || `https://www.youtube.com/watch?v=${videoId}`,
+              start,
+              title: title.textContent,
+              source: source.textContent,
+            }));
+            document.dispatchEvent(new CustomEvent("podcast:playing", { detail: { videoId } }));
+            attachYouTubePlayer(document.getElementById("sidebar-podcast-iframe"));
+            return true;
+          }
+
+          function playAtIndex(index, options) {
+            if (!state.playlist.length) return false;
+            const normalizedIndex = (index + state.playlist.length) % state.playlist.length;
+            state.currentIndex = normalizedIndex;
+            return renderPodcast(state.playlist[normalizedIndex], options || { autoplay: true });
+          }
+
+          function playAdjacent(offset) {
+            if (!state.playlist.length) return false;
+            const current = state.currentIndex >= 0 ? state.currentIndex : findPlaylistIndex(state.currentTrack?.videoId);
+            return playAtIndex((current >= 0 ? current : 0) + offset, { autoplay: true });
+          }
+
+          window.playPodcast = function (episode) {
+            return renderPodcast(episode || {}, { autoplay: true });
+          };
+
+          window.setPodcastPlaylist = function (episodes) {
+            const normalized = normalizePlaylist(episodes);
+            state.playlist = normalized;
+            if (state.currentTrack) {
+              state.currentIndex = findPlaylistIndex(state.currentTrack.videoId);
+            }
+            syncButtons();
+          };
+
+          window.seedPodcastPlayer = function (episodes) {
+            window.setPodcastPlaylist(episodes);
+            if (window.__podcastPlayerHasTrack) return false;
+            if (!state.playlist.length) return false;
+            return playAtIndex(Math.floor(Math.random() * state.playlist.length), { autoplay: false });
+          };
+
+          if (toggle) {
+            toggle.onclick = function () {
+              if (!state.currentTrack) return;
+              if (!state.ytPlayer || typeof state.ytPlayer.playVideo !== "function") {
+                renderPodcast(state.currentTrack, { autoplay: true });
+                return;
+              }
+              try {
+                if (state.isPlaying) {
+                  state.ytPlayer.pauseVideo();
+                } else {
+                  state.ytPlayer.playVideo();
+                }
+              } catch (_) {}
+            };
+          }
+
+          if (prev) {
+            prev.onclick = function () {
+              playAdjacent(-1);
+            };
+          }
+
+          if (next) {
+            next.onclick = function () {
+              playAdjacent(1);
+            };
+          }
+
+          if (seek) {
+            seek.onclick = function (event) {
+              if (!state.ytPlayer || typeof state.ytPlayer.seekTo !== "function") return;
+              const total = state.ytPlayer.getDuration();
+              if (!total || !isFinite(total)) return;
+              const rect = seek.getBoundingClientRect();
+              const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+              state.ytPlayer.seekTo(ratio * total, true);
+            };
+            seek.onkeydown = function (event) {
+              if (!state.ytPlayer || typeof state.ytPlayer.seekTo !== "function") return;
+              const total = state.ytPlayer.getDuration();
+              if (!total || !isFinite(total)) return;
+              const current = state.ytPlayer.getCurrentTime();
+              let nextTime = current;
+              if (event.key === "ArrowRight" || event.key === "ArrowUp") nextTime = current + 10;
+              else if (event.key === "ArrowLeft" || event.key === "ArrowDown") nextTime = current - 10;
+              else if (event.key === "Home") nextTime = 0;
+              else if (event.key === "End") nextTime = total;
+              else return;
+              event.preventDefault();
+              state.ytPlayer.seekTo(Math.max(0, Math.min(total, nextTime)), true);
+            };
+          }
+
+          const saved = localStorage.getItem("podcast:last");
+          if (!window.__podcastPlayerHasTrack && saved && saved !== "null") {
+            try {
+              renderPodcast(JSON.parse(saved), { autoplay: false });
+            } catch (_) {
+              localStorage.removeItem("podcast:last");
+            }
+          } else if (window.__podcastPlayerHasTrack) {
+            syncButtons();
+            const iframe = document.getElementById("sidebar-podcast-iframe");
+            if (iframe && !state.ytPlayer) attachYouTubePlayer(iframe);
+          }
+        })();
+
+        document.addEventListener("DOMContentLoaded", initLayout);
+        document.addEventListener("astro:after-swap", applyStoredTheme);
+        document.addEventListener("astro:page-load", initLayout);
+        initLayout();
       })();
     </script>
   </body>
