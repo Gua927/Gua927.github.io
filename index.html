@@ -13,7 +13,8 @@ I am interested in <strong>mathematics</strong> and <strong>AI</strong>. My curr
 </p> <p class="intro-text">
 This site organizes my Timeline, Publication, Blog, Podcast, and Projects as a compact record
         of research updates, notes, and work in progress.
-</p> </div> <section class="index-list" id="news" aria-label="Latest news"> <div class="index-list-header"> <span>News</span> <a href="/timeline/">[ View timeline ]</a> </div> <ul class="timeline-list"> <li class="timeline-item"> <a href="/blog/sat-mask-diffusion-language-model-training/"> <span class="timeline-meta"> 2026.06.13 · Blog </span> <span class="timeline-separator" aria-hidden="true">—</span> <strong>SAT-Mask: Self-Aligned Trajectory Masking for Diffusion Language Models</strong> </a> </li><li class="timeline-item"> <a href="/project/#easyocr"> <span class="timeline-meta"> 2026.06.13 · Project </span> <span class="timeline-separator" aria-hidden="true">—</span> <strong>EasyOCR</strong> </a> </li><li class="timeline-item"> <a href="/"> <span class="timeline-meta"> 2026.06.13 · Site Update </span> <span class="timeline-separator" aria-hidden="true">—</span> <strong>Rebuilt my website</strong> </a> </li> </ul> </section> </section>  </main> </div> <script>
+</p> </div> <section class="index-list" id="news" aria-label="Latest news"> <div class="index-list-header"> <span>News</span> <a href="/timeline/">[ View timeline ]</a> </div> <ul class="timeline-list"> <li class="timeline-item"> <a href="/blog/sat-mask-diffusion-language-model-training/"> <span class="timeline-meta"> 2026.06.13 · Blog </span> <span class="timeline-separator" aria-hidden="true">—</span> <strong>SAT-Mask: Self-Aligned Trajectory Masking for Diffusion Language Models</strong> </a> </li><li class="timeline-item"> <a href="/project/#easyocr"> <span class="timeline-meta"> 2026.06.13 · Project </span> <span class="timeline-separator" aria-hidden="true">—</span> <strong>EasyOCR</strong> </a> </li><li class="timeline-item"> <a href="/"> <span class="timeline-meta"> 2026.06.13 · Site Update </span> <span class="timeline-separator" aria-hidden="true">—</span> <strong>Rebuilt my website</strong> </a> </li> </ul> </section> </section>  </main> </div> <script>(function(){const podcastPlaylist = [{"title":"Whynot TV: Danfei Xu","url":"https://www.youtube.com/watch?v=__P5yygfRRQ&t=774s","videoId":"__P5yygfRRQ","source":"YouTube"}];
+
       (function () {
         let layoutCleanup = null;
 
@@ -331,6 +332,8 @@ This site organizes my Timeline, Publication, Blog, Podcast, and Projects as a c
             return playAtIndex(Math.floor(Math.random() * state.playlist.length), { autoplay: false });
           };
 
+          window.setPodcastPlaylist(podcastPlaylist);
+
           if (toggle) {
             toggle.onclick = function () {
               if (!state.currentTrack) return;
@@ -386,16 +389,26 @@ This site organizes my Timeline, Publication, Blog, Podcast, and Projects as a c
           }
 
           const saved = localStorage.getItem("podcast:last");
+          let restoredFromStorage = false;
           if (!window.__podcastPlayerHasTrack && saved && saved !== "null") {
             try {
-              renderPodcast(JSON.parse(saved), { autoplay: false });
+              restoredFromStorage = renderPodcast(JSON.parse(saved), { autoplay: false });
+              if (!restoredFromStorage) localStorage.removeItem("podcast:last");
             } catch (_) {
               localStorage.removeItem("podcast:last");
             }
-          } else if (window.__podcastPlayerHasTrack) {
+          }
+
+          if (restoredFromStorage) {
+            return;
+          }
+
+          if (window.__podcastPlayerHasTrack) {
             syncButtons();
             const iframe = document.getElementById("sidebar-podcast-iframe");
             if (iframe && !state.ytPlayer) attachYouTubePlayer(iframe);
+          } else if (state.playlist.length) {
+            playAtIndex(Math.floor(Math.random() * state.playlist.length), { autoplay: false });
           }
         })();
 
@@ -404,4 +417,4 @@ This site organizes my Timeline, Publication, Blog, Podcast, and Projects as a c
         document.addEventListener("astro:page-load", initLayout);
         initLayout();
       })();
-    </script> </body> </html>
+    })();</script> </body> </html>
