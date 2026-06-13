@@ -6,6 +6,7 @@ category: PUB-NOTE
 tags: ["MDLM", "Order"]
 author: Runze Tian
 affiliation: GenSI Lab, THU-AIR
+bib: public/assets/blog/sat-mask-diffusion-language-model-training/references.bib
 ---
 
 ## Train-inference mismatch
@@ -14,7 +15,7 @@ Masked diffusion language models are trained to denoise partially masked text. T
 
 Our paper, **Efficient Diffusion Language Model Training via Self-Aligned Trajectory Masking**, studies this train-inference mismatch and proposes **SAT-Mask**, a **S**elf-**A**ligned **T**rajectory **Masking** schedule.[^note-schedule]
 
-![SAT-Mask method overview](/assets/img/SAT-Mask.png "Figure 1. Overview of SAT-Mask. The method builds self-aligned training states through confidence-based partial denoising, reducing train-inference mismatch while improving downstream performance.")
+![SAT-Mask method overview](/assets/blog/sat-mask-diffusion-language-model-training/fig/SAT-Mask.png "Figure 1. Overview of SAT-Mask. The method builds self-aligned training states through confidence-based partial denoising, reducing train-inference mismatch while improving downstream performance.")
 
 ### Random masks are not trajectories
 

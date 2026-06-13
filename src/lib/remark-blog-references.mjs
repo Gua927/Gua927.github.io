@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { basename, resolve } from "node:path";
 
 const CITATION_PATTERN = /\[(@[^\]]+)\]/g;
 
@@ -38,11 +38,24 @@ function readPostFrontmatter(file) {
   return parseFrontmatter(readFileSync(path, "utf8"));
 }
 
+function postSlug(file) {
+  const path = file?.path || file?.history?.[0];
+  if (!path) return "";
+
+  return basename(path).replace(/\.(md|mdx)$/i, "");
+}
+
 function externalBibPath(file) {
   const frontmatter = readPostFrontmatter(file);
   if (frontmatter.bib) {
     return resolve(process.cwd(), frontmatter.bib.replace(/^\//, ""));
   }
+
+  const slug = postSlug(file);
+  const assetBib = slug
+    ? resolve(process.cwd(), "public", "assets", "blog", slug, "references.bib")
+    : "";
+  if (assetBib && existsSync(assetBib)) return assetBib;
 
   if (!frontmatter.title) return "";
 

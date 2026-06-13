@@ -204,16 +204,23 @@ Footnote behavior:
 
 ## Images
 
-Put images in:
+Blog-specific images should live next to the post's other assets:
 
 ```text
-public/assets/img/
+public/assets/blog/{post-slug}/fig/
+```
+
+`{post-slug}` must match the Markdown filename without `.md`. For example:
+
+```text
+src/content/blog/sat-mask-diffusion-language-model-training.md
+public/assets/blog/sat-mask-diffusion-language-model-training/fig/
 ```
 
 Reference them from Markdown with root-relative paths:
 
 ```markdown
-![SAT-Mask trajectory overview](/assets/img/sat-mask-trajectory.svg)
+![SAT-Mask method overview](/assets/blog/sat-mask-diffusion-language-model-training/fig/SAT-Mask.png)
 ```
 
 Always provide meaningful alt text.
@@ -221,7 +228,7 @@ Always provide meaningful alt text.
 To add a visible caption, use the Markdown image title field:
 
 ```markdown
-![SAT-Mask trajectory overview](/assets/img/sat-mask-trajectory.svg "Figure 1. SAT-Mask progressively aligns training masks with inference-time denoising trajectories.")
+![SAT-Mask method overview](/assets/blog/sat-mask-diffusion-language-model-training/fig/SAT-Mask.png "Figure 1. Overview of SAT-Mask and its confidence-based partial denoising process.")
 ```
 
 Caption behavior:
@@ -278,25 +285,26 @@ This line cites two papers [@austin2021structured; @sahoo2024simple].
 Create a matching `.bib` file under:
 
 ```text
-bib/{category}/{sanitized-title}.bib
+public/assets/blog/{post-slug}/references.bib
 ```
 
-The default path is derived from the Blog frontmatter:
+`{post-slug}` must match the Blog Markdown filename without `.md`.
 
-- `{category}` uses the post `category`, or `notes` if omitted.
-- `{sanitized-title}` removes punctuation such as `:` and replaces spaces with `_`.
-
-For example, this post:
-
-```yaml
-title: "SAT-Mask: Self-Aligned Trajectory Masking for Diffusion Language Models"
-category: PUB-NOTE
-```
-
-uses:
+For example:
 
 ```text
-bib/PUB-NOTE/SAT-Mask_Self-Aligned_Trajectory_Masking_for_Diffusion_Language_Models.bib
+src/content/blog/sat-mask-diffusion-language-model-training.md
+public/assets/blog/sat-mask-diffusion-language-model-training/references.bib
+```
+
+Recommended per-post asset layout:
+
+```text
+public/assets/blog/{post-slug}/
+  references.bib
+  fig/
+    figure-1.png
+    method-overview.svg
 ```
 
 Put BibTeX entries in that file:
@@ -313,7 +321,7 @@ Put BibTeX entries in that file:
 If a post needs a custom bibliography path, set `bib` in frontmatter:
 
 ```yaml
-bib: bib/PUB-NOTE/custom-file.bib
+bib: public/assets/blog/custom-post/references.bib
 ```
 
 The build pipeline will:
@@ -327,7 +335,7 @@ Reference rules:
 - Citation keys in Markdown must match BibTeX entry keys in the `.bib` file.
 - Use `;` between multiple citations.
 - Keep BibTeX fields simple: `title`, `author`, `year`, `journal`, `booktitle`, `publisher`, `doi`, and `url` are supported.
-- Do not put raw BibTeX blocks inside Blog Markdown; keep references in `bib/...`.
+- Do not put raw BibTeX blocks inside Blog Markdown; keep references in `public/assets/blog/{post-slug}/references.bib`.
 
 ## Tags And Filtering
 
@@ -370,5 +378,7 @@ Before finishing a new Blog post:
 - `tags` is an array, even if empty.
 - Headings use only `#`, `##`, and `###`.
 - Headings are concise enough for the TOC.
-- Images use root-relative `/assets/img/...` paths and alt text.
+- Blog images are stored in `public/assets/blog/{post-slug}/fig/`.
+- Images use root-relative `/assets/blog/{post-slug}/fig/...` paths and alt text.
+- References, if any, are stored in `public/assets/blog/{post-slug}/references.bib`.
 - The post builds with `npm run build`.
