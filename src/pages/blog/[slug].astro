@@ -11,7 +11,8 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
-const { Content } = await render(post);
+const { Content, headings } = await render(post);
+const tocHeadings = headings.filter((heading) => heading.depth >= 2 && heading.depth <= 3);
 
 function formatDate(date: Date) {
   return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
@@ -19,13 +20,56 @@ function formatDate(date: Date) {
 ---
 
 <BaseLayout title={post.data.title} description={post.data.excerpt}>
-  <article class="markdown-content blog-post">
+  <div class="blog-post-shell">
     <header class="blog-post-header">
-      <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
-      {post.data.category && <span class="category">{post.data.category}</span>}
       <h1>{post.data.title}</h1>
       <p class="excerpt">{post.data.excerpt}</p>
     </header>
-    <Content />
-  </article>
+
+    <div class="blog-post-divider" aria-hidden="true"></div>
+
+    <dl class="blog-post-meta" aria-label="Post details">
+      <div>
+        <dt>Author</dt>
+        <dd>{post.data.author}</dd>
+      </div>
+      <div>
+        <dt>Affiliation</dt>
+        <dd>{post.data.affiliation}</dd>
+      </div>
+      <div>
+        <dt>Published</dt>
+        <dd>
+          <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+        </dd>
+      </div>
+      <div>
+        <dt>Category</dt>
+        <dd>{post.data.category ?? "notes"}</dd>
+      </div>
+    </dl>
+
+    <div class="blog-post-divider blog-post-divider-meta" aria-hidden="true"></div>
+
+    <article class="blog-post">
+      <div class="markdown-content blog-post-content">
+        <Content />
+      </div>
+    </article>
+
+    {
+      tocHeadings.length > 0 && (
+        <aside class="blog-post-toc" aria-label="Table of contents">
+          <span>Contents</span>
+          <nav>
+            {tocHeadings.map((heading) => (
+              <a href={`#${heading.slug}`} class={`depth-${heading.depth}`}>
+                {heading.text}
+              </a>
+            ))}
+          </nav>
+        </aside>
+      )
+    }
+  </div>
 </BaseLayout>

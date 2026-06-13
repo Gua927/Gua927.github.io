@@ -19,16 +19,28 @@ const filters = [
   ...Array.from(categoryCounts.keys()).filter((category) => !categoryOrder.includes(category)),
 ].map((category) => ({ key: category, ...categoryCounts.get(category)! }));
 
+const tagCounts = new Map<string, { label: string; count: number }>();
+for (const post of posts) {
+  for (const label of post.data.tags) {
+    const key = tagKey(label);
+    const current = tagCounts.get(key);
+    tagCounts.set(key, { label, count: (current?.count ?? 0) + 1 });
+  }
+}
+const tagFilters = Array.from(tagCounts.entries())
+  .map(([key, value]) => ({ key, ...value }))
+  .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
+
 function formatDate(date: Date) {
   return date.toISOString().split("T")[0];
 }
 
-function tagsFor(post: (typeof posts)[number]) {
-  return [post.data.category ?? "notes", "research", "generative-ai"];
-}
-
 function categoryKey(post: (typeof posts)[number]) {
   return (post.data.category ?? "notes").toLowerCase();
+}
+
+function tagKey(tag: string) {
+  return tag.toLowerCase();
 }
 ---
 
@@ -39,16 +51,33 @@ function categoryKey(post: (typeof posts)[number]) {
       <p>{posts.length} entries · personal notes and working ideas</p>
     </header>
 
-    <div class="note-kind-filters" aria-label="Blog filters">
-      <button type="button" data-kind="all" class="note-kind active" aria-pressed="true">
-        [ All <span>{posts.length}</span> ]
-      </button>
+    <div class="note-filter-panel" aria-label="Blog filters">
+      <div class="note-kind-filters" aria-label="Category filters">
+        <button type="button" data-kind="all" class="note-filter note-kind active" aria-pressed="true">
+          [ All <span>{posts.length}</span> ]
+        </button>
+        {
+          filters.map(({ key, label, count }) => (
+            <button type="button" data-kind={key} class="note-filter note-kind" aria-pressed="false">
+              [ {label} <span>{count}</span> ]
+            </button>
+          ))
+        }
+      </div>
+
       {
-        filters.map(({ key, label, count }) => (
-          <button type="button" data-kind={key} class="note-kind" aria-pressed="false">
-            [ {label} <span>{count}</span> ]
-          </button>
-        ))
+        tagFilters.length > 0 && (
+          <div class="note-tag-filters" aria-label="Tag filters">
+            <button type="button" data-tag="all" class="note-filter note-tag active" aria-pressed="true">
+              #All <span>{posts.length}</span>
+            </button>
+            {tagFilters.map(({ key, label, count }) => (
+              <button type="button" data-tag={key} class="note-filter note-tag" aria-pressed="false">
+                #{label} <span>{count}</span>
+              </button>
+            ))}
+          </div>
+        )
       }
     </div>
 
@@ -59,14 +88,15 @@ function categoryKey(post: (typeof posts)[number]) {
             href={`/blog/${post.id}/`}
             class="note-entry"
             data-kind={categoryKey(post)}
+            data-tags={post.data.tags.map(tagKey).join(" ")}
           >
             <div>
               <span>{post.data.category ?? "notes"}</span>
               <div>
                 <h3>{post.data.title}</h3>
                 <div>
-                  {tagsFor(post).map((tag) => (
-                    <span>{tag.toLowerCase()}</span>
+                  {post.data.tags.map((tag) => (
+                    <span>#{tag}</span>
                   ))}
                 </div>
               </div>
@@ -77,6 +107,7 @@ function categoryKey(post: (typeof posts)[number]) {
       }
     </div>
 
+    <div class="notes-empty hidden" data-empty-message>No entries match this index.</div>
     {posts.length === 0 && <div class="notes-empty">No entries yet.</div>}
   </section>
 
@@ -90,33 +121,103 @@ function categoryKey(post: (typeof posts)[number]) {
           cleanupFn = null;
         }
 
-        const filters = document.querySelectorAll(".note-kind");
+        const kindFilters = document.querySelectorAll(".note-kind");
+        const tagFilters = document.querySelectorAll(".note-tag");
         const entries = document.querySelectorAll(".note-entry");
-        if (!filters.length) return;
+        const emptyMessage = document.querySelector("[data-empty-message]");
+        if (!kindFilters.length) return;
 
-        function applyFilter(filter) {
-          filters.forEach((item) => {
-            var active = item.dataset.kind === filter;
+        var activeKind = "all";
+        var activeTags = new Set();
+
+        function setActive(items, attr, value) {
+          items.forEach((item) => {
+            var active = item.dataset[attr] === value;
             item.classList.toggle("active", active);
             item.setAttribute("aria-pressed", active ? "true" : "false");
           });
+        }
 
-          entries.forEach((entry) => {
-            entry.style.display = filter === "all" || entry.dataset.kind === filter ? "" : "none";
+        function applyTagActiveState() {
+          tagFilters.forEach((item) => {
+            var tag = item.dataset.tag || "all";
+            var active = tag === "all" ? activeTags.size === 0 : activeTags.has(tag);
+            item.classList.toggle("active", active);
+            item.setAttribute("aria-pressed", active ? "true" : "false");
           });
         }
 
-        function onClick(e) {
-          applyFilter(e.currentTarget.dataset.kind);
+        function applyFilters() {
+          setActive(kindFilters, "kind", activeKind);
+          applyTagActiveState();
+
+          var visibleCount = 0;
+          entries.forEach((entry) => {
+            var kindMatches = activeKind === "all" || entry.dataset.kind === activeKind;
+            var tags = (entry.dataset.tags || "").split(" ").filter(Boolean);
+            var tagMatches =
+              activeTags.size === 0 ||
+              Array.from(activeTags).every((activeTag) => tags.indexOf(activeTag) !== -1);
+            var show = kindMatches && tagMatches;
+            entry.style.display = show ? "" : "none";
+            if (show) visibleCount += 1;
+          });
+
+          if (emptyMessage) {
+            emptyMessage.classList.toggle("hidden", visibleCount !== 0);
+          }
         }
 
-        filters.forEach((filter) => filter.addEventListener("click", onClick));
+        function updateUrl() {
+          var params = new URLSearchParams(window.location.search);
+          if (activeKind === "all") params.delete("kind");
+          else params.set("kind", activeKind);
+          if (activeTags.size === 0) params.delete("tag");
+          else params.set("tag", Array.from(activeTags).sort().join(","));
+          var query = params.toString();
+          var nextUrl = window.location.pathname + (query ? "?" + query : "") + window.location.hash;
+          window.history.replaceState({}, "", nextUrl);
+        }
 
-        var urlKind = new URLSearchParams(window.location.search).get("kind");
-        if (urlKind) applyFilter(urlKind.toLowerCase());
+        function onKindClick(e) {
+          activeKind = e.currentTarget.dataset.kind || "all";
+          applyFilters();
+          updateUrl();
+        }
+
+        function onTagClick(e) {
+          var tag = e.currentTarget.dataset.tag || "all";
+          if (tag === "all") {
+            activeTags.clear();
+          } else if (activeTags.has(tag)) {
+            activeTags.delete(tag);
+          } else {
+            activeTags.add(tag);
+          }
+          applyFilters();
+          updateUrl();
+        }
+
+        kindFilters.forEach((filter) => filter.addEventListener("click", onKindClick));
+        tagFilters.forEach((filter) => filter.addEventListener("click", onTagClick));
+
+        var params = new URLSearchParams(window.location.search);
+        var urlKind = params.get("kind");
+        var urlTag = params.get("tag");
+        if (urlKind) activeKind = urlKind.toLowerCase();
+        if (urlTag) {
+          urlTag
+            .toLowerCase()
+            .split(",")
+            .map((tag) => tag.trim())
+            .filter(Boolean)
+            .forEach((tag) => activeTags.add(tag));
+        }
+        applyFilters();
 
         cleanupFn = function () {
-          filters.forEach((filter) => filter.removeEventListener("click", onClick));
+          kindFilters.forEach((filter) => filter.removeEventListener("click", onKindClick));
+          tagFilters.forEach((filter) => filter.removeEventListener("click", onTagClick));
         };
       }
 
