@@ -2189,7 +2189,7 @@ html.dark .hero-background::after {
   display: grid;
   place-items: center;
   height: clamp(10.5rem, 15vw, 12.25rem);
-  padding: 0.45rem;
+  padding: 0.55rem;
   border: 0;
   background: transparent;
   overflow: hidden;
@@ -2224,15 +2224,18 @@ html.dark .hero-background::after {
   position: relative;
   display: grid;
   place-items: center;
-  width: 92%;
-  height: 92%;
+  width: 100%;
+  height: 100%;
   background: #fff;
+  overflow: hidden;
 }
 
 .publication-figure img {
   display: block;
-  width: 96%;
-  height: 96%;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
   object-fit: contain;
   transition: transform 0.25s ease;
 }
@@ -2434,6 +2437,7 @@ html.dark .hero-background::after {
   .publication-figure {
     min-height: 11rem;
     height: auto;
+    aspect-ratio: 16 / 9;
   }
 
   .project-archive-entry > div > span:last-child {

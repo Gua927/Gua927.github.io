@@ -564,8 +564,9 @@ const isHome = pathname === "/";
             syncButtons();
             const iframe = document.getElementById("sidebar-podcast-iframe");
             if (iframe && !state.ytPlayer) attachYouTubePlayer(iframe);
-          } else if (state.playlist.length) {
-            playAtIndex(Math.floor(Math.random() * state.playlist.length), { autoplay: false });
+          } else if (state.playlist.length && !window.__podcastInitialAutoplayDone) {
+            window.__podcastInitialAutoplayDone = true;
+            playAtIndex(Math.floor(Math.random() * state.playlist.length), { autoplay: true });
           }
         })();
 
