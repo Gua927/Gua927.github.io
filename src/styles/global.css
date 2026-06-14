@@ -2,15 +2,15 @@
 
 :root {
   color-scheme: light;
-  --bg-body: #f6f1e8;
-  --bg-deep: #eee6d8;
-  --panel: #fbf7ef;
+  --bg-body: #ffffff;
+  --bg-deep: #f5f5f5;
+  --panel: #ffffff;
   --text-main: #171717;
   --text: #171717;
   --muted: #525252;
   --faint: #737373;
-  --border-main: #d8cdbb;
-  --border-subtle: #e7dccb;
+  --border-main: #d4d4d4;
+  --border-subtle: #e5e5e5;
   --accent: #525252;
   --green: #22c55e;
   --max: 1440px;
@@ -923,11 +923,18 @@ html.dark .theme-icon-dark {
   width: min(45vw, 720px);
   max-width: 720px;
   aspect-ratio: 4 / 5;
+  opacity: 0.62;
+  filter: saturate(1.16) contrast(1.12) brightness(0.98);
+  -webkit-mask-image: radial-gradient(ellipse at 58% 58%, #000 0 30%, rgba(0, 0, 0, 0.88) 46%, rgba(0, 0, 0, 0.42) 68%, transparent 92%);
+  mask-image: radial-gradient(ellipse at 58% 58%, #000 0 30%, rgba(0, 0, 0, 0.88) 46%, rgba(0, 0, 0, 0.42) 68%, transparent 92%);
+  pointer-events: none;
+}
+
+html.dark .hero-background {
   opacity: 0.46;
   filter: saturate(1.08) contrast(1.04) brightness(0.98);
   -webkit-mask-image: radial-gradient(ellipse at 58% 58%, #000 0 24%, rgba(0, 0, 0, 0.82) 40%, rgba(0, 0, 0, 0.35) 64%, transparent 86%);
   mask-image: radial-gradient(ellipse at 58% 58%, #000 0 24%, rgba(0, 0, 0, 0.82) 40%, rgba(0, 0, 0, 0.35) 64%, transparent 86%);
-  pointer-events: none;
 }
 
 .hero-background::before,
@@ -940,8 +947,8 @@ html.dark .theme-icon-dark {
 
 .hero-background::before {
   background:
-    linear-gradient(120deg, var(--bg-body) 0%, rgba(246, 241, 232, 0.72) 26%, transparent 66%),
-    linear-gradient(0deg, var(--bg-body) 0%, rgba(246, 241, 232, 0.14) 22%, rgba(246, 241, 232, 0.05) 54%, var(--bg-body) 100%);
+    linear-gradient(120deg, #ffffff 0%, rgba(255, 255, 255, 0.68) 24%, rgba(255, 255, 255, 0.2) 50%, transparent 72%),
+    linear-gradient(0deg, #ffffff 0%, rgba(255, 255, 255, 0.2) 24%, rgba(255, 255, 255, 0.04) 54%, #ffffff 100%);
 }
 
 html.dark .hero-background::before {
@@ -951,7 +958,9 @@ html.dark .hero-background::before {
 }
 
 .hero-background::after {
-  background: radial-gradient(circle at 56% 52%, transparent 0 14%, rgba(246, 241, 232, 0.42) 46%, rgba(246, 241, 232, 0.86) 88%);
+  background:
+    radial-gradient(circle at 56% 52%, transparent 0 18%, rgba(255, 255, 255, 0.18) 42%, rgba(255, 255, 255, 0.74) 86%),
+    linear-gradient(90deg, #ffffff 0%, rgba(255, 255, 255, 0) 42%);
 }
 
 html.dark .hero-background::after {
@@ -1223,9 +1232,9 @@ html.dark .hero-background::after {
   max-height: min(68vh, calc(100vh - var(--citation-preview-top, 0px) - 16px));
   overflow: auto;
   padding: 0;
-  border: 1px solid rgba(232, 218, 196, 0.68);
-  background: rgba(244, 235, 220, 0.34);
-  box-shadow: 0 18px 42px rgba(93, 74, 48, 0.11);
+  border: 1px solid rgba(216, 205, 187, 0.88);
+  background: rgba(251, 247, 239, 0.75);
+  box-shadow: 0 18px 42px rgba(93, 74, 48, 0.16);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   color: var(--text-main);
@@ -1240,9 +1249,9 @@ html.dark .hero-background::after {
 }
 
 html.dark .markdown-content .citation-preview {
-  border-color: color-mix(in srgb, var(--border-main) 78%, transparent);
-  background: color-mix(in srgb, var(--bg-body) 10%, transparent);
-  box-shadow: 0 18px 42px color-mix(in srgb, var(--bg-deep) 42%, transparent);
+  border-color: color-mix(in srgb, var(--border-main) 90%, transparent);
+  background: color-mix(in srgb, var(--panel) 75%, transparent);
+  box-shadow: 0 18px 42px color-mix(in srgb, var(--bg-deep) 58%, transparent);
 }
 
 .markdown-content .citation-shell.is-open .citation-preview,
@@ -1423,7 +1432,7 @@ html:not(.dark) .markdown-content .citation-preview-item + .citation-preview-ite
   max-width: 100%;
   height: auto;
   margin: 28px auto;
-  border: 1px solid var(--border-main);
+  border: 0;
   border-radius: 2px;
 }
 
@@ -1470,9 +1479,9 @@ html:not(.dark) .markdown-content .citation-preview-item + .citation-preview-ite
   max-height: min(68vh, calc(100vh - var(--footnote-preview-top, 0px) - 16px));
   overflow: auto;
   padding: 0;
-  border: 1px solid rgba(232, 218, 196, 0.68);
-  background: rgba(244, 235, 220, 0.34);
-  box-shadow: 0 18px 42px rgba(93, 74, 48, 0.11);
+  border: 1px solid rgba(216, 205, 187, 0.88);
+  background: rgba(251, 247, 239, 0.75);
+  box-shadow: 0 18px 42px rgba(93, 74, 48, 0.16);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   color: var(--text-main);
@@ -1487,9 +1496,9 @@ html:not(.dark) .markdown-content .citation-preview-item + .citation-preview-ite
 }
 
 html.dark .markdown-content .footnote-preview {
-  border-color: color-mix(in srgb, var(--border-main) 78%, transparent);
-  background: color-mix(in srgb, var(--bg-body) 10%, transparent);
-  box-shadow: 0 18px 42px color-mix(in srgb, var(--bg-deep) 42%, transparent);
+  border-color: color-mix(in srgb, var(--border-main) 90%, transparent);
+  background: color-mix(in srgb, var(--panel) 75%, transparent);
+  box-shadow: 0 18px 42px color-mix(in srgb, var(--bg-deep) 58%, transparent);
 }
 
 .markdown-content .footnote-shell.is-open .footnote-preview,
@@ -1554,6 +1563,75 @@ html.dark .markdown-content .footnote-preview {
   color: var(--muted);
 }
 
+.markdown-content blockquote:has(> p:first-child > strong:first-child) {
+  position: relative;
+  margin: 26px 0 30px;
+  padding: 1rem 1.12rem 1.05rem 1.18rem;
+  border: 1px solid var(--border-main);
+  border-left: 2px solid var(--text-main);
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--panel) 56%, var(--bg-body));
+  color: var(--muted);
+  box-shadow: none;
+}
+
+html.dark .markdown-content blockquote:has(> p:first-child > strong:first-child) {
+  background: color-mix(in srgb, var(--panel) 82%, var(--bg-deep));
+  box-shadow: none;
+}
+
+.markdown-content blockquote:has(> p:first-child > strong:first-child)::before,
+.markdown-content blockquote:has(> p:first-child > strong:first-child)::after {
+  position: absolute;
+  left: 0.7rem;
+  color: var(--faint);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.68rem;
+  line-height: 1;
+}
+
+.markdown-content blockquote:has(> p:first-child > strong:first-child)::before {
+  top: -0.42rem;
+  padding: 0 0.32rem;
+  background: var(--bg-body);
+  content: "[";
+}
+
+.markdown-content blockquote:has(> p:first-child > strong:first-child)::after {
+  right: auto;
+  bottom: -0.42rem;
+  padding: 0 0.32rem;
+  background: var(--bg-body);
+  content: "]";
+}
+
+.markdown-content blockquote:has(> p:first-child > strong:first-child) p {
+  margin: 0.45rem 0 0;
+}
+
+.markdown-content blockquote:has(> p:first-child > strong:first-child) p:first-child {
+  margin-top: 0;
+}
+
+.markdown-content blockquote:has(> p:first-child > strong:first-child) p:first-child strong:first-child {
+  display: inline-block;
+  margin-right: 0.35rem;
+  color: var(--text-main);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.markdown-content blockquote:has(> p:first-child > strong:first-child) .katex-display {
+  max-width: 100%;
+  margin: 0.82rem 0 0.25rem;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0.18rem 0 0.26rem;
+}
+
 .markdown-content pre {
   overflow-x: auto;
   border: 1px solid var(--border-main);
@@ -1587,6 +1665,252 @@ html.dark .markdown-content .footnote-preview {
 .markdown-content td {
   border: 1px solid var(--border-main);
   padding: 8px 10px;
+}
+
+.markdown-content .paper-table-wrap {
+  width: 100%;
+  margin: 34px 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.markdown-content .paper-results-table {
+  display: table;
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  color: var(--text-main);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  white-space: nowrap;
+}
+
+.markdown-content .paper-table-wrap.compact .paper-results-table {
+  min-width: 620px;
+}
+
+.markdown-content .algorithm-box {
+  margin: 34px 0 36px;
+  border-top: 2px solid var(--text-main);
+  border-bottom: 2px solid var(--text-main);
+  color: var(--text-main);
+  font-size: 0.78rem;
+  line-height: 1.55;
+  overflow-x: auto;
+}
+
+.markdown-content .algorithm-caption {
+  padding: 0.52rem 0.72rem;
+  border-bottom: 1px solid var(--text-main);
+  color: var(--text-main);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.92rem;
+  font-weight: 650;
+  text-align: center;
+}
+
+.markdown-content .algorithm-caption span {
+  margin-right: 0.45rem;
+  font-weight: 800;
+}
+
+.markdown-content .algorithm-lines {
+  margin: 0;
+  padding: 0.62rem 0;
+  counter-reset: algorithm-line;
+  list-style: none;
+}
+
+.markdown-content .algorithm-lines li {
+  position: relative;
+  display: flex;
+  align-items: baseline;
+  gap: 1.3rem;
+  min-height: 1.55em;
+  padding: 0.1rem 0.72rem 0.1rem 2.65rem;
+  counter-increment: algorithm-line;
+}
+
+.markdown-content .algorithm-lines li::before {
+  position: absolute;
+  left: 0.72rem;
+  width: 1.25rem;
+  color: var(--faint);
+  content: counter(algorithm-line);
+  text-align: right;
+}
+
+.markdown-content .algorithm-lines .alg-indent {
+  padding-left: 4rem;
+}
+
+.markdown-content .algorithm-lines .alg-indent::before {
+  left: 1.35rem;
+}
+
+.markdown-content .alg-key {
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.markdown-content .algorithm-code {
+  min-width: 0;
+  color: var(--text-main);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+}
+
+.markdown-content .algorithm-code .katex,
+.markdown-content .alg-comment .katex {
+  font-size: 1em;
+  white-space: nowrap;
+}
+
+.markdown-content .algorithm-code .katex {
+  font-family: KaTeX_Main, "Times New Roman", serif;
+}
+
+.markdown-content .alg-comment {
+  flex: none;
+  margin-left: auto;
+  color: var(--faint);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.76rem;
+  font-style: italic;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.markdown-content .paper-results-table caption {
+  max-width: 680px;
+  margin: 0 0 0.72rem;
+  caption-side: top;
+  color: var(--faint);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  text-align: left;
+  white-space: normal;
+}
+
+.markdown-content .paper-results-table th,
+.markdown-content .paper-results-table td {
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border-main) 70%, transparent);
+  padding: 0.48rem 0.62rem;
+  text-align: right;
+  vertical-align: middle;
+}
+
+.markdown-content .paper-results-table thead th {
+  border-top: 2px solid var(--text-main);
+  border-bottom: 1px solid var(--text-main);
+  color: var(--text-main);
+  font-weight: 700;
+  text-align: center;
+}
+
+.markdown-content .paper-results-table tbody tr:last-child th,
+.markdown-content .paper-results-table tbody tr:last-child td {
+  border-bottom: 2px solid var(--text-main);
+}
+
+.markdown-content .paper-results-table th:first-child,
+.markdown-content .paper-results-table td:first-child,
+.markdown-content .paper-results-table tbody th {
+  text-align: left;
+}
+
+.markdown-content .paper-results-table tbody th {
+  color: var(--text-main);
+  font-weight: 650;
+}
+
+.markdown-content .paper-results-table .paper-table-group td {
+  padding-top: 0.66rem;
+  padding-bottom: 0.36rem;
+  border-bottom: 1px solid var(--text-main);
+  color: var(--faint);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 0.82rem;
+  font-style: italic;
+  text-align: left;
+}
+
+.markdown-content .paper-results-table .paper-table-rule th,
+.markdown-content .paper-results-table .paper-table-rule td {
+  border-top: 1px solid var(--text-main);
+}
+
+.markdown-content .paper-results-table .sat-row th,
+.markdown-content .paper-results-table .sat-row td {
+  background: color-mix(in srgb, #d7f1d3 62%, var(--bg-body));
+}
+
+html.dark .markdown-content .paper-results-table .sat-row th,
+html.dark .markdown-content .paper-results-table .sat-row td {
+  background: color-mix(in srgb, #2d5f35 44%, var(--panel));
+}
+
+.markdown-content .blog-wrap-figure {
+  width: min(46%, 360px);
+  margin: 0.25rem 0 1.05rem 1.45rem;
+}
+
+.markdown-content .blog-wrap-figure.right {
+  float: right;
+  clear: right;
+}
+
+.markdown-content .blog-wrap-figure.wide {
+  width: min(56%, 480px);
+}
+
+.markdown-content .blog-wrap-figure img {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+}
+
+.markdown-content .blog-wrap-figure figcaption {
+  padding-top: 0.48rem;
+  color: var(--faint);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.markdown-content .blog-wrap-figure + p::after {
+  display: block;
+  clear: both;
+  content: "";
+}
+
+@media (max-width: 860px) {
+  .markdown-content .blog-wrap-figure,
+  .markdown-content .blog-wrap-figure.right,
+  .markdown-content .blog-wrap-figure.wide {
+    float: none;
+    clear: none;
+    width: 100%;
+    margin: 30px auto;
+  }
+
+  .markdown-content .algorithm-box {
+    font-size: 0.74rem;
+  }
+
+  .markdown-content .algorithm-lines li {
+    min-width: 680px;
+    padding-right: 0.72rem;
+  }
+
+  .markdown-content .alg-comment {
+    display: block;
+    margin-top: 0.1rem;
+    text-align: left;
+    white-space: normal;
+  }
 }
 
 .contact-strip {
@@ -2087,6 +2411,10 @@ html.dark .markdown-content .footnote-preview {
     right: -20%;
     bottom: -4%;
     width: min(92vw, 520px);
+    opacity: 0.48;
+  }
+
+  html.dark .hero-background {
     opacity: 0.34;
   }
 

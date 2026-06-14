@@ -237,7 +237,24 @@ Caption behavior:
 - The caption appears directly below the image.
 - The caption box is centered with the image, but the caption text is left-aligned.
 - Caption text is smaller than body text and uses a lighter color.
+- Blog illustrations intentionally have no border. If an image itself needs framing, include that frame in the image asset.
 - Do not write separate HTML `<figure>` blocks unless a post needs custom layout.
+
+For paper-style posts that need text wrapping around a figure, use the custom wrapped figure classes:
+
+```html
+<figure class="blog-wrap-figure right">
+  <img src="/assets/blog/sat-mask-diffusion-language-model-training/fig/any-order-masking.png" alt="Random masking versus order-aware masking">
+  <figcaption>Figure 1. Random masking visits arbitrary mask states; SAT-Mask follows an order-aware trajectory.</figcaption>
+</figure>
+```
+
+Wrapped figure rules:
+
+- Use `blog-wrap-figure right` for a medium right-floating figure.
+- Add `wide` when the figure needs more width: `blog-wrap-figure right wide`.
+- Wrapped figures automatically become full-width on mobile.
+- Keep captions short; long captions make the surrounding prose awkward.
 
 ## Math And Code
 
@@ -257,6 +274,29 @@ p_\theta(x_0 \mid x_t)
 $$
 ```
 
+KaTeX also supports simple color commands. Use this sparingly to mark the exact term being discussed:
+
+```markdown
+$$
+\mathcal{L} =
+\mathbb{E}_{ {\color{red}\mathbf{x}'_t\sim \mathcal{Q}_{\theta,t}} }
+\left[-\log p_\theta(x_0\mid {\color{red}\mathbf{x}'_t},t)\right].
+$$
+```
+
+For theorem-like statements, use a Markdown blockquote whose first text is a bold label:
+
+```markdown
+> **Theorem (Additive capacity law).**
+>
+> $$
+> \mathcal{C}_{\mathrm{needed}}(Q)
+> \ge H(\mathbf{x}_0)+H_Q(\mathbf{x}_t\mid\mathbf{x}_0).
+> $$
+```
+
+This renders as a compact site-themed statement box. Use it for definitions, propositions, lemmas, or theorems that are part of the post's argument. Do not overuse it for ordinary equations.
+
 Code blocks should include a language when possible:
 
 ````markdown
@@ -265,6 +305,69 @@ def schedule(t):
     return t
 ```
 ````
+
+### Algorithm Blocks
+
+Paper-style pseudocode uses the custom `algorithm` code fence. The block is rendered at build time into a numbered algorithm environment, and inline math inside `$...$` is rendered by KaTeX.
+
+Use this format:
+
+````markdown
+```algorithm
+caption: SAT-Mask Training
+input: Dataset $\mathcal{D}$, denoiser $f_{\theta}$, rollout step $\Delta t$, sampler $S$, temperature $\tau$
+while not converged do
+  Sample clean data $\mathbf{x}_0 \sim \mathcal{D}$ and diffusion time $t \sim \mathcal{U}(0,1)$
+  Compute logits $\ell_\theta=f_\theta(\mathbf{x}_{t^+},t^+)$
+  $B_t \leftarrow |\mathcal{M}_{t^+}|-N_t$ // Number of tokens to unmask from $\mathbf{x}_{t^+}$
+  $\mathbf{x}'_t \leftarrow S(\mathbf{x}_{t^+},\ell_\theta,B_t)$ // One sampler step
+  Update $\theta$ by descending $\nabla_\theta\mathcal{L}_{\mathrm{SAT}}(\theta)$ // Reconstruction loss
+end while
+```
+````
+
+Algorithm rules:
+
+- The first line may be `caption: ...`; it becomes the algorithm title after `Algorithm 1`.
+- The `input:` line is styled as the input row.
+- Indent body lines with two spaces.
+- Use `//` for right-side comments.
+- Put mathematical notation in `$...$`; do not use raw HTML `<sub>`, `<sup>`, or manually pasted Unicode formulas.
+- Do not hand-write `<div class="algorithm-box">` in Markdown. Raw HTML bypasses the Markdown math pipeline and formulas will not render correctly.
+
+## Paper Tables
+
+Normal Markdown tables are fine for small notes. For paper-result tables that need the LaTeX-like compact style, use the custom HTML table classes:
+
+```html
+<div class="paper-table-wrap compact">
+  <table class="paper-results-table">
+    <caption>Table 1. GSM8K-CoT accuracy under different sampling steps. Higher is better.</caption>
+    <thead>
+      <tr>
+        <th scope="col">Method</th>
+        <th scope="col">Param.</th>
+        <th scope="col">32 steps</th>
+        <th scope="col">64 steps</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr class="paper-table-rule"><th scope="row">SMDM</th><td>170M</td><td>49.65</td><td>50.01</td></tr>
+      <tr class="sat-row"><th scope="row">SAT-Mask</th><td>170M</td><td><strong>51.63</strong></td><td><strong>53.52</strong></td></tr>
+    </tbody>
+  </table>
+</div>
+```
+
+Paper table rules:
+
+- Wrap every paper table in `paper-table-wrap`; add `compact` for narrower tables.
+- Use `<caption>` for the table description instead of a separate paragraph.
+- Use `<th scope="row">` for row labels and `<th scope="col">` for column labels.
+- Add `paper-table-rule` to rows that need a stronger horizontal separation.
+- Add `paper-table-group` for group-heading rows inside `<tbody>`.
+- Add `sat-row` to highlight this site's method row.
+- Large tables are horizontally scrollable on small screens.
 
 ## References With BibTeX
 

@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import remarkTyporaMath from "./src/lib/remark-typora-math.mjs";
+import remarkBlogAlgorithms from "./src/lib/remark-blog-algorithms.mjs";
 import remarkBlogFigures from "./src/lib/remark-blog-figures.mjs";
 import remarkBlogReferences from "./src/lib/remark-blog-references.mjs";
 import rehypeBlogReferenceOrder from "./src/lib/rehype-blog-reference-order.mjs";
@@ -19,6 +20,7 @@ export default defineConfig({
         remarkGfm,
         remarkMath,
         remarkTyporaMath,
+        remarkBlogAlgorithms,
         remarkBlogFigures,
         remarkBlogReferences,
       ],
