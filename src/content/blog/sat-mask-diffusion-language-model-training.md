@@ -382,6 +382,10 @@ For text generation, the paper evaluates unconditional OpenWebText generation wi
 <div class="paper-table-wrap">
   <table class="paper-results-table">
     <caption>Table 1. OpenWebText unconditional generation. MAUVE is higher-is-better; GenPPL is lower-is-better; entropy is reported as a sanity metric. Best scores within each method family and sampling budget are bolded.</caption>
+    <colgroup>
+      <col class="paper-col-method">
+      <col class="paper-col-metric" span="9">
+    </colgroup>
     <thead>
       <tr>
         <th scope="col"></th>
@@ -424,6 +428,11 @@ For GSM8K, the paper follows the SMDM supervised fine-tuning setup and evaluates
 <div class="paper-table-wrap compact">
   <table class="paper-results-table">
     <caption>Table 2. GSM8K-CoT math reasoning accuracy under different sampling steps. Higher is better. Missing entries indicate results not reported in the corresponding baseline.</caption>
+    <colgroup>
+      <col class="paper-col-method">
+      <col class="paper-col-param">
+      <col class="paper-col-metric" span="4">
+    </colgroup>
     <thead>
       <tr>
         <th scope="col">Method</th>

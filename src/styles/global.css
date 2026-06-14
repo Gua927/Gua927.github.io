@@ -1186,11 +1186,23 @@ html.dark .hero-background::after {
 
 .markdown-content ul,
 .markdown-content ol {
+  margin-top: 0.55rem;
+  margin-bottom: 0.82rem;
   padding-left: 1.2rem;
 }
 
+.markdown-content li {
+  line-height: 1.5;
+}
+
 .markdown-content li + li {
-  margin-top: 0.45em;
+  margin-top: 0.2em;
+}
+
+.markdown-content li > ul,
+.markdown-content li > ol {
+  margin-top: 0.25rem;
+  margin-bottom: 0.35rem;
 }
 
 .markdown-content a {
@@ -1677,17 +1689,20 @@ html.dark .markdown-content blockquote:has(> p:first-child > strong:first-child)
 .markdown-content .paper-results-table {
   display: table;
   width: 100%;
-  min-width: 760px;
+  min-width: 820px;
   border-collapse: collapse;
   color: var(--text-main);
   font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
   font-size: 0.78rem;
-  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+  line-height: 1.1;
+  table-layout: fixed;
   white-space: nowrap;
 }
 
 .markdown-content .paper-table-wrap.compact .paper-results-table {
-  min-width: 620px;
+  min-width: 660px;
 }
 
 .markdown-content .algorithm-box {
@@ -1796,18 +1811,28 @@ html.dark .markdown-content blockquote:has(> p:first-child > strong:first-child)
 .markdown-content .paper-results-table th,
 .markdown-content .paper-results-table td {
   border: 0;
-  border-bottom: 1px solid color-mix(in srgb, var(--border-main) 70%, transparent);
-  padding: 0.48rem 0.62rem;
-  text-align: right;
+  padding: 0.25rem 0.58rem;
+  text-align: center;
   vertical-align: middle;
 }
 
 .markdown-content .paper-results-table thead th {
-  border-top: 2px solid var(--text-main);
-  border-bottom: 1px solid var(--text-main);
   color: var(--text-main);
   font-weight: 700;
   text-align: center;
+}
+
+.markdown-content .paper-results-table thead tr:first-child th {
+  border-top: 2px solid var(--text-main);
+  padding-top: 0.42rem;
+  padding-bottom: 0.18rem;
+  text-align: center;
+}
+
+.markdown-content .paper-results-table thead tr:last-child th {
+  border-bottom: 1px solid var(--text-main);
+  padding-top: 0.18rem;
+  padding-bottom: 0.42rem;
 }
 
 .markdown-content .paper-results-table tbody tr:last-child th,
@@ -1827,8 +1852,9 @@ html.dark .markdown-content blockquote:has(> p:first-child > strong:first-child)
 }
 
 .markdown-content .paper-results-table .paper-table-group td {
-  padding-top: 0.66rem;
-  padding-bottom: 0.36rem;
+  padding-top: 0.5rem;
+  padding-bottom: 0.28rem;
+  border-top: 1px solid var(--text-main);
   border-bottom: 1px solid var(--text-main);
   color: var(--faint);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -1840,6 +1866,22 @@ html.dark .markdown-content blockquote:has(> p:first-child > strong:first-child)
 .markdown-content .paper-results-table .paper-table-rule th,
 .markdown-content .paper-results-table .paper-table-rule td {
   border-top: 1px solid var(--text-main);
+}
+
+.markdown-content .paper-results-table col.paper-col-method {
+  width: 24%;
+}
+
+.markdown-content .paper-results-table col.paper-col-param {
+  width: 13%;
+}
+
+.markdown-content .paper-results-table col.paper-col-metric {
+  width: auto;
+}
+
+.markdown-content .paper-table-wrap.compact .paper-results-table col.paper-col-method {
+  width: 30%;
 }
 
 .markdown-content .paper-results-table .sat-row th,

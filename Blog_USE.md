@@ -343,6 +343,11 @@ Normal Markdown tables are fine for small notes. For paper-result tables that ne
 <div class="paper-table-wrap compact">
   <table class="paper-results-table">
     <caption>Table 1. GSM8K-CoT accuracy under different sampling steps. Higher is better.</caption>
+    <colgroup>
+      <col class="paper-col-method">
+      <col class="paper-col-param">
+      <col class="paper-col-metric" span="2">
+    </colgroup>
     <thead>
       <tr>
         <th scope="col">Method</th>
@@ -362,6 +367,8 @@ Normal Markdown tables are fine for small notes. For paper-result tables that ne
 Paper table rules:
 
 - Wrap every paper table in `paper-table-wrap`; add `compact` for narrower tables.
+- Add a `<colgroup>` so the browser uses stable column widths instead of auto-fitting each row.
+- Use `paper-col-method` for the method/name column, `paper-col-param` for parameter-size columns, and `paper-col-metric` for metric columns.
 - Use `<caption>` for the table description instead of a separate paragraph.
 - Use `<th scope="row">` for row labels and `<th scope="col">` for column labels.
 - Add `paper-table-rule` to rows that need a stronger horizontal separation.
