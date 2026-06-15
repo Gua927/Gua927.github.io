@@ -16,14 +16,15 @@ import { frontmatter } from "../content/about.md";
       </h1>
       <div class="subtitle" set:html={frontmatter.subtitle} />
       <p class="intro-text">
-        I am interested in <strong>mathematics</strong> and <strong>AI</strong>. My current research
-        focuses on <strong>generative AI</strong>, especially the relationship between probabilistic
-        generation paths and the intrinsic structure of data, with work in molecular generation 🧬 and
-        diffusion language models ✍️.
+        I am interested in <strong>mathematics</strong> 🧮 and <strong>artificial intelligence</strong> 🤖.
+        My current research focuses on <strong>generative AI</strong>, particularly the interplay between
+        probabilistic generation trajectories and the intrinsic structure of data. I am currently exploring
+        these ideas in molecular generation 🧬 and diffusion language models ✍️.
       </p>
       <p class="intro-text">
-        This site organizes my Timeline, Publication, Blog, Media, and Projects as a compact record
-        of research updates, notes, and work in progress.
+        This site organizes my <a href="/timeline/">Timeline</a>, <a href="/publication/">Publication</a>,
+        <a href="/blog/">Blog</a>, <a href="/media/">Media</a>, and <a href="/project/">Projects</a> as a
+        compact record of research updates, notes, and work in progress.
       </p>
     </div>
 
@@ -32,7 +33,7 @@ import { frontmatter } from "../content/about.md";
         <span>News</span>
         <a href="/timeline/">[ View timeline ]</a>
       </div>
-      <TimelineList limit={3} />
+      <TimelineList limit={3} categories={["publication", "blog", "project"]} />
     </section>
   </section>
 </BaseLayout>

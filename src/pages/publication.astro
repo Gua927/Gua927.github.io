@@ -49,13 +49,20 @@ function formatDate(date: Date) {
                 <p class="publication-status">{paper.data.status}</p>
 
                 <div class="publication-actions" aria-label={`${paper.data.title} links`}>
-                  <details class="publication-abstract">
-                    <summary>ABSTRACT</summary>
-                    <p>{paper.data.abstract}</p>
-                  </details>
+                  <button
+                    type="button"
+                    class="publication-abstract-toggle"
+                    aria-expanded="false"
+                    aria-controls={`publication-abstract-${paper.id}`}
+                  >
+                    ABSTRACT
+                  </button>
                   {paper.data.pdf && <a href={paper.data.pdf}>PDF</a>}
                   {paper.data.blog && <a href={paper.data.blog}>Blog</a>}
                   {paper.data.code && <a href={paper.data.code}>Code</a>}
+                  <p id={`publication-abstract-${paper.id}`} class="publication-abstract-panel" hidden>
+                    {paper.data.abstract}
+                  </p>
                 </div>
               </div>
             </div>
@@ -66,4 +73,27 @@ function formatDate(date: Date) {
 
     {publications.length === 0 && <div class="publication-empty">No publications yet.</div>}
   </section>
+
+  <script is:inline>
+    (function () {
+      function initPublicationAbstracts() {
+        document.querySelectorAll(".publication-abstract-toggle").forEach(function (button) {
+          if (button.dataset.bound === "true") return;
+          button.dataset.bound = "true";
+
+          button.addEventListener("click", function () {
+            const panel = document.getElementById(button.getAttribute("aria-controls") || "");
+            if (!panel) return;
+
+            const expanded = button.getAttribute("aria-expanded") === "true";
+            button.setAttribute("aria-expanded", expanded ? "false" : "true");
+            panel.hidden = expanded;
+          });
+        });
+      }
+
+      document.addEventListener("DOMContentLoaded", initPublicationAbstracts);
+      document.addEventListener("astro:page-load", initPublicationAbstracts);
+    })();
+  </script>
 </BaseLayout>

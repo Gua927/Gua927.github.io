@@ -1,4 +1,4 @@
-export type MediaCategory = "Podcast" | "SpaceX";
+export type MediaCategory = "Podcast" | "SpaceX" | "Badminton";
 
 export type MediaItem = {
   number: number;
@@ -66,7 +66,7 @@ export const curatedMedia: MediaItem[] = [
   },
   {
     number: 4,
-    title: "SpaceX | Starship's Second Flight Test",
+    title: "Starship | Second Flight Test",
     host: "YouTube",
     addedDate: "2026-06-15",
     description: "Starship's second integrated flight test, showing SpaceX's rapid iteration after the first launch and the next step toward a reusable heavy-lift launch system.",
@@ -78,7 +78,7 @@ export const curatedMedia: MediaItem[] = [
   },
   {
     number: 5,
-    title: "SpaceX | Starship's Third Flight Test",
+    title: "Starship | Third Flight Test",
     host: "YouTube",
     addedDate: "2026-06-15",
     description: "Starship's third integrated flight test, continuing SpaceX's rapid iteration toward orbital-class operations and reusable heavy-lift launch capability.",
@@ -90,7 +90,7 @@ export const curatedMedia: MediaItem[] = [
   },
   {
     number: 6,
-    title: "SpaceX | Starship's Fourth Flight Test",
+    title: "Starship | Fourth Flight Test",
     host: "YouTube",
     addedDate: "2026-06-15",
     description: "Starship's fourth integrated flight test, following SpaceX's continued iteration across launch, stage separation, entry, and recovery objectives.",
@@ -102,7 +102,7 @@ export const curatedMedia: MediaItem[] = [
   },
   {
     number: 7,
-    title: "SpaceX | Starship's Fifth Flight Test",
+    title: "Starship | Fifth Flight Test",
     host: "YouTube",
     addedDate: "2026-06-15",
     description: "Starship's fifth integrated flight test, another step in SpaceX's campaign to mature the vehicle through repeated full-system launches.",
@@ -114,7 +114,7 @@ export const curatedMedia: MediaItem[] = [
   },
   {
     number: 8,
-    title: "SpaceX | Starship's Sixth Flight Test",
+    title: "Starship | Sixth Flight Test",
     host: "YouTube",
     addedDate: "2026-06-15",
     description: "Starship's sixth integrated flight test, extending the sequence of high-tempo development flights for the Starship and Super Heavy system.",
@@ -126,7 +126,7 @@ export const curatedMedia: MediaItem[] = [
   },
   {
     number: 9,
-    title: "SpaceX | Starship's Seventh Flight Test",
+    title: "Starship | Seventh Flight Test",
     host: "YouTube",
     addedDate: "2026-06-15",
     description: "Starship's seventh integrated flight test, documenting the next launch in SpaceX's iterative Starship development program.",
@@ -138,7 +138,7 @@ export const curatedMedia: MediaItem[] = [
   },
   {
     number: 10,
-    title: "SpaceX | Starship's Tenth Flight Test",
+    title: "Starship | Tenth Flight Test",
     host: "YouTube",
     addedDate: "2026-06-15",
     description: "Starship's tenth integrated flight test, part of SpaceX's continuing sequence of Starship launch and recovery demonstrations.",
@@ -157,6 +157,32 @@ export const curatedMedia: MediaItem[] = [
     note: "Starship testing philosophy and development cadence.",
     youtubeUrl: "https://www.youtube.com/watch?v=ANe_HW4X8oc",
     tags: ["selected", "spacex", "starship"],
+    category: "SpaceX",
+    featured: true,
+  },
+  {
+    number: 12,
+    title: "Lin Dan | 2017 Retirement Interview",
+    host: "YouTube",
+    addedDate: "2026-06-16",
+    description:
+      "Lin Dan reflects beyond gold medals, thanking the great rival whose pressure helped shape the champion he became.",
+    note: "Badminton, rivalry, and the meaning beyond gold medals.",
+    youtubeUrl: "https://www.youtube.com/watch?v=tiTEG6gPhfU",
+    tags: ["selected", "badminton", "podcast", "lin-dan"],
+    category: "Badminton",
+    featured: true,
+  },
+  {
+    number: 13,
+    title: "The Rise of SpaceX: Everything for Mars",
+    host: "YouTube",
+    addedDate: "2026-06-16",
+    description:
+      "A look at SpaceX's Mars-driven rise, from Falcon 1 failures to Starbase and a new space infrastructure system.",
+    note: "Mars, Starbase, reusable rockets, and SpaceX's infrastructure ambition.",
+    youtubeUrl: "https://www.youtube.com/watch?v=x2meJPOn9ws",
+    tags: ["selected", "spacex", "mars", "podcast"],
     category: "SpaceX",
     featured: true,
   },
@@ -204,11 +230,18 @@ export const mediaPlaylistGroups: MediaPlaylistGroup[] = [
   {
     key: "Podcast",
     label: "Podcast",
-    tracks: toMediaTracks(curatedMedia.filter((episode) => episode.category === "Podcast")),
+    tracks: toMediaTracks(
+      curatedMedia.filter((episode) => episode.category === "Podcast" || episode.tags.includes("podcast")),
+    ),
   },
   {
     key: "SpaceX",
     label: "SpaceX",
     tracks: toMediaTracks(curatedMedia.filter((episode) => episode.category === "SpaceX")),
+  },
+  {
+    key: "Badminton",
+    label: "Badminton",
+    tracks: toMediaTracks(curatedMedia.filter((episode) => episode.category === "Badminton")),
   },
 ].filter((group) => group.tracks.length);

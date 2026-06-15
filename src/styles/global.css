@@ -353,6 +353,7 @@ html.dark .theme-icon-dark {
   border-radius: 999px;
   background: var(--green);
   box-shadow: 0 0 10px rgba(34, 197, 94, 0.42);
+  animation: media-status-breathe 2.8s ease-in-out infinite;
 }
 
 .sidebar-media-status strong {
@@ -365,7 +366,6 @@ html.dark .theme-icon-dark {
   --media-frame-scale: 0.5;
   position: relative;
   aspect-ratio: 16 / 9;
-  border: 1px solid var(--border-subtle);
   background: var(--bg-deep);
   overflow: hidden;
 }
@@ -397,7 +397,7 @@ html.dark .theme-icon-dark {
 
 .sidebar-media-meta {
   display: grid;
-  gap: 1px;
+  gap: 4px;
   min-width: 0;
 }
 
@@ -415,8 +415,10 @@ html.dark .theme-icon-dark {
 }
 
 .sidebar-media-meta button {
+  --playlist-shine: linear-gradient(90deg, var(--muted) 0%, var(--muted) 38%, var(--text-main) 50%, var(--muted) 62%, var(--muted) 100%);
   justify-self: start;
   max-width: 100%;
+  margin-top: 1px;
   padding: 0;
   border: 0;
   background: transparent;
@@ -426,13 +428,51 @@ html.dark .theme-icon-dark {
   line-height: 1.25;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  background-image: var(--playlist-shine);
+  background-size: 240% 100%;
+  background-position: 120% 0;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   cursor: pointer;
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, background-position 0.2s ease;
+  animation: playlist-switch-scan 2.8s ease-in-out infinite;
 }
 
 .sidebar-media-meta button:hover:not(:disabled),
 .sidebar-media-meta button:focus-visible {
   color: var(--text-main);
+}
+
+@keyframes playlist-switch-scan {
+  0%,
+  100% {
+    background-position: 120% 0;
+  }
+
+  50% {
+    background-position: -20% 0;
+  }
+}
+
+@keyframes media-status-breathe {
+  0%,
+  100% {
+    opacity: 0.42;
+    box-shadow: 0 0 6px rgba(34, 197, 94, 0.24);
+  }
+
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.58);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sidebar-media-meta button,
+  .sidebar-media-status span {
+    animation: none;
+  }
 }
 
 .sidebar-media-meta button:focus-visible {
@@ -1161,10 +1201,10 @@ html.dark .hero-background::after {
 
 .timeline-list a {
   display: grid;
-  grid-template-columns: max-content max-content minmax(0, max-content);
+  grid-template-columns: max-content max-content minmax(0, 1fr);
   align-items: baseline;
   gap: 8px;
-  width: fit-content;
+  width: 100%;
   color: var(--muted);
   text-decoration: none;
   font-size: clamp(0.86rem, 1.35vw, 1rem);
@@ -1186,6 +1226,9 @@ html.dark .hero-background::after {
 .timeline-list strong {
   color: var(--text-main);
   font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .timeline-list a:hover strong {
@@ -2430,7 +2473,6 @@ html.dark .markdown-content .paper-results-table .sat-row td {
     min-height: 68px;
     margin-top: 0;
     padding: 6px 12px max(8px, env(safe-area-inset-bottom));
-    border-top: 1px solid var(--border-main);
     background: color-mix(in srgb, var(--bg-body) 94%, transparent);
     backdrop-filter: blur(10px);
   }
@@ -3464,42 +3506,36 @@ html.dark .markdown-content .paper-results-table .sat-row td {
 }
 
 .publication-actions a,
-.publication-abstract summary {
+.publication-abstract-toggle {
+  order: 1;
   color: var(--muted);
+  border: 0;
+  background: transparent;
+  padding: 0;
+  font: inherit;
   text-decoration: none;
   text-transform: uppercase;
   cursor: pointer;
 }
 
 .publication-actions a::before,
-.publication-abstract summary::before {
+.publication-abstract-toggle::before {
   content: "[ ";
 }
 
 .publication-actions a::after,
-.publication-abstract summary::after {
+.publication-abstract-toggle::after {
   content: " ]";
 }
 
 .publication-actions a:hover,
-.publication-abstract summary:hover,
-.publication-abstract[open] summary {
+.publication-abstract-toggle:hover,
+.publication-abstract-toggle[aria-expanded="true"] {
   color: var(--text-main);
 }
 
-.publication-abstract {
-  display: contents;
-}
-
-.publication-abstract summary {
-  list-style: none;
-}
-
-.publication-abstract summary::-webkit-details-marker {
-  display: none;
-}
-
-.publication-abstract p {
+.publication-abstract-panel {
+  order: 2;
   flex-basis: 100%;
   margin: 0.35rem 0 0;
   padding: 1rem 0 0;

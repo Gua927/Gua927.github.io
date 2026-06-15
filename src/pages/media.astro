@@ -4,7 +4,12 @@ import { curatedMedia, youtubeId } from "../lib/media";
 
 const categoryCounts = new Map<string, number>();
 for (const episode of curatedMedia) {
-  categoryCounts.set(episode.category, (categoryCounts.get(episode.category) ?? 0) + 1);
+  const filterKeys = new Set([episode.category]);
+  if (episode.tags.includes("podcast")) filterKeys.add("Podcast");
+
+  for (const key of filterKeys) {
+    categoryCounts.set(key, (categoryCounts.get(key) ?? 0) + 1);
+  }
 }
 
 const mediaCategories = [
@@ -23,6 +28,11 @@ const mediaCategories = [
 const mediaCards = curatedMedia.map((episode) => ({
   ...episode,
   videoId: youtubeId(episode.youtubeUrl),
+  filterCategories: [
+    ...(episode.featured ? ["Featured"] : []),
+    episode.category,
+    ...(episode.tags.includes("podcast") ? ["Podcast"] : []),
+  ],
 }));
 ---
 
@@ -59,6 +69,7 @@ const mediaCards = curatedMedia.map((episode) => ({
               id={`media-${episode.videoId || episode.number}`}
               data-video-id=""
               data-category={episode.category}
+              data-filters={Array.from(new Set(episode.filterCategories)).join(" ")}
               data-featured={episode.featured ? "true" : "false"}
             >
               <button
@@ -138,18 +149,27 @@ const mediaCards = curatedMedia.map((episode) => ({
         });
       }
 
-      function applyCategoryFilter(category) {
+      function filterValues(card) {
+        return (card.dataset.filters || card.dataset.category || "").split(" ").filter(Boolean);
+      }
+
+      function applySelectedFilters(selectedFilters) {
         const filters = document.querySelectorAll(".media-filter");
         const cards = document.querySelectorAll(".media-card");
 
         filters.forEach(function (filter) {
-          const active = filter.dataset.category === category;
+          const active = selectedFilters.has(filter.dataset.category || "");
           filter.classList.toggle("active", active);
           filter.setAttribute("aria-pressed", active ? "true" : "false");
         });
 
         cards.forEach(function (card) {
-          const show = category === "Featured" ? card.dataset.featured === "true" : card.dataset.category === category;
+          const values = filterValues(card);
+          const show =
+            selectedFilters.size === 0 ||
+            Array.from(selectedFilters).every(function (filter) {
+              return values.includes(filter);
+            });
           card.style.display = show ? "" : "none";
         });
       }
@@ -163,6 +183,16 @@ const mediaCards = curatedMedia.map((episode) => ({
         const left = document.getElementById("media-scroll-left");
         const right = document.getElementById("media-scroll-right");
         const filters = document.querySelectorAll(".media-filter");
+        const selectedFilters = new Set(
+          Array.from(filters)
+            .filter(function (filter) {
+              return filter.classList.contains("active");
+            })
+            .map(function (filter) {
+              return filter.dataset.category || "";
+            })
+            .filter(Boolean),
+        );
 
         cards.forEach(function (card) {
           const button = card.querySelector(".media-card-art");
@@ -173,7 +203,7 @@ const mediaCards = curatedMedia.map((episode) => ({
             img.src = "https://img.youtube.com/vi/" + encodeURIComponent(videoId) + "/hqdefault.jpg";
           }
         });
-        applyCategoryFilter("Featured");
+        applySelectedFilters(selectedFilters);
 
         function visibleCards() {
           return cards.filter(function (card) {
@@ -201,7 +231,10 @@ const mediaCards = curatedMedia.map((episode) => ({
           });
           if (!target) return;
           if (target.style.display === "none") {
-            applyCategoryFilter(target.dataset.featured === "true" ? "Featured" : target.dataset.category || "Featured");
+            selectedFilters.clear();
+            const firstFilter = filterValues(target)[0] || target.dataset.category || "Featured";
+            selectedFilters.add(firstFilter);
+            applySelectedFilters(selectedFilters);
           }
           requestAnimationFrame(function () {
             scrollToCard(visibleCards().indexOf(target), behavior);
@@ -213,7 +246,16 @@ const mediaCards = curatedMedia.map((episode) => ({
           function (event) {
             const filter = event.target.closest(".media-filter");
             if (filter) {
-              applyCategoryFilter(filter.dataset.category || "Featured");
+              const category = filter.dataset.category || "";
+              if (selectedFilters.has(category)) {
+                selectedFilters.delete(category);
+              } else {
+                selectedFilters.add(category);
+              }
+              applySelectedFilters(selectedFilters);
+              requestAnimationFrame(function () {
+                scrollToCard(0);
+              });
               return;
             }
 

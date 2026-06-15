@@ -1,14 +1,23 @@
 ---
-import { formatTimelineDate, getTimelineEntries, timelineLabels } from "../lib/timeline";
+import {
+  formatTimelineDate,
+  getTimelineEntries,
+  timelineLabels,
+  type TimelineCategory,
+} from "../lib/timeline";
 
 interface Props {
   limit?: number;
+  categories?: TimelineCategory[];
   class?: string;
 }
 
-const { limit, class: className = "" } = Astro.props;
+const { limit, categories, class: className = "" } = Astro.props;
 
-const entries = (await getTimelineEntries()).slice(0, limit);
+const categorySet = categories ? new Set<TimelineCategory>(categories) : undefined;
+const entries = (await getTimelineEntries())
+  .filter((entry) => !categorySet || categorySet.has(entry.category))
+  .slice(0, limit);
 ---
 
 <ul class:list={["timeline-list", className]}>
