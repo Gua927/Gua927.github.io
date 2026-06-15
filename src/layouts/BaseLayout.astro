@@ -2,7 +2,7 @@
 import "katex/dist/katex.min.css";
 import "../styles/global.css";
 import { ClientRouter } from "astro:transitions";
-import { mediaPlaylist } from "../lib/media";
+import { mediaPlaylistGroups } from "../lib/media";
 
 const {
   title = "Runze Tian",
@@ -143,7 +143,9 @@ const currentCrumbLabel = title;
           </div>
           <div class="sidebar-media-meta" aria-live="polite" aria-atomic="true">
             <strong id="sidebar-media-title">No media selected</strong>
-            <span id="sidebar-media-source">Media</span>
+            <button type="button" id="sidebar-media-source" aria-label="Switch media playlist" title="Switch playlist">
+              Featured
+            </button>
           </div>
           <div class="sidebar-media-controls" aria-label="Media controls">
             <div
@@ -209,7 +211,7 @@ const currentCrumbLabel = title;
       </main>
     </div>
 
-    <script is:inline define:vars={{ mediaPlaylist }}>
+    <script is:inline define:vars={{ mediaPlaylistGroups }}>
       (function () {
         let layoutCleanup = null;
 
@@ -331,6 +333,8 @@ const currentCrumbLabel = title;
 
           const state = window.__mediaPlayerState || {
             playlist: [],
+            playlistGroups: [],
+            playlistMode: "Featured",
             currentIndex: -1,
             currentTrack: null,
             isPlaying: false,
@@ -399,6 +403,39 @@ const currentCrumbLabel = title;
               .filter(Boolean);
           }
 
+          function normalizePlaylistGroups(groups) {
+            if (!Array.isArray(groups)) return [];
+            return groups
+              .map(function (group) {
+                const tracks = normalizePlaylist(group.tracks);
+                if (!group.key || !tracks.length) return null;
+                return {
+                  key: group.key,
+                  label: group.label || group.key,
+                  tracks,
+                };
+              })
+              .filter(Boolean);
+          }
+
+          function findPlaylistGroup(mode) {
+            return state.playlistGroups.find(function (group) {
+              return group.key === mode;
+            });
+          }
+
+          function syncPlaylistModeButton() {
+            if (!source) return;
+            const activeGroup = findPlaylistGroup(state.playlistMode);
+            source.textContent = activeGroup ? activeGroup.label : "Featured";
+            source.disabled = state.playlistGroups.length < 2;
+            source.setAttribute(
+              "aria-label",
+              state.playlistGroups.length < 2 ? "Media playlist" : "Switch media playlist",
+            );
+            source.title = state.playlistGroups.length < 2 ? "Media playlist" : "Switch playlist";
+          }
+
           function findPlaylistIndex(videoId) {
             return state.playlist.findIndex(function (episode) {
               return episode.videoId === videoId;
@@ -406,6 +443,7 @@ const currentCrumbLabel = title;
           }
 
           function syncButtons() {
+            syncPlaylistModeButton();
             if (toggle) {
               toggle.disabled = !state.currentTrack;
               toggle.setAttribute("aria-label", state.isPlaying ? "Pause media" : "Play media");
@@ -432,6 +470,7 @@ const currentCrumbLabel = title;
               start: state.currentTrack.start,
               title: state.currentTrack.title,
               source: state.currentTrack.source,
+              playlistMode: state.playlistMode,
               currentTime: currentTime || state.currentTrack.start,
               isPlaying: state.isPlaying,
             }));
@@ -622,7 +661,7 @@ const currentCrumbLabel = title;
             destroyYouTubePlayer();
             embed.innerHTML = `<iframe id="sidebar-media-iframe" src="${embedUrl}" title="${episode.title || "Media item"}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>`;
             title.textContent = episode.title || "Untitled media";
-            source.textContent = episode.source || "YouTube";
+            syncPlaylistModeButton();
             player.hidden = false;
             window.__mediaPlayerHasTrack = true;
             state.currentTrack = {
@@ -670,6 +709,34 @@ const currentCrumbLabel = title;
             syncButtons();
           };
 
+          function setMediaPlaylistMode(mode, options) {
+            const targetGroup = findPlaylistGroup(mode) || state.playlistGroups[0];
+            if (!targetGroup) return false;
+            state.playlistMode = targetGroup.key;
+            state.playlist = targetGroup.tracks;
+            state.currentIndex = state.currentTrack ? findPlaylistIndex(state.currentTrack.videoId) : -1;
+            syncButtons();
+
+            if (options && options.play) {
+              if (state.currentIndex >= 0 && options.keepCurrent !== false) {
+                return true;
+              }
+              return playAtIndex(0, { autoplay: true });
+            }
+            return true;
+          }
+
+          window.setMediaPlaylistGroups = function (groups) {
+            const normalized = normalizePlaylistGroups(groups);
+            if (!normalized.length) return false;
+            state.playlistGroups = normalized;
+            return setMediaPlaylistMode(state.playlistMode || normalized[0].key, { keepCurrent: true });
+          };
+
+          window.setMediaPlaylistMode = function (mode, options) {
+            return setMediaPlaylistMode(mode, options || { keepCurrent: true });
+          };
+
           window.seedMediaPlayer = function (episodes) {
             window.setMediaPlaylist(episodes);
             if (window.__mediaPlayerHasTrack) return false;
@@ -677,9 +744,20 @@ const currentCrumbLabel = title;
             return playAtIndex(Math.floor(Math.random() * state.playlist.length), { autoplay: false });
           };
 
-          window.setMediaPlaylist(mediaPlaylist);
+          window.setMediaPlaylistGroups(mediaPlaylistGroups);
 
           function bindMediaControls() {
+            if (source) {
+              source.onclick = function () {
+                if (!state.playlistGroups.length) return;
+                const current = state.playlistGroups.findIndex(function (group) {
+                  return group.key === state.playlistMode;
+                });
+                const nextGroup = state.playlistGroups[(Math.max(0, current) + 1) % state.playlistGroups.length];
+                setMediaPlaylistMode(nextGroup.key, { play: true, keepCurrent: true });
+              };
+            }
+
             if (toggle) {
               toggle.onclick = function () {
                 if (!state.currentTrack) return;
@@ -778,6 +856,9 @@ const currentCrumbLabel = title;
           if (!window.__mediaPlayerHasTrack && saved && saved !== "null") {
             try {
               const savedState = JSON.parse(saved);
+              if (savedState.playlistMode) {
+                setMediaPlaylistMode(savedState.playlistMode, { keepCurrent: true });
+              }
               restoredFromStorage = renderMedia(savedState, {
                 autoplay: savedState.isPlaying !== false,
                 start: savedState.currentTime || savedState.start,

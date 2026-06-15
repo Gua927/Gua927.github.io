@@ -1,8 +1,24 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { curatedMedia, mediaPlaylist, youtubeId } from "../lib/media";
+import { curatedMedia, youtubeId } from "../lib/media";
 
-const mediaCategories = ["All", "Podcast", "SpaceX"] as const;
+const categoryCounts = new Map<string, number>();
+for (const episode of curatedMedia) {
+  categoryCounts.set(episode.category, (categoryCounts.get(episode.category) ?? 0) + 1);
+}
+
+const mediaCategories = [
+  {
+    key: "Featured",
+    label: "Featured",
+    count: curatedMedia.filter((episode) => episode.featured).length,
+  },
+  ...Array.from(categoryCounts, ([label, count]) => ({
+    key: label,
+    label,
+    count,
+  })),
+];
 
 const mediaCards = curatedMedia.map((episode) => ({
   ...episode,
@@ -22,11 +38,11 @@ const mediaCards = curatedMedia.map((episode) => ({
         mediaCategories.map((category) => (
           <button
             type="button"
-            class={`media-filter${category === "All" ? " active" : ""}`}
-            data-category={category}
-            aria-pressed={category === "All" ? "true" : "false"}
+            class={`media-filter${category.key === "Featured" ? " active" : ""}`}
+            data-category={category.key}
+            aria-pressed={category.key === "Featured" ? "true" : "false"}
           >
-            [ {category} ]
+            [ {category.label} <span>{category.count}</span> ]
           </button>
         ))
       }
@@ -43,6 +59,7 @@ const mediaCards = curatedMedia.map((episode) => ({
               id={`media-${episode.videoId || episode.number}`}
               data-video-id=""
               data-category={episode.category}
+              data-featured={episode.featured ? "true" : "false"}
             >
               <button
                 type="button"
@@ -70,8 +87,8 @@ const mediaCards = curatedMedia.map((episode) => ({
                   <span>{episode.addedDate}</span>
                 </div>
                 <div class="media-card-tags" aria-label="Tags">
-                  {episode.tags.map((tag) => <span>{tag}</span>)}
-                  <span class="media-card-category">{episode.category}</span>
+                  <span class="media-card-category">#{episode.category.toUpperCase()}</span>
+                  {episode.featured && <span class="media-card-featured">#Featured</span>}
                 </div>
               </div>
             </article>
@@ -93,7 +110,7 @@ const mediaCards = curatedMedia.map((episode) => ({
     </footer>
   </section>
 
-  <script is:inline define:vars={{ mediaPlaylist }}>
+  <script is:inline>
     (function () {
       let cleanupFn = null;
 
@@ -132,7 +149,7 @@ const mediaCards = curatedMedia.map((episode) => ({
         });
 
         cards.forEach(function (card) {
-          const show = category === "All" || card.dataset.category === category;
+          const show = category === "Featured" ? card.dataset.featured === "true" : card.dataset.category === category;
           card.style.display = show ? "" : "none";
         });
       }
@@ -156,13 +173,47 @@ const mediaCards = curatedMedia.map((episode) => ({
             img.src = "https://img.youtube.com/vi/" + encodeURIComponent(videoId) + "/hqdefault.jpg";
           }
         });
+        applyCategoryFilter("Featured");
+
+        function visibleCards() {
+          return cards.filter(function (card) {
+            return card.style.display !== "none";
+          });
+        }
+
+        function scrollToCard(index, behavior) {
+          if (!carousel || !cards.length) return;
+          const visible = visibleCards();
+          if (!visible.length) return;
+          const target = visible[Math.max(0, Math.min(index, visible.length - 1))];
+          const carouselRect = carousel.getBoundingClientRect();
+          const targetRect = target.getBoundingClientRect();
+          carousel.scrollTo({
+            left: carousel.scrollLeft + targetRect.left - carouselRect.left - (carousel.clientWidth - targetRect.width) / 2,
+            behavior: behavior || "smooth",
+          });
+        }
+
+        function showVideoInCarousel(videoId, behavior) {
+          if (!videoId) return;
+          const target = cards.find(function (card) {
+            return card.dataset.videoId === videoId;
+          });
+          if (!target) return;
+          if (target.style.display === "none") {
+            applyCategoryFilter(target.dataset.featured === "true" ? "Featured" : target.dataset.category || "Featured");
+          }
+          requestAnimationFrame(function () {
+            scrollToCard(visibleCards().indexOf(target), behavior);
+          });
+        }
 
         document.addEventListener(
           "click",
           function (event) {
             const filter = event.target.closest(".media-filter");
             if (filter) {
-              applyCategoryFilter(filter.dataset.category || "All");
+              applyCategoryFilter(filter.dataset.category || "Featured");
               return;
             }
 
@@ -178,7 +229,10 @@ const mediaCards = curatedMedia.map((episode) => ({
               videoId,
               source: button.dataset.mediaSource || "YouTube",
             });
-            if (ok) setActive(videoId);
+            if (ok) {
+              setActive(videoId);
+              showVideoInCarousel(videoId);
+            }
           },
           { signal: abort.signal },
         );
@@ -186,32 +240,30 @@ const mediaCards = curatedMedia.map((episode) => ({
         document.addEventListener(
           "media:playing",
           function (event) {
-            setActive(event.detail && event.detail.videoId);
+            const videoId = event.detail && event.detail.videoId;
+            setActive(videoId);
+            showVideoInCarousel(videoId);
           },
           { signal: abort.signal },
         );
 
-        if (window.setMediaPlaylist) {
-          window.setMediaPlaylist(mediaPlaylist);
-        }
-        // BaseLayout handles first-init seeding; media page only replaces the
-        // player when the user explicitly clicks a card.
+        // BaseLayout owns the player playlist mode; media page only replaces
+        // the player when the user explicitly clicks a card.
 
         // Highlight the card for the currently playing track on entry.
         const currentTrack = window.__mediaPlayerState && window.__mediaPlayerState.currentTrack;
         if (currentTrack && currentTrack.videoId) {
           setActive(currentTrack.videoId);
+          showVideoInCarousel(currentTrack.videoId, "auto");
         }
 
         function currentIndex() {
           if (!carousel) return 0;
-          const visibleCards = cards.filter(function (card) {
-            return card.style.display !== "none";
-          });
-          if (!visibleCards.length) return 0;
+          const visible = visibleCards();
+          if (!visible.length) return 0;
           const rect = carousel.getBoundingClientRect();
           const targetLine = rect.left + rect.width / 2;
-          return visibleCards.reduce(
+          return visible.reduce(
             function (best, card, index) {
               const cardRect = card.getBoundingClientRect();
               const distance = Math.abs(cardRect.left + cardRect.width / 2 - targetLine);
@@ -219,21 +271,6 @@ const mediaCards = curatedMedia.map((episode) => ({
             },
             { index: 0, distance: Infinity },
           ).index;
-        }
-
-        function scrollToCard(index) {
-          if (!carousel || !cards.length) return;
-          const visibleCards = cards.filter(function (card) {
-            return card.style.display !== "none";
-          });
-          if (!visibleCards.length) return;
-          const target = visibleCards[Math.max(0, Math.min(index, visibleCards.length - 1))];
-          const carouselRect = carousel.getBoundingClientRect();
-          const targetRect = target.getBoundingClientRect();
-          carousel.scrollTo({
-            left: carousel.scrollLeft + targetRect.left - carouselRect.left - (carousel.clientWidth - targetRect.width) / 2,
-            behavior: "smooth",
-          });
         }
 
         if (left) {
