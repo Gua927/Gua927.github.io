@@ -184,7 +184,7 @@ export const curatedMedia: MediaItem[] = [
     youtubeUrl: "https://www.youtube.com/watch?v=x2meJPOn9ws",
     tags: ["selected", "spacex", "mars", "podcast"],
     category: "SpaceX",
-    featured: true,
+    featured: false,
   },
 ];
 
