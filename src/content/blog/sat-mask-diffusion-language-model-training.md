@@ -3,7 +3,7 @@ title: "SAT-Mask: Self-Aligned Trajectory Masking for Diffusion Language Models"
 date: 2026-06-14
 excerpt: SAT-Mask aligns masked diffusion language model training with inference trajectories by replacing random mask states with self-aligned, confidence-guided rollout states.
 category: PUB-NOTE
-tags: ["MDLM", "Order"]
+tags: ["Stared", "MDLM", "Order"]
 author: Runze Tian
 affiliation: GenSI Lab, THU-AIR
 bib: public/assets/blog/sat-mask-diffusion-language-model-training/references.bib

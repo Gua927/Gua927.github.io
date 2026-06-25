@@ -476,6 +476,11 @@ const currentCrumbLabel = title;
             }));
           }
 
+          if (!window.__mediaPlayerBeforeSwapSaveAttached) {
+            window.__mediaPlayerBeforeSwapSaveAttached = true;
+            document.addEventListener("astro:before-swap", saveMediaState);
+          }
+
           let saveStateTimer = state.saveStateTimer;
           function startSaveStateTimer() {
             stopSaveStateTimer();

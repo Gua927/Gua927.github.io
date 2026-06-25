@@ -6,7 +6,7 @@ const posts = (await getCollection("blog"))
   .filter((p) => !p.data.draft)
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
 
-const categoryOrder = ["pub-note", "paper", "notes", "methods", "ideas", "essays", "experiments"];
+const categoryOrder = ["pub-note", "research", "paper", "notes", "methods", "ideas", "essays", "experiments"];
 const categoryCounts = new Map<string, { label: string; count: number }>();
 for (const post of posts) {
   const label = post.data.category ?? "notes";
@@ -27,9 +27,19 @@ for (const post of posts) {
     tagCounts.set(key, { label, count: (current?.count ?? 0) + 1 });
   }
 }
+const tagOrder = ["stared", "mdlm"];
 const tagFilters = Array.from(tagCounts.entries())
   .map(([key, value]) => ({ key, ...value }))
-  .sort((a, b) => a.label.localeCompare(b.label, undefined, { sensitivity: "base" }));
+  .sort((a, b) => {
+    const aOrder = tagOrder.indexOf(a.key);
+    const bOrder = tagOrder.indexOf(b.key);
+    if (aOrder >= 0 || bOrder >= 0) {
+      if (aOrder < 0) return 1;
+      if (bOrder < 0) return -1;
+      return aOrder - bOrder;
+    }
+    return a.label.localeCompare(b.label, undefined, { sensitivity: "base" });
+  });
 
 function formatDate(date: Date) {
   return date.toISOString().split("T")[0];
