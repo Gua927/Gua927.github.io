@@ -500,6 +500,7 @@ Fred Zhangzhi Peng, Zachary Bezemek, Jarrid Rector-Brooks, Shuibai Zhang, Anru R
             currentIndex: -1,
             currentTrack: null,
             isPlaying: false,
+            resumeRequested: false,
             apiReady: false,
             ytPlayer: null,
             progressTimer: null,
@@ -604,8 +605,29 @@ Fred Zhangzhi Peng, Zachary Bezemek, Jarrid Rector-Brooks, Shuibai Zhang, Anru R
             });
           }
 
+          function getActualPlaybackState() {
+            if (
+              state.ytPlayer &&
+              typeof state.ytPlayer.getPlayerState === "function" &&
+              window.YT &&
+              window.YT.PlayerState
+            ) {
+              try {
+                return state.ytPlayer.getPlayerState();
+              } catch (_) {}
+            }
+            return null;
+          }
+
+          function isActuallyPlaying() {
+            const actualState = getActualPlaybackState();
+            if (actualState === null) return state.isPlaying;
+            return actualState === window.YT.PlayerState.PLAYING;
+          }
+
           function syncButtons() {
             syncPlaylistModeButton();
+            state.isPlaying = isActuallyPlaying();
             if (toggle) {
               toggle.disabled = !state.currentTrack;
               toggle.setAttribute("aria-label", state.isPlaying ? "Pause media" : "Play media");
@@ -620,6 +642,7 @@ Fred Zhangzhi Peng, Zachary Bezemek, Jarrid Rector-Brooks, Shuibai Zhang, Anru R
 
           function saveMediaState() {
             if (!state.currentTrack) return;
+            state.isPlaying = isActuallyPlaying();
             let currentTime = 0;
             if (state.ytPlayer && typeof state.ytPlayer.getCurrentTime === "function") {
               try {
@@ -636,6 +659,11 @@ Fred Zhangzhi Peng, Zachary Bezemek, Jarrid Rector-Brooks, Shuibai Zhang, Anru R
               currentTime: currentTime || state.currentTrack.start,
               isPlaying: state.isPlaying,
             }));
+          }
+
+          if (!window.__mediaPlayerBeforeSwapSaveAttached) {
+            window.__mediaPlayerBeforeSwapSaveAttached = true;
+            document.addEventListener("astro:before-swap", saveMediaState);
           }
 
           let saveStateTimer = state.saveStateTimer;
@@ -718,7 +746,7 @@ Fred Zhangzhi Peng, Zachary Bezemek, Jarrid Rector-Brooks, Shuibai Zhang, Anru R
                   state.apiReady = true;
                   startProgressTimer();
                   syncButtons();
-                  if (state.isPlaying && typeof state.ytPlayer.playVideo === "function") {
+                  if (state.resumeRequested && typeof state.ytPlayer.playVideo === "function") {
                     state.ytPlayer.playVideo();
                   }
                   return;
@@ -742,7 +770,7 @@ Fred Zhangzhi Peng, Zachary Bezemek, Jarrid Rector-Brooks, Shuibai Zhang, Anru R
                     state.apiReady = true;
                     startProgressTimer();
                     syncButtons();
-                    if (state.isPlaying) {
+                    if (state.resumeRequested) {
                       try {
                         state.ytPlayer.playVideo();
                       } catch (_) {}
@@ -750,6 +778,14 @@ Fred Zhangzhi Peng, Zachary Bezemek, Jarrid Rector-Brooks, Shuibai Zhang, Anru R
                   },
                   onStateChange: function (event) {
                     state.isPlaying = event.data === window.YT.PlayerState.PLAYING;
+                    if (
+                      event.data === window.YT.PlayerState.PLAYING ||
+                      event.data === window.YT.PlayerState.PAUSED ||
+                      event.data === window.YT.PlayerState.CUED ||
+                      event.data === window.YT.PlayerState.ENDED
+                    ) {
+                      state.resumeRequested = false;
+                    }
                     if (event.data === window.YT.PlayerState.ENDED) {
                       playAdjacent(1);
                     }
@@ -797,7 +833,8 @@ Fred Zhangzhi Peng, Zachary Bezemek, Jarrid Rector-Brooks, Shuibai Zhang, Anru R
               state.currentTrack.videoId === videoId &&
               document.getElementById("sidebar-media-iframe")
             ) {
-              state.isPlaying = Boolean(options && options.autoplay) || state.isPlaying;
+              state.resumeRequested = Boolean(options && options.autoplay);
+              state.isPlaying = isActuallyPlaying();
               if (options && options.autoplay && state.ytPlayer && typeof state.ytPlayer.playVideo === "function") {
                 try {
                   state.ytPlayer.playVideo();
@@ -835,7 +872,8 @@ Fred Zhangzhi Peng, Zachary Bezemek, Jarrid Rector-Brooks, Shuibai Zhang, Anru R
             };
             const matchedIndex = findPlaylistIndex(videoId);
             if (matchedIndex >= 0) state.currentIndex = matchedIndex;
-            state.isPlaying = autoplay === "1";
+            state.resumeRequested = autoplay === "1";
+            state.isPlaying = false;
             updateProgressUI(start, 0);
             syncButtons();
             saveMediaState();
@@ -928,9 +966,10 @@ Fred Zhangzhi Peng, Zachary Bezemek, Jarrid Rector-Brooks, Shuibai Zhang, Anru R
                   return;
                 }
                 try {
-                  if (state.isPlaying) {
+                  if (isActuallyPlaying()) {
                     state.ytPlayer.pauseVideo();
                   } else {
+                    state.resumeRequested = false;
                     state.ytPlayer.playVideo();
                   }
                 } catch (_) {}
