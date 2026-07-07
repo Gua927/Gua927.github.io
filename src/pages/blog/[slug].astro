@@ -13,10 +13,11 @@ export async function getStaticPaths() {
 const { post } = Astro.props;
 const { Content, headings } = await render(post);
 const tocHeadings = headings.filter(
-  (heading) => heading.depth >= 1 && heading.depth <= 3 && heading.slug !== "footnote-label",
+  (heading) => heading.depth >= 1 && heading.depth <= 3 && !["footnote-label", "takeaway"].includes(heading.slug),
 );
 const categoryLabel = post.data.category ?? "notes";
 const categoryHref = `/blog/?kind=${categoryLabel.toLowerCase()}`;
+const affiliationHref = post.data.affiliationHref;
 
 function formatDate(date: Date) {
   return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
@@ -40,7 +41,7 @@ function formatDate(date: Date) {
       <div>
         <dt>Affiliation</dt>
         <dd>
-          <a href="https://www.gensi-thuair.com/#/portal_home" target="_blank" rel="noopener noreferrer">
+          <a href={affiliationHref} target="_blank" rel="noopener noreferrer">
             {post.data.affiliation}
           </a>
         </dd>

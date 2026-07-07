@@ -1683,6 +1683,36 @@ html.dark .markdown-content .footnote-preview {
   text-decoration: none;
 }
 
+.markdown-content .blog-takeaway {
+  margin: 0 0 32px;
+  padding: 1.05rem 1.18rem 1.1rem;
+  border: 1px solid var(--border-main);
+  border-left: 3px solid var(--text-main);
+  background: color-mix(in srgb, var(--panel) 72%, var(--bg-deep));
+  color: var(--muted);
+}
+
+html.dark .markdown-content .blog-takeaway {
+  background: color-mix(in srgb, var(--panel) 82%, var(--bg-deep));
+}
+
+.markdown-content .blog-takeaway strong {
+  display: block;
+  margin-bottom: 0.45rem;
+  color: var(--text-main);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.markdown-content .blog-takeaway p {
+  margin: 0;
+  color: inherit;
+}
+
 .markdown-content blockquote {
   margin: 20px 0 24px;
   padding: 8px 0 8px 18px;
@@ -2176,7 +2206,11 @@ html.dark .markdown-content .paper-results-table .sat-row td {
   font-weight: 700;
   line-height: 1.05;
   letter-spacing: -0.035em;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-break: normal;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  hyphenate-limit-chars: 8 4 4;
 }
 
 .blog-post-header .excerpt {
@@ -3057,6 +3091,11 @@ html.dark .markdown-content .paper-results-table .sat-row td {
   font-size: 15px;
   font-weight: 700;
   line-height: 1.35;
+  overflow-wrap: break-word;
+  word-break: normal;
+  -webkit-hyphens: auto;
+  hyphens: auto;
+  hyphenate-limit-chars: 8 4 4;
 }
 
 .note-entry:hover h3 {

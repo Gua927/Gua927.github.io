@@ -37,6 +37,7 @@ category: notes
 tags: ["TagA", "TagB"]
 author: Runze Tian
 affiliation: GenSI Lab, THU-AIR
+affiliationHref: https://www.gensi-thuair.com/#/portal_home
 draft: false
 ---
 ```
@@ -50,6 +51,7 @@ Field rules:
 - `tags` is optional and defaults to `[]`. Use short labels; they appear as Blog filters.
 - `author` is optional and defaults to `Runze Tian`.
 - `affiliation` is optional and defaults to `GenSI Lab, THU-AIR`.
+- `affiliationHref` is optional and defaults to `https://www.gensi-thuair.com/#/portal_home`.
 - `draft` is optional and defaults to `false`. Set `draft: true` to hide the post from the Blog index. Current route generation may still build draft pages, so do not use draft files for private content.
 
 Known category order on the Blog index:
@@ -65,7 +67,7 @@ Other categories work, but they appear after the known categories.
 On the Blog detail page:
 
 - `author` is linked to the site home page `/`.
-- `affiliation` is linked to `https://www.gensi-thuair.com/#/portal_home`.
+- `affiliation` is linked to `affiliationHref`.
 
 If a future post needs different metadata links, update the Blog detail template rather than encoding links inside frontmatter.
 
