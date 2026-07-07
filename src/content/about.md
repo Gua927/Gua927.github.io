@@ -1,7 +1,7 @@
 ---
 title: about
 permalink: /
-subtitle: Undergraduate Student @ <a href='https://stat.ruc.edu.cn/'>RUC Statistics</a>; Intern @ <a href='https://www.gensi-thuair.com/#/portal_home'>GenSI Lab, THU-AIR</a>
+subtitle: Undergraduate Student @ <a href='https://stat.ruc.edu.cn/'>RUC Statistics</a>; Intern @ <a href='https://www.gensi-thuair.com/#/portal_home'>GenSI Lab, THU-AIR</a>; and <a href='https://ai4s.lab.westlake.edu.cn/'>Talentlab, Westleak</a>
 
 profile:
   image: profile-sea.jpg
