@@ -2366,6 +2366,236 @@ html.dark .markdown-content .paper-results-table .sat-row td {
   opacity: 1;
 }
 
+/* Essays keep the site's restrained language while giving long-form prose a
+   quieter, warmer reading surface than technical notes. */
+.essay-post-shell {
+  --essay-accent: #8a6a43;
+  position: relative;
+  width: min(100%, 1040px);
+  min-height: calc(100vh - 44px);
+  margin: 0 auto;
+  padding: clamp(72px, 9vw, 120px) clamp(32px, 4.5vw, 56px) clamp(84px, 10vw, 128px);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, #f4ead9 42%, transparent), transparent 26rem),
+    var(--bg-body);
+}
+
+html.dark .essay-post-shell {
+  --essay-accent: #c6a879;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, #6b5132 13%, transparent), transparent 26rem),
+    var(--bg-body);
+}
+
+.essay-post-header {
+  width: min(100%, 660px);
+  margin: 0;
+  text-align: center;
+}
+
+.essay-post-kicker {
+  display: flex;
+  justify-content: center;
+  gap: 0.65rem;
+  margin: 0 0 2.1rem;
+  color: var(--essay-accent);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.67rem;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.essay-post-kicker a {
+  text-decoration: none;
+}
+
+.essay-post-kicker a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.35em;
+}
+
+.essay-post-header h1 {
+  margin: 0;
+  color: var(--text-main);
+  font-family: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", Georgia, serif;
+  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.055em;
+  text-wrap: balance;
+}
+
+.essay-post-excerpt {
+  max-width: 38rem;
+  margin: 1.8rem auto 0;
+  color: var(--muted);
+  font-family: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", Georgia, serif;
+  font-size: clamp(0.98rem, 1.5vw, 1.08rem);
+  line-height: 1.9;
+  text-wrap: balance;
+}
+
+.essay-post-ornament {
+  display: grid;
+  grid-template-columns: minmax(2rem, 5.5rem) auto minmax(2rem, 5.5rem);
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  margin: 2.1rem auto 1.35rem;
+  color: var(--essay-accent);
+}
+
+.essay-post-ornament span {
+  width: 100%;
+  height: 1px;
+  background: color-mix(in srgb, var(--essay-accent) 58%, transparent);
+}
+
+.essay-post-ornament i {
+  font-family: Georgia, serif;
+  font-size: 0.75rem;
+  font-style: normal;
+  line-height: 1;
+}
+
+.essay-post-byline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem 0.65rem;
+  margin: 0;
+  color: var(--faint);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.67rem;
+  letter-spacing: 0.035em;
+}
+
+.essay-post-byline a {
+  color: inherit;
+  text-decoration-color: transparent;
+}
+
+.essay-post-byline a:hover {
+  color: var(--text-main);
+  text-decoration-color: currentColor;
+}
+
+.essay-post {
+  width: min(100%, 660px);
+  margin-top: clamp(54px, 8vw, 84px);
+}
+
+.essay-post-content {
+  max-width: 660px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: color-mix(in srgb, var(--text-main) 76%, var(--muted));
+  font-family: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", Georgia, serif;
+  font-size: clamp(1.03rem, 1.35vw, 1.1rem);
+  line-height: 2.05;
+  letter-spacing: 0.018em;
+}
+
+.essay-post-content p {
+  margin: 0 0 1.5em;
+  text-align: justify;
+  text-justify: inter-ideograph;
+}
+
+.essay-post-content > p:first-of-type::first-letter {
+  float: left;
+  margin: 0.12em 0.13em 0 0;
+  color: var(--essay-accent);
+  font-family: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", Georgia, serif;
+  font-size: 3.3em;
+  font-weight: 600;
+  line-height: 0.72;
+}
+
+.essay-post-content :is(h1, h2, h3) {
+  display: block;
+  margin-top: 2.8em;
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.essay-post-content :is(h1, h2, h3)::after {
+  content: none;
+}
+
+.essay-post-content blockquote {
+  margin: 2.4rem auto;
+  padding: 0.2rem clamp(1rem, 4vw, 2.4rem);
+  border: 0;
+  color: var(--muted);
+  font-style: italic;
+  text-align: center;
+}
+
+.essay-post-content .essay-sidenote {
+  float: right;
+  clear: right;
+  width: 220px;
+  margin: 0.35rem -280px 1.65rem 36px;
+  padding: 0.15rem 0 0.15rem 1rem;
+  border: 0;
+  border-left: 1px solid color-mix(in srgb, var(--essay-accent) 55%, var(--border-main));
+  color: var(--muted);
+  font-family: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", Georgia, serif;
+  font-size: 0.82rem;
+  font-style: normal;
+  line-height: 1.72;
+  text-align: left;
+}
+
+.essay-post-content .essay-sidenote::before {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--essay-accent);
+  content: "旁注";
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+}
+
+.essay-post-content .essay-sidenote p {
+  margin: 0;
+  color: inherit;
+  line-height: inherit;
+  text-align: left;
+}
+
+.essay-post-content .essay-sidenote p + p {
+  margin-top: 0.75rem;
+}
+
+.essay-post-footer {
+  display: flex;
+  justify-content: center;
+  width: min(100%, 660px);
+  gap: 0.8rem;
+  margin-top: clamp(60px, 9vw, 96px);
+  color: var(--essay-accent);
+  font-family: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", Georgia, serif;
+  font-size: 0.84rem;
+  letter-spacing: 0.3em;
+}
+
+@media (max-width: 1240px) {
+  .essay-post-content .essay-sidenote {
+    float: none;
+    width: auto;
+    margin: 1.4rem 0 1.75rem;
+    padding: 0.75rem 1rem;
+    border: 1px solid color-mix(in srgb, var(--essay-accent) 42%, var(--border-main));
+    background: color-mix(in srgb, var(--essay-accent) 5%, transparent);
+  }
+}
+
 @media (max-width: 860px) {
   body {
     overflow-x: hidden;
@@ -2687,6 +2917,38 @@ html.dark .markdown-content .paper-results-table .sat-row td {
 
   .blog-post-toc {
     display: none;
+  }
+
+  .essay-post-shell {
+    min-height: auto;
+    padding: 60px 24px 84px;
+  }
+
+  .essay-post-header h1 {
+    font-size: clamp(2.25rem, 10.5vw, 3.2rem);
+    letter-spacing: 0.035em;
+  }
+
+  .essay-post-excerpt {
+    line-height: 1.75;
+  }
+
+  .essay-post {
+    margin-top: 52px;
+  }
+
+  .essay-post-header,
+  .essay-post,
+  .essay-post-footer {
+    margin-right: auto;
+    margin-left: auto;
+  }
+
+  .essay-post-content {
+    margin-right: auto;
+    margin-left: auto;
+    font-size: 1.03rem;
+    line-height: 1.95;
   }
 
 }

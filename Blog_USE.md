@@ -93,6 +93,19 @@ The current design supports heading styles for:
 
 Avoid `####` and deeper headings in Blog posts. They may render as browser/default Markdown headings but are not part of the designed Blog heading system or table of contents.
 
+## Essay Margin Notes
+
+Posts with `category: essays` use the dedicated Essay layout. On wide screens, the main reading column shifts left to reserve a right-hand margin for annotations. On narrower screens, annotations return to the main flow so they remain readable without horizontal scrolling.
+
+Write a margin note as a marked Markdown blockquote:
+
+```markdown
+> [!sidenote]
+> 这是一条与相邻段落相关的旁注。
+```
+
+The Chinese marker `[!旁注]` is also supported. Place the block immediately before the paragraph it annotates. Use ordinary blockquotes for quoted material; only blockquotes with one of these two markers become margin notes.
+
 ## Heading Visual Style
 
 Blog body headings automatically receive a light gray `#` mark after the heading text:

@@ -7,6 +7,7 @@ import rehypeKatex from "rehype-katex";
 import remarkTyporaMath from "./src/lib/remark-typora-math.mjs";
 import remarkBlogAlgorithms from "./src/lib/remark-blog-algorithms.mjs";
 import remarkBlogFigures from "./src/lib/remark-blog-figures.mjs";
+import remarkEssaySidenotes from "./src/lib/remark-essay-sidenotes.mjs";
 import remarkBlogReferences from "./src/lib/remark-blog-references.mjs";
 import rehypeBlogReferenceOrder from "./src/lib/rehype-blog-reference-order.mjs";
 
@@ -22,6 +23,7 @@ export default defineConfig({
         remarkTyporaMath,
         remarkBlogAlgorithms,
         remarkBlogFigures,
+        remarkEssaySidenotes,
         remarkBlogReferences,
       ],
       rehypePlugins: [

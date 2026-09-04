@@ -1,0 +1,56 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  post: CollectionEntry<"blog">;
+  Content: any;
+  categoryHref: string;
+}
+
+const { post, Content, categoryHref } = Astro.props;
+
+function formatDate(date: Date) {
+  return `${date.getFullYear()} 年 ${date.getMonth() + 1} 月 ${date.getDate()} 日`;
+}
+---
+
+<div class="essay-post-shell" lang="zh-CN">
+  <header class="essay-post-header">
+    <p class="essay-post-kicker">
+      <a href={categoryHref}>Essay</a>
+      {post.data.tags[0] && <span aria-hidden="true">/</span>}
+      {post.data.tags[0] && <span>{post.data.tags[0]}</span>}
+    </p>
+
+    <h1>{post.data.title}</h1>
+    <p class="essay-post-excerpt">{post.data.excerpt}</p>
+
+    <div class="essay-post-ornament" aria-hidden="true">
+      <span></span>
+      <i>◇</i>
+      <span></span>
+    </div>
+
+    <p class="essay-post-byline">
+      <a href="/">{post.data.author}</a>
+      <span aria-hidden="true">·</span>
+      <a href={post.data.affiliationHref} target="_blank" rel="noopener noreferrer">
+        {post.data.affiliation}
+      </a>
+      <span aria-hidden="true">·</span>
+      <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+    </p>
+  </header>
+
+  <article class="essay-post">
+    <div class="markdown-content essay-post-content">
+      <Content />
+    </div>
+  </article>
+
+  <footer class="essay-post-footer" aria-label="End of essay">
+    <span aria-hidden="true">—</span>
+    <span>完</span>
+    <span aria-hidden="true">—</span>
+  </footer>
+</div>
