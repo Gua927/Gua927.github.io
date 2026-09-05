@@ -38,6 +38,12 @@ const blog = defineCollection({
     affiliation: z.string().default("GenSI Lab, THU-AIR"),
     affiliationHref: z.string().url().default("https://www.gensi-thuair.com/#/portal_home"),
     bib: z.string().optional(),
+    lang: z.string().optional(),
+    essay: z.object({
+      dropCap: z.boolean().default(false),
+      showAffiliation: z.boolean().default(true),
+      endMark: z.string().default("完"),
+    }).default({ dropCap: false, showAffiliation: true, endMark: "完" }),
     draft: z.boolean().default(false),
   }),
 });

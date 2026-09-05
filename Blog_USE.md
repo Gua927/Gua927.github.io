@@ -93,9 +93,33 @@ The current design supports heading styles for:
 
 Avoid `####` and deeper headings in Blog posts. They may render as browser/default Markdown headings but are not part of the designed Blog heading system or table of contents.
 
+## Essay Template
+
+Start by copying the reusable template (kept outside the content collection so it does not become a published page):
+
+```bash
+cp templates/essay.md src/content/blog/your-slug.md
+```
+
+Replace the title, date, excerpt, tags, and body. Delete unused examples. Store media under `public/assets/blog/your-slug/` and reference it as `/assets/blog/your-slug/...`.
+
+Posts with `category: essays` share the title alignment, metadata, date format, and dividers of pub-note. Their serif prose, quieter section headings, margin annotations, and ending mark preserve a personal reading style. The shared header lives in `src/components/PostHeader.astro`; the Essay wrapper uses a content slot in `src/components/EssayPost.astro`, and its styles live in `src/styles/essay.css`. New essays need only Markdown, with no page-specific CSS or Astro components.
+
+Optional frontmatter:
+
+```yaml
+lang: zh-CN # Use en for English prose; Essay defaults to zh-CN.
+essay:
+  showAffiliation: false # Hide the affiliation for personal writing; defaults to true.
+  dropCap: false # Opt into a large opening letter with true; defaults to false.
+  endMark: "完" # Customize the closing mark, or use "" to hide it.
+```
+
+Existing posts work without these fields. Author and affiliation still use the collection defaults unless overridden. The `essay` options only affect Essay pages. Essay headings remain in the reading column; the right margin is reserved for notes and images rather than a fixed table of contents.
+
 ## Essay Margin Notes
 
-Posts with `category: essays` use the dedicated Essay layout. On wide screens, the main reading column shifts left to reserve a right-hand margin for annotations. On narrower screens, annotations return to the main flow so they remain readable without horizontal scrolling.
+On wide screens, annotations sit beside a reading column capped at 720px, using the same gutter as the pub-note table of contents. At 1240px and below, annotations return to the main flow so they remain readable without horizontal scrolling.
 
 Write a margin note as a marked Markdown blockquote:
 
@@ -106,15 +130,15 @@ Write a margin note as a marked Markdown blockquote:
 
 The Chinese marker `[!旁注]` is also supported. Place the block immediately before the paragraph it annotates. Use ordinary blockquotes for quoted material; only blockquotes with one of these two markers become margin notes.
 
-For a numbered image in the right margin, give the figure an ID, add the same marker to its caption, and link to it from the related sentence:
+For a numbered image in the right margin, place it before the paragraph it annotates, give the figure an ID, add the same marker to its caption, and link to it from the related sentence:
 
 ```html
-正文中的相关关键词<sup class="essay-media-ref"><a href="#essay-figure-1">1</a></sup>放在句子里。
-
 <figure class="essay-side-media" id="essay-figure-1">
   <img src="/assets/blog/example.jpg" alt="Meaningful description" />
   <figcaption data-marker="1">图片说明</figcaption>
 </figure>
+
+正文中的相关关键词<sup class="essay-media-ref"><a href="#essay-figure-1">1</a></sup>放在句子里。
 ```
 
 Put the image-reference number immediately after the word or short phrase it explains, rather than collecting it at the end of the paragraph. Image-reference numbers use the Essay accent color and jump to the corresponding figure. They are separate from Markdown footnotes, which continue to use the standard `[^note]` syntax and appear in the endnotes section. Essay footnotes do not open hover previews.
@@ -129,7 +153,7 @@ On wide screens, side images are automatically lowered by roughly one line so th
 
 ## Heading Visual Style
 
-Blog body headings automatically receive a light gray `#` mark after the heading text:
+Non-Essay Blog body headings automatically receive a light gray `#` mark after the heading text:
 
 - `h1` gets the largest `#` mark.
 - `h2` gets a medium `#` mark.

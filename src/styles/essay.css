@@ -1,0 +1,372 @@
+/* Shared article grid and metadata come from global.css; only prose differs. */
+.blog-post-shell.essay-post-shell {
+  --essay-accent: #8a6a43;
+  --essay-serif: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", Georgia, serif;
+  grid-template-columns: minmax(0, 720px) var(--blog-toc-width);
+  padding-right: var(--blog-page-inset);
+}
+
+html.dark .essay-post-shell {
+  --essay-accent: #c6a879;
+}
+
+.essay-post-shell .blog-post-divider-meta {
+  grid-column: 1 / -1;
+}
+
+.essay-post-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.65rem;
+  margin: 0 0 0.25rem;
+  color: var(--essay-accent);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.67rem;
+  letter-spacing: 0.12em;
+}
+
+.essay-post-kicker a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.essay-post-kicker a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.3em;
+}
+
+.essay-post-shell .blog-post-header h1 {
+  font-family: var(--essay-serif);
+  font-weight: 600;
+  line-height: 1.22;
+  letter-spacing: 0.025em;
+  text-wrap: pretty;
+}
+
+.essay-post-content {
+  display: flow-root;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  color: color-mix(in srgb, var(--text-main) 84%, var(--muted));
+  font-family: var(--essay-serif);
+  font-size: clamp(1.03rem, 1.35vw, 1.1rem);
+  line-height: 1.95;
+  letter-spacing: 0.018em;
+  overflow-wrap: anywhere;
+}
+
+.essay-post-content p {
+  margin: 0 0 1.35em;
+  text-wrap: pretty;
+}
+
+.essay-post-content:lang(zh) > p {
+  text-align: justify;
+  text-justify: inter-ideograph;
+}
+
+.essay-post-content.has-drop-cap > p:first-of-type::first-letter {
+  float: left;
+  margin: 0.12em 0.13em 0 0;
+  color: var(--essay-accent);
+  font-size: 3.3em;
+  font-weight: 600;
+  line-height: 0.72;
+}
+
+.essay-post-content :is(h1, h2, h3) {
+  display: block;
+  margin: 2.5em 0 0.9em;
+  color: var(--text-main);
+  font-family: inherit;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: 0.025em;
+  scroll-margin-top: 6rem;
+}
+
+.essay-post-content h1 {
+  font-size: 1.75em;
+}
+.essay-post-content h2 {
+  font-size: 1.4em;
+}
+.essay-post-content h3 {
+  font-size: 1.15em;
+}
+.essay-post-content :is(h1, h2, h3)::after {
+  content: none;
+}
+
+.essay-post-content blockquote {
+  margin: 2rem 0;
+  padding: 0.2rem 0 0.2rem 1.25rem;
+  border-left: 2px solid var(--essay-accent);
+  color: var(--muted);
+  font-style: normal;
+}
+
+.essay-post-content blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+.essay-post-content > hr {
+  width: 3rem;
+  margin: 2.75rem auto;
+  border: 0;
+  border-top: 1px solid var(--essay-accent);
+}
+
+.essay-post-content .essay-sidenote {
+  float: right;
+  clear: right;
+  width: var(--blog-toc-width);
+  margin: 0.35rem calc(-1 * (var(--blog-toc-width) + var(--blog-column-gap))) 1.65rem var(--blog-column-gap);
+  padding: 0.15rem 0 0.15rem 1rem;
+  border: 0;
+  border-left: 1px solid color-mix(in srgb, var(--essay-accent) 55%, var(--border-main));
+  color: var(--muted);
+  font-family: var(--essay-serif);
+  font-size: 0.82rem;
+  font-style: normal;
+  line-height: 1.72;
+  text-align: left;
+}
+
+.essay-post-content .essay-sidenote::before {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--essay-accent);
+  content: "旁注";
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.6rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+}
+
+.essay-post-content .essay-sidenote p {
+  margin: 0;
+  color: inherit;
+  line-height: inherit;
+  text-align: left;
+}
+
+.essay-post-content .essay-sidenote p + p {
+  margin-top: 0.75rem;
+}
+
+.essay-post-content .blog-figure,
+.essay-post-content .essay-media,
+.essay-post-content .essay-side-media {
+  margin: 2.35rem 0;
+}
+
+.essay-post-content .blog-figure img,
+.essay-post-content .essay-media img,
+.essay-post-content .essay-side-media img,
+.essay-post-content .essay-media video {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  border: 0;
+  background: var(--bg-deep);
+}
+
+.essay-post-content .essay-media a {
+  display: block;
+}
+
+.essay-post-content .blog-figure figcaption,
+.essay-post-content .essay-media figcaption,
+.essay-post-content .essay-side-media figcaption {
+  margin-top: 0.58rem;
+  color: var(--faint);
+  font-family: Inter, "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.055em;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.essay-post-content .essay-side-media {
+  --essay-side-media-offset: 1.15lh;
+  float: right;
+  clear: right;
+  width: var(--blog-toc-width);
+  margin: var(--essay-side-media-offset) calc(-1 * (var(--blog-toc-width) + var(--blog-column-gap))) 1.8rem var(--blog-column-gap);
+  scroll-margin-top: 6rem;
+}
+
+.essay-post-content figcaption[data-marker]::before {
+  margin-right: 0.55em;
+  color: var(--essay-accent);
+  content: attr(data-marker);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.82em;
+  font-weight: 400;
+}
+
+.essay-post-content .essay-side-media:target figcaption {
+  color: var(--text-main);
+}
+
+.essay-post-content .essay-media-ref {
+  margin: 0 0.06em;
+  color: var(--essay-accent);
+  font-size: 0.72em;
+  font-weight: 400;
+  line-height: 1;
+  vertical-align: super;
+}
+
+.essay-post-content .essay-media-ref a {
+  color: inherit;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: inherit;
+  font-weight: inherit;
+  text-decoration: none;
+}
+
+.essay-post-content .essay-media-ref a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.22em;
+}
+
+.essay-post-content sup:has(> a[data-footnote-ref]) {
+  margin: 0 0.06em;
+  font-size: 1em;
+  font-weight: 400;
+}
+
+.essay-post-content a[data-footnote-ref] {
+  display: inline-block;
+  color: var(--faint);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.72em;
+  font-weight: 400;
+  line-height: 1;
+  text-decoration: none;
+  vertical-align: super;
+}
+
+.essay-post-content a[data-footnote-ref]:hover {
+  color: var(--text-main);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.essay-post-content .footnotes {
+  margin-top: 4.5rem;
+  padding-top: 1.25rem;
+  border-top-color: color-mix(in srgb, var(--essay-accent) 36%, var(--border-main));
+  font-family: Inter, "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  font-size: 0.78rem;
+  line-height: 1.72;
+}
+
+.essay-post-content .footnotes::before {
+  display: block;
+  margin-bottom: 0.85rem;
+  color: var(--essay-accent);
+  content: "注";
+  font-family: var(--essay-serif);
+  font-size: 0.86rem;
+  letter-spacing: 0.18em;
+}
+
+.essay-post-content .footnotes ol {
+  padding-left: 1.1rem;
+}
+
+.essay-post-content .footnotes li + li {
+  margin-top: 0.55rem;
+}
+
+.essay-post-content .footnotes li::marker {
+  color: var(--faint);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.82em;
+  font-weight: 400;
+}
+
+.essay-post-content [data-footnote-backref] {
+  margin-left: 0.28em;
+  font-size: 0.86em;
+  font-weight: 400;
+  opacity: 0.72;
+}
+
+.essay-post-content .essay-video-figure video {
+  aspect-ratio: 960 / 544;
+  object-fit: contain;
+}
+
+.essay-post-content > :last-child {
+  margin-bottom: 0;
+}
+
+.essay-post-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  margin-top: 3rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border-main);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.72rem;
+}
+
+.essay-post-footer a {
+  color: var(--muted);
+  text-decoration: none;
+}
+
+.essay-post-footer a:hover {
+  color: var(--text-main);
+}
+
+.essay-end-mark {
+  color: var(--essay-accent);
+  font-family: var(--essay-serif);
+  letter-spacing: 0.2em;
+}
+
+.essay-post-shell a:focus-visible {
+  outline: 2px solid var(--essay-accent);
+  outline-offset: 4px;
+}
+
+@media (max-width: 1240px) {
+  .blog-post-shell.essay-post-shell {
+    grid-template-columns: minmax(0, 720px);
+    grid-template-areas: "header" "divider" "meta" "divider-meta" "post";
+  }
+
+  .essay-post-content .essay-sidenote {
+    float: none;
+    width: auto;
+    margin: 1.4rem 0 1.75rem;
+    padding: 0.4rem 0 0.4rem 1rem;
+  }
+
+  .essay-post-content .essay-side-media {
+    float: none;
+    width: min(100%, 420px);
+    margin: 1.2rem auto 1.75rem;
+  }
+}
+
+@media (max-width: 860px) {
+  .blog-post-shell.essay-post-shell {
+    padding: 48px 20px 72px;
+  }
+  .essay-post-content {
+    font-size: 1.03rem;
+    line-height: 1.9;
+  }
+}

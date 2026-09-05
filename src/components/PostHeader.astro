@@ -1,0 +1,43 @@
+---
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  post: CollectionEntry<"blog">;
+  categoryHref: string;
+  showAffiliation?: boolean;
+}
+
+const { post, categoryHref, showAffiliation = true } = Astro.props;
+const date = post.data.date.toISOString().slice(0, 10).replaceAll("-", ".");
+---
+
+<header class="blog-post-header">
+  <slot name="kicker" />
+  <h1>{post.data.title}</h1>
+  <p class="excerpt">{post.data.excerpt}</p>
+</header>
+
+<div class="blog-post-divider" aria-hidden="true"></div>
+
+<dl class:list={["blog-post-meta", { "blog-post-meta-compact": !showAffiliation }]} aria-label="Post details">
+  <div>
+    <dt>Author</dt>
+    <dd><a href="/">{post.data.author}</a></dd>
+  </div>
+  {showAffiliation && (
+    <div>
+      <dt>Affiliation</dt>
+      <dd><a href={post.data.affiliationHref} target="_blank" rel="noopener noreferrer">{post.data.affiliation}</a></dd>
+    </div>
+  )}
+  <div>
+    <dt>Published</dt>
+    <dd><time datetime={post.data.date.toISOString()}>{date}</time></dd>
+  </div>
+  <div>
+    <dt>Category</dt>
+    <dd><a href={categoryHref}>{post.data.category ?? "notes"}</a></dd>
+  </div>
+</dl>
+
+<div class="blog-post-divider blog-post-divider-meta" aria-hidden="true"></div>

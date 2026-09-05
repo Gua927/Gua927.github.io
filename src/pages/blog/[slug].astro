@@ -1,6 +1,7 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import EssayPost from "../../components/EssayPost.astro";
+import PostHeader from "../../components/PostHeader.astro";
 import { getCollection, render } from "astro:content";
 
 export async function getStaticPaths() {
@@ -18,75 +19,40 @@ const tocHeadings = headings.filter(
 );
 const categoryLabel = post.data.category ?? "notes";
 const categoryHref = `/blog/?kind=${categoryLabel.toLowerCase()}`;
-const affiliationHref = post.data.affiliationHref;
 const isEssay = categoryLabel.toLowerCase() === "essays";
-
-function formatDate(date: Date) {
-  return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}`;
-}
 ---
 
 <BaseLayout title={post.data.title} description={post.data.excerpt}>
   {
     isEssay ? (
-      <EssayPost post={post} Content={Content} categoryHref={categoryHref} />
-    ) : (
-  <div class="blog-post-shell">
-    <header class="blog-post-header">
-      <h1>{post.data.title}</h1>
-      <p class="excerpt">{post.data.excerpt}</p>
-    </header>
-
-    <div class="blog-post-divider" aria-hidden="true"></div>
-
-    <dl class="blog-post-meta" aria-label="Post details">
-      <div>
-        <dt>Author</dt>
-        <dd><a href="/">{post.data.author}</a></dd>
-      </div>
-      <div>
-        <dt>Affiliation</dt>
-        <dd>
-          <a href={affiliationHref} target="_blank" rel="noopener noreferrer">
-            {post.data.affiliation}
-          </a>
-        </dd>
-      </div>
-      <div>
-        <dt>Published</dt>
-        <dd>
-          <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
-        </dd>
-      </div>
-      <div>
-        <dt>Category</dt>
-        <dd><a href={categoryHref}>{categoryLabel}</a></dd>
-      </div>
-    </dl>
-
-    <div class="blog-post-divider blog-post-divider-meta" aria-hidden="true"></div>
-
-    <article class="blog-post">
-      <div class="markdown-content blog-post-content">
+      <EssayPost post={post} categoryHref={categoryHref}>
         <Content />
-      </div>
-    </article>
+      </EssayPost>
+    ) : (
+      <div class="blog-post-shell" lang={post.data.lang}>
+        <PostHeader post={post} categoryHref={categoryHref} />
 
-    {
-      tocHeadings.length > 0 && (
-        <aside class="blog-post-toc" aria-label="Table of contents">
-          <span>Contents</span>
-          <nav>
-            {tocHeadings.map((heading) => (
-              <a href={`#${heading.slug}`} class={`depth-${heading.depth}`}>
-                {heading.text}
-              </a>
-            ))}
-          </nav>
-        </aside>
-      )
-    }
-  </div>
+        <article class="blog-post">
+          <div class="markdown-content blog-post-content">
+            <Content />
+          </div>
+        </article>
+
+        {
+          tocHeadings.length > 0 && (
+            <aside class="blog-post-toc" aria-label="Table of contents">
+              <span>Contents</span>
+              <nav>
+                {tocHeadings.map((heading) => (
+                  <a href={`#${heading.slug}`} class={`depth-${heading.depth}`}>
+                    {heading.text}
+                  </a>
+                ))}
+              </nav>
+            </aside>
+          )
+        }
+      </div>
     )
   }
 
