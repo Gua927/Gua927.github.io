@@ -8,7 +8,12 @@ affiliation: Independent
 affiliationHref: https://Gua927.github.io
 ---
 
-2022年的夏天，我即将高三，由于高二成绩还算不错，南阳一中给了我一个清华大学夏令营的名额。 
+<figure class="essay-side-media" id="essay-figure-1">
+  <img src="/assets/blog/summer-2022/media/summer-camp-keepsakes.jpg" alt="夏令营发放的背包、T恤和手册" loading="lazy" decoding="async" />
+  <figcaption data-marker="1">夏令营留下的几件东西</figcaption>
+</figure>
+
+2022年的夏天，我即将高三，由于高二成绩还算不错，南阳一中给了我一个清华大学夏令营<sup class="essay-media-ref"><a href="#essay-figure-1" aria-label="查看对应图片 1">1</a></sup>的名额。
 
 按照惯例，夏令营应该在清华园中进行，但由于疫情，那一年被安排在了郑州四中的校园内。在七月底，父母开车把我送了过去。 
 
@@ -16,9 +21,23 @@ affiliationHref: https://Gua927.github.io
 
 结营晚会上，我和舍友合唱了毛不易的《牧马城市》，当时还很喜欢听毛不易的歌。也是在结营晚会上，我喜欢上了《杀死那个石家庄人》，一直到现在还常常循环。最后的最后，挥舞着手机闪光灯，夏令营在《爱你》和《日不落》中结束。 
 
-一切像一场梦一样，梦醒了，高三就开学了。 
+<figure class="essay-media essay-video-figure">
+  <video controls preload="metadata" playsinline poster="/assets/blog/summer-2022/media/closing-ceremony-poster.jpg" aria-label="2022 年夏令营结营晚会现场视频">
+    <source src="/assets/blog/summer-2022/media/closing-ceremony.webm" type="video/webm" />
+    <source src="/assets/blog/summer-2022/media/closing-ceremony.mp4" type="video/mp4" />
+    你的浏览器不支持视频播放，可以<a href="/assets/blog/summer-2022/media/closing-ceremony.mp4">下载视频</a>观看。
+  </video>
+  <figcaption>结营晚会现场，2022 年 7 月。</figcaption>
+</figure>
 
-可能说不上讨厌，但至少我不喜欢高三。首当其冲的是任课老师的调整，刚开学那阵我心高气傲，特别不适应，很想让老师知道我很厉害，可是开学很长一段时间我都考不出来，总觉得老师没那么关心我（但其实各位老师人都很好，教学质量也很高）。可能也因为这个，渐渐的，心气也在一次次失利中不知不觉的没了。 
+一切像一场梦一样，梦醒了，高三就开学了。
+
+<figure class="essay-side-media" id="essay-figure-2">
+  <img src="/assets/blog/summer-2022/media/classroom-after-gaokao.jpg" alt="写有清华北大舍我其谁横幅的高三教室" loading="lazy" decoding="async" />
+  <figcaption data-marker="2">高三结束后的教室</figcaption>
+</figure>
+
+可能说不上讨厌，但至少我不喜欢高三<sup class="essay-media-ref"><a href="#essay-figure-2" aria-label="查看对应图片 2">2</a></sup>。首当其冲的是任课老师的调整，刚开学那阵我心高气傲，特别不适应，很想让老师知道我很厉害，可是开学很长一段时间我都考不出来，总觉得老师没那么关心我（但其实各位老师人都很好，教学质量也很高）。可能也因为这个，渐渐的，心气也在一次次失利中不知不觉的没了。
 
 当时我特别想学物理，想去北大物理学院，想去清华物理，想去研究可控核聚变。可惜整个高三，除了零星的几次好成绩，其他时候都有点平庸了，包括最后…… 
 

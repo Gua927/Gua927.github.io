@@ -268,6 +268,10 @@ function formatDate(date: Date) {
       function initFootnotePreviews() {
         footnoteCleanup?.();
 
+        // Essay footnotes stay quiet and inline; readers can follow the number
+        // to the endnote without opening a floating preview over the prose.
+        if (document.querySelector(".essay-post-shell")) return;
+
         const refs = Array.from(document.querySelectorAll<HTMLAnchorElement>(".markdown-content a[data-footnote-ref]"));
         if (!refs.length) return;
 

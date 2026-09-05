@@ -2366,29 +2366,41 @@ html.dark .markdown-content .paper-results-table .sat-row td {
   opacity: 1;
 }
 
-/* Essays keep the site's restrained language while giving long-form prose a
-   quieter, warmer reading surface than technical notes. */
+/* Essays share the site's reading surface and distinguish long-form prose
+   through typography, spacing, and margin notes. */
+.page-shell:has(> .essay-post-shell) {
+  container-type: inline-size;
+}
+
 .essay-post-shell {
   --essay-accent: #8a6a43;
+  --essay-margin-width: calc(var(--sidebar) + 24px);
+  --essay-inline-padding: clamp(32px, 4vw, 64px);
+  --essay-main-width: 100cqw;
+  --essay-content-width: min(
+    860px,
+    calc(var(--essay-main-width) - var(--essay-margin-width) - var(--essay-inline-padding))
+  );
+  --essay-edge-inset: 22px;
+  --essay-margin-reach: calc(
+    var(--essay-main-width) - var(--essay-inline-padding)
+    - var(--essay-content-width)
+    - var(--essay-edge-inset)
+  );
   position: relative;
-  width: min(100%, 1040px);
+  width: 100%;
   min-height: calc(100vh - 44px);
-  margin: 0 auto;
-  padding: clamp(72px, 9vw, 120px) clamp(32px, 4.5vw, 56px) clamp(84px, 10vw, 128px);
-  background:
-    linear-gradient(180deg, color-mix(in srgb, #f4ead9 42%, transparent), transparent 26rem),
-    var(--bg-body);
+  margin: 0;
+  padding: clamp(72px, 9vw, 120px) var(--essay-inline-padding) clamp(84px, 10vw, 128px);
+  background: var(--bg-body);
 }
 
 html.dark .essay-post-shell {
   --essay-accent: #c6a879;
-  background:
-    linear-gradient(180deg, color-mix(in srgb, #6b5132 13%, transparent), transparent 26rem),
-    var(--bg-body);
 }
 
 .essay-post-header {
-  width: min(100%, 660px);
+  width: min(100%, var(--essay-content-width));
   margin: 0;
   text-align: center;
 }
@@ -2397,7 +2409,7 @@ html.dark .essay-post-shell {
   display: flex;
   justify-content: center;
   gap: 0.65rem;
-  margin: 0 0 2.1rem;
+  margin: 0 0 1.45rem;
   color: var(--essay-accent);
   font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
   font-size: 0.67rem;
@@ -2416,47 +2428,37 @@ html.dark .essay-post-shell {
 }
 
 .essay-post-header h1 {
-  margin: 0;
+  margin: 0 auto;
   color: var(--text-main);
   font-family: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", Georgia, serif;
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  max-width: 13em;
+  font-size: clamp(2.8rem, 5vw, 4.25rem);
   font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: 0.055em;
+  line-height: 1.12;
+  letter-spacing: 0.035em;
+  text-align: center;
   text-wrap: balance;
 }
 
 .essay-post-excerpt {
-  max-width: 38rem;
-  margin: 1.8rem auto 0;
+  max-width: 46rem;
+  margin: 1.3rem auto 0;
   color: var(--muted);
   font-family: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", Georgia, serif;
-  font-size: clamp(0.98rem, 1.5vw, 1.08rem);
-  line-height: 1.9;
-  text-wrap: balance;
+  font-size: clamp(0.98rem, 1.35vw, 1.06rem);
+  line-height: 1.78;
+  text-wrap: pretty;
 }
 
 .essay-post-ornament {
-  display: grid;
-  grid-template-columns: minmax(2rem, 5.5rem) auto minmax(2rem, 5.5rem);
-  align-items: center;
-  justify-content: center;
-  gap: 0.85rem;
-  margin: 2.1rem auto 1.35rem;
-  color: var(--essay-accent);
-}
-
-.essay-post-ornament span {
   width: 100%;
   height: 1px;
-  background: color-mix(in srgb, var(--essay-accent) 58%, transparent);
+  margin: 1.9rem 0 1.15rem;
+  background: color-mix(in srgb, var(--essay-accent) 36%, var(--border-main));
 }
 
-.essay-post-ornament i {
-  font-family: Georgia, serif;
-  font-size: 0.75rem;
-  font-style: normal;
-  line-height: 1;
+.essay-post-ornament > * {
+  display: none;
 }
 
 .essay-post-byline {
@@ -2482,12 +2484,12 @@ html.dark .essay-post-shell {
 }
 
 .essay-post {
-  width: min(100%, 660px);
-  margin-top: clamp(54px, 8vw, 84px);
+  width: min(100%, var(--essay-content-width));
+  margin-top: clamp(48px, 6vw, 68px);
 }
 
 .essay-post-content {
-  max-width: 660px;
+  max-width: var(--essay-content-width);
   margin: 0;
   padding: 0;
   border: 0;
@@ -2538,8 +2540,8 @@ html.dark .essay-post-shell {
 .essay-post-content .essay-sidenote {
   float: right;
   clear: right;
-  width: 220px;
-  margin: 0.35rem -280px 1.65rem 36px;
+  width: calc(var(--essay-margin-width) - 44px);
+  margin: 0.35rem calc(0px - var(--essay-margin-reach)) 1.65rem 44px;
   padding: 0.15rem 0 0.15rem 1rem;
   border: 0;
   border-left: 1px solid color-mix(in srgb, var(--essay-accent) 55%, var(--border-main));
@@ -2573,10 +2575,155 @@ html.dark .essay-post-shell {
   margin-top: 0.75rem;
 }
 
+.essay-post-content .essay-media,
+.essay-post-content .essay-side-media {
+  margin: 2.35rem 0;
+}
+
+.essay-post-content .essay-media img,
+.essay-post-content .essay-side-media img,
+.essay-post-content .essay-media video {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0;
+  border: 0;
+  background: var(--bg-deep);
+}
+
+.essay-post-content .essay-media a {
+  display: block;
+}
+
+.essay-post-content .essay-media figcaption,
+.essay-post-content .essay-side-media figcaption {
+  margin-top: 0.58rem;
+  color: var(--faint);
+  font-family: Inter, "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  font-size: 0.72rem;
+  font-weight: 400;
+  letter-spacing: 0.055em;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.essay-post-content .essay-side-media {
+  --essay-side-media-offset: 1.15lh;
+  float: right;
+  clear: right;
+  width: calc(var(--essay-margin-width) - 44px);
+  margin: var(--essay-side-media-offset) calc(0px - var(--essay-margin-reach)) 1.8rem 44px;
+  scroll-margin-top: 6rem;
+}
+
+.essay-post-content figcaption[data-marker]::before {
+  margin-right: 0.55em;
+  color: var(--essay-accent);
+  content: attr(data-marker);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.82em;
+  font-weight: 400;
+}
+
+.essay-post-content .essay-side-media:target figcaption {
+  color: var(--text-main);
+}
+
+.essay-post-content .essay-media-ref {
+  margin: 0 0.06em;
+  color: var(--essay-accent);
+  font-size: 0.72em;
+  font-weight: 400;
+  line-height: 1;
+  vertical-align: super;
+}
+
+.essay-post-content .essay-media-ref a {
+  color: inherit;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: inherit;
+  font-weight: inherit;
+  text-decoration: none;
+}
+
+.essay-post-content .essay-media-ref a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.22em;
+}
+
+.essay-post-content sup:has(> a[data-footnote-ref]) {
+  margin: 0 0.06em;
+  font-size: 1em;
+  font-weight: 400;
+}
+
+.essay-post-content a[data-footnote-ref] {
+  display: inline-block;
+  color: var(--faint);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.72em;
+  font-weight: 400;
+  line-height: 1;
+  text-decoration: none;
+  vertical-align: super;
+}
+
+.essay-post-content a[data-footnote-ref]:hover {
+  color: var(--text-main);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.essay-post-content .footnotes {
+  margin-top: 4.5rem;
+  padding-top: 1.25rem;
+  border-top-color: color-mix(in srgb, var(--essay-accent) 36%, var(--border-main));
+  font-family: Inter, "PingFang SC", "Hiragino Sans GB", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+  font-size: 0.78rem;
+  line-height: 1.72;
+}
+
+.essay-post-content .footnotes::before {
+  display: block;
+  margin-bottom: 0.85rem;
+  color: var(--essay-accent);
+  content: "注";
+  font-family: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", Georgia, serif;
+  font-size: 0.86rem;
+  letter-spacing: 0.18em;
+}
+
+.essay-post-content .footnotes ol {
+  padding-left: 1.1rem;
+}
+
+.essay-post-content .footnotes li + li {
+  margin-top: 0.55rem;
+}
+
+.essay-post-content .footnotes li::marker {
+  color: var(--faint);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.82em;
+  font-weight: 400;
+}
+
+.essay-post-content [data-footnote-backref] {
+  margin-left: 0.28em;
+  font-size: 0.86em;
+  font-weight: 400;
+  opacity: 0.72;
+}
+
+.essay-post-content .essay-video-figure video {
+  aspect-ratio: 960 / 544;
+  object-fit: contain;
+}
+
 .essay-post-footer {
   display: flex;
   justify-content: center;
-  width: min(100%, 660px);
+  width: min(100%, var(--essay-content-width));
   gap: 0.8rem;
   margin-top: clamp(60px, 9vw, 96px);
   color: var(--essay-accent);
@@ -2586,13 +2733,26 @@ html.dark .essay-post-shell {
 }
 
 @media (max-width: 1240px) {
+  .essay-post-shell {
+    --essay-content-width: 860px;
+  }
+
   .essay-post-content .essay-sidenote {
     float: none;
     width: auto;
     margin: 1.4rem 0 1.75rem;
+  }
+
+  .essay-post-content .essay-sidenote {
     padding: 0.75rem 1rem;
     border: 1px solid color-mix(in srgb, var(--essay-accent) 42%, var(--border-main));
     background: color-mix(in srgb, var(--essay-accent) 5%, transparent);
+  }
+
+  .essay-post-content .essay-side-media {
+    float: none;
+    width: min(100%, 420px);
+    margin: 1.2rem auto 1.75rem;
   }
 }
 

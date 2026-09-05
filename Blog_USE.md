@@ -106,6 +106,27 @@ Write a margin note as a marked Markdown blockquote:
 
 The Chinese marker `[!旁注]` is also supported. Place the block immediately before the paragraph it annotates. Use ordinary blockquotes for quoted material; only blockquotes with one of these two markers become margin notes.
 
+For a numbered image in the right margin, give the figure an ID, add the same marker to its caption, and link to it from the related sentence:
+
+```html
+正文中的相关关键词<sup class="essay-media-ref"><a href="#essay-figure-1">1</a></sup>放在句子里。
+
+<figure class="essay-side-media" id="essay-figure-1">
+  <img src="/assets/blog/example.jpg" alt="Meaningful description" />
+  <figcaption data-marker="1">图片说明</figcaption>
+</figure>
+```
+
+Put the image-reference number immediately after the word or short phrase it explains, rather than collecting it at the end of the paragraph. Image-reference numbers use the Essay accent color and jump to the corresponding figure. They are separate from Markdown footnotes, which continue to use the standard `[^note]` syntax and appear in the endnotes section. Essay footnotes do not open hover previews.
+
+On wide screens, side images are automatically lowered by roughly one line so their top edge does not lock to the beginning of a paragraph. This is part of the Essay template; no per-post adjustment is normally needed. For an exceptional image, override the reusable offset variable on that figure:
+
+```html
+<figure class="essay-side-media" style="--essay-side-media-offset: 2.2rem">
+  ...
+</figure>
+```
+
 ## Heading Visual Style
 
 Blog body headings automatically receive a light gray `#` mark after the heading text:
@@ -213,8 +234,10 @@ SAT-Mask is a schedule-level change.[^schedule]
 Footnote behavior:
 
 - The inline marker is rendered as a small superscript link.
+- Place the marker immediately after the relevant word or short phrase, not automatically at the end of its paragraph.
 - Footnotes are collected near the end of the rendered article.
 - Footnote text is smaller and lighter than body text.
+- Essay footnotes use direct links without hover previews.
 - Keep footnotes short. Use References for bibliographic citations instead of footnotes.
 
 ## Images

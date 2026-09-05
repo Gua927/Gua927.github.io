@@ -9,8 +9,9 @@ const posts = (await getCollection("blog"))
 const categoryOrder = ["pub-note", "research", "paper", "notes", "methods", "ideas", "essays", "experiments"];
 const categoryCounts = new Map<string, { label: string; count: number }>();
 for (const post of posts) {
-  const label = post.data.category ?? "notes";
-  const key = label.toLowerCase();
+  const rawLabel = post.data.category ?? "notes";
+  const key = rawLabel.toLowerCase();
+  const label = formatCategoryLabel(rawLabel);
   const current = categoryCounts.get(key);
   categoryCounts.set(key, { label, count: (current?.count ?? 0) + 1 });
 }
@@ -47,6 +48,10 @@ function formatDate(date: Date) {
 
 function categoryKey(post: (typeof posts)[number]) {
   return (post.data.category ?? "notes").toLowerCase();
+}
+
+function formatCategoryLabel(category: string) {
+  return category.toLowerCase() === "essays" ? "ESSAY" : category;
 }
 
 function tagKey(tag: string) {
@@ -101,7 +106,7 @@ function tagKey(tag: string) {
             data-tags={post.data.tags.map(tagKey).join(" ")}
           >
             <div>
-              <span>{post.data.category ?? "notes"}</span>
+              <span>{formatCategoryLabel(post.data.category ?? "notes")}</span>
               <div>
                 <h3>{post.data.title}</h3>
                 <div>
