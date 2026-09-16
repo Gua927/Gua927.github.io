@@ -712,16 +712,34 @@ function seed(key: string) {
 
 type Tune = { salt: string; angleMin: number; clearGain: number; falloff: number; unit: number };
 
-function layout({ salt, angleMin, clearGain, falloff, unit }: Tune, rounds: number): Placed[] {
+/**
+ * Two drawings of the same graph come out of the one solver.
+ *
+ * The open one (`captions: true`) leaves every labelled tie long enough to
+ * print its caption between the two faces, and is what a click on a person
+ * unfolds into. The folded one ignores captions altogether: it is built from
+ * the relations alone and is what [ universe ] shows. Solving the folded one
+ * *from* the open one (`from`) is what makes the unfolding read as one picture
+ * opening rather than two pictures swapped — every person slides in or out
+ * along much the same line, and the drawing keeps its orientation.
+ */
+type Mode = { captions: boolean; from?: { place: Placed[]; unit: number } };
+
+const OPEN: Mode = { captions: true };
+
+function layout({ salt, angleMin, clearGain, falloff, unit }: Tune, rounds: number, mode: Mode = OPEN): Placed[] {
+  const start = new Map(mode.from?.place.map((person) => [person.id, person]));
+  const shrink = mode.from ? unit / mode.from.unit : 1;
   const nodes = roster.map((person) => {
     const angle = seed(person.id + salt) * Math.PI * 2;
     const hop = hops.get(me.id)!.get(person.id)!;
     const out = unit * (1 + falloff * (hop - 1));
+    const from = start.get(person.id);
     return {
       person,
       r: person.id === me.id ? HUB_R : NODE_R,
-      x: person.id === me.id ? 0 : Math.cos(angle) * out,
-      y: person.id === me.id ? 0 : Math.sin(angle) * out,
+      x: person.id === me.id ? 0 : from ? from.x * shrink : Math.cos(angle) * out,
+      y: person.id === me.id ? 0 : from ? from.y * shrink : Math.sin(angle) * out,
       // I stay at the origin, so that the picture is centred on me by
       // construction rather than by luck.
       pinned: person.id === me.id,
@@ -732,6 +750,11 @@ function layout({ salt, angleMin, clearGain, falloff, unit }: Tune, rounds: numb
 
   const byPair = new Map<string, Edge>();
   for (const edge of edges) byPair.set([edge.a, edge.b].sort().join("|"), edge);
+
+  /** Room a tie must leave for its caption — none at all in the folded drawing. */
+  function room(edge: Edge, ra: number, rb: number) {
+    return mode.captions ? captionRoom(edge, ra, rb) : 0;
+  }
 
   /** How far from me a person's hop count puts them. */
   function radius(node: Body) {
@@ -750,7 +773,7 @@ function layout({ salt, angleMin, clearGain, falloff, unit }: Tune, rounds: numb
     const edge = byPair.get([a.person.id, b.person.id].sort().join("|"));
     if (edge) {
       want *= 1 - PAPER_PULL * (tieScale(edge) - 1);
-      want = Math.max(want, captionRoom(edge, a.r, b.r));
+      want = Math.max(want, room(edge, a.r, b.r));
     }
     // Nobody may be asked to stand inside somebody else.
     return Math.max(want, a.r + b.r + MIN_SEPARATION);
@@ -954,7 +977,7 @@ function layout({ salt, angleMin, clearGain, falloff, unit }: Tune, rounds: numb
       for (const edge of edges) {
         const a = nodes.find((node) => node.person.id === edge.a)!;
         const b = nodes.find((node) => node.person.id === edge.b)!;
-        separate(a, b, captionRoom(edge, a.r, b.r));
+        separate(a, b, room(edge, a.r, b.r));
       }
       for (let i = 0; i < nodes.length; i++) {
         for (let j = i + 1; j < nodes.length; j++) {
@@ -969,15 +992,32 @@ function layout({ salt, angleMin, clearGain, falloff, unit }: Tune, rounds: numb
   // Stress depends only on distances, so the drawing is free to be turned.
   // Turn its long axis flat: the canvas is far wider than it is tall, and a
   // rotation is the one way to exploit that without distorting a thing.
-  let sxx = 0;
-  let sxy = 0;
-  let syy = 0;
-  for (const node of nodes) {
-    sxx += node.x * node.x;
-    sxy += node.x * node.y;
-    syy += node.y * node.y;
+  //
+  // A drawing folded from another is turned to lie over that one instead —
+  // the rotation about me that leaves everybody, summed, nearest to where the
+  // open drawing has them — so that the page can slide between the two with
+  // each person moving in or out along a line, not round a bend.
+  let turn: number;
+  if (mode.from) {
+    let sin = 0;
+    let cos = 0;
+    for (const node of nodes) {
+      const was = start.get(node.person.id)!;
+      cos += node.x * was.x + node.y * was.y;
+      sin += node.x * was.y - node.y * was.x;
+    }
+    turn = Math.atan2(sin, cos);
+  } else {
+    let sxx = 0;
+    let sxy = 0;
+    let syy = 0;
+    for (const node of nodes) {
+      sxx += node.x * node.x;
+      sxy += node.x * node.y;
+      syy += node.y * node.y;
+    }
+    turn = -0.5 * Math.atan2(2 * sxy, sxx - syy);
   }
-  const turn = -0.5 * Math.atan2(2 * sxy, sxx - syy);
   const ct = Math.cos(turn);
   const st = Math.sin(turn);
 
@@ -1070,7 +1110,15 @@ type Grade = {
   crossings: number;
 };
 
-function grade(place: Placed[]): Grade {
+/**
+ * `behindMe` lets a tie pass behind my own face without penalty, on the same
+ * grounds `clearOfTies` already leaves me out as an obstacle: I sit at the
+ * centre of my own clique, so packed tightly its chords cannot help but cross
+ * me, and since everyone on such a chord is joined to me anyway, a line
+ * disappearing behind my avatar invents nothing. The open drawing is judged
+ * without it, as it always was.
+ */
+function grade(place: Placed[], { behindMe = false } = {}): Grade {
   const at = new Map(place.map((person) => [person.id, person]));
   const gap = (a: Placed, b: Placed) => Math.hypot(a.x - b.x, a.y - b.y);
 
@@ -1087,6 +1135,7 @@ function grade(place: Placed[]): Grade {
     const b = at.get(edge.b)!;
     for (const other of place) {
       if (other.id === edge.a || other.id === edge.b) continue;
+      if (behindMe && other.id === me.id) continue;
       const vx = b.x - a.x;
       const vy = b.y - a.y;
       const len2 = vx * vx + vy * vy || 1;
@@ -1199,7 +1248,7 @@ function beats(mark: Grade, than: Grade) {
   return mark.cost < than.cost;
 }
 
-function solve(): Placed[] {
+function solve(): { place: Placed[]; tune: Tune } {
   const grid: Tune[] = [];
   for (const salt of STARTS) {
     for (const angleMin of ANGLE_TRIES) {
@@ -1251,7 +1300,61 @@ function solve(): Placed[] {
         ` falloff ${tune.falloff}, unit ${tune.unit}`,
     ].join("\n"),
   );
+  return best!;
+}
+
+/**
+ * Hop lengths to try for the folded drawing, smallest first. The search stops
+ * at the first that says nothing false and clears every legibility floor: the
+ * folded drawing exists to be small, so nothing above the floors is weighed
+ * against that.
+ *
+ * On this roster the AIR clique is what sets the floor. Six faces of radius 30
+ * joined nearly every way round cannot be packed much under a hop of 240
+ * without some chord grazing a face — Keyue Qiu to Wei-Ying Ma passes eight
+ * units from Hao Zhou at 150 — and a line that grazes a face reads as ending
+ * there. That is a fact about the graph, not a tuning to be argued with.
+ */
+const FOLD_UNIT_TRIES = [150, 170, 190, 210, 225, 240, 260];
+
+/**
+ * The folded drawing: the open one re-solved with every caption floor taken
+ * away, at a much shorter hop, started from where the open one left everybody.
+ * Fan and start are inherited from the open drawing's winning tune. Hop length
+ * and falloff are searched again, since those are what the caption floors had
+ * been forcing; so is clearance, because the open drawing can win with none —
+ * its long ties pass nobody closely — and packed at half the hop that leaves
+ * lines grazing faces.
+ */
+function fold({ place, tune }: { place: Placed[]; tune: Tune }): Placed[] {
+  let best: { place: Placed[]; mark: Grade; unit: number } | null = null;
+  for (const unit of FOLD_UNIT_TRIES) {
+    for (const falloff of FALLOFF_TRIES) {
+      for (const clearGain of CLEAR_TRIES) {
+        const candidate = layout({ ...tune, unit, falloff, clearGain }, ROUNDS, {
+          captions: false,
+          from: { place, unit: tune.unit },
+        });
+        const mark = grade(candidate, { behindMe: true });
+        if (!best || beats(mark, best.mark)) best = { place: candidate, mark, unit };
+      }
+    }
+    if (best!.mark.faults === 0 && best!.mark.short === 0) break;
+  }
+  const { mark, unit } = best!;
+  console.log(
+    `[network] folded at unit ${unit}: faults ${mark.faults}, floors missed ${mark.short},` +
+      ` narrowest fan ${Math.round((mark.narrowest * 180) / Math.PI)}°, ties clear faces by` +
+      ` ${mark.daylight.toFixed(0)}, tie lengths vary by ${(mark.uneven * 100).toFixed(0)}%,` +
+      ` crossings ${mark.crossings}`,
+  );
   return best!.place;
 }
 
-export const placed: Placed[] = solve();
+const open = solve();
+
+/** The open drawing: room for every caption. What a click on a person unfolds into. */
+export const placed: Placed[] = open.place;
+
+/** The folded drawing: relations only, no captions. What [ universe ] shows. */
+export const compact: Placed[] = fold(open);

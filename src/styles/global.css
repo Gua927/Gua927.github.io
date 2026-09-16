@@ -3725,10 +3725,6 @@ html.dark .markdown-content .paper-results-table .sat-row td {
   cursor: grabbing;
 }
 
-#net-camera.is-gliding {
-  transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
-}
-
 /* Plain lines. Ties to the focused person darken; nothing changes hue.
    Width is a per-line attribute, set from how many papers the two share — so
    it must not be declared here, where CSS would override the attribute. */
@@ -3975,12 +3971,6 @@ html.dark .markdown-content .paper-results-table .sat-row td {
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  #net-camera.is-gliding {
-    transition: none;
-  }
 }
 
 @media (max-width: 900px) {
