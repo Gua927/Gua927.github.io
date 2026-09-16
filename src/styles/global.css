@@ -3678,3 +3678,317 @@ html.dark .markdown-content .paper-results-table .sat-row td {
     display: none;
   }
 }
+
+/* ── Relationship network ──────────────────────────────────────────────── */
+
+.net-page {
+  max-width: none;
+  padding: 3rem;
+}
+
+.net-header {
+  margin-bottom: 2rem;
+}
+
+.net-header h1 {
+  margin: 0 0 0.5rem;
+  color: var(--text-main);
+  font-size: 2.25rem;
+  font-weight: 700;
+  line-height: 1.12;
+}
+
+.net-header p {
+  margin: 0;
+  color: var(--muted);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.875rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.net-stage {
+  position: relative;
+  border: 1px solid var(--border-main);
+  background: var(--bg-deep);
+}
+
+.net-svg {
+  display: block;
+  width: 100%;
+  height: min(74vh, 680px);
+  cursor: grab;
+  touch-action: none;
+}
+
+.net-svg.is-grabbing {
+  cursor: grabbing;
+}
+
+#net-camera.is-gliding {
+  transition: transform 0.5s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+/* Plain lines. Ties to the focused person darken; nothing changes hue.
+   Width is a per-line attribute, set from how many papers the two share — so
+   it must not be declared here, where CSS would override the attribute. */
+.net-edges line {
+  stroke: var(--border-main);
+  opacity: 0.5;
+  transition: stroke 0.25s ease, opacity 0.25s ease;
+}
+
+.net-edges line.is-active {
+  stroke: var(--text-main);
+  opacity: 0.9;
+}
+
+/* A directed tie means advising, and points advisor → student. The head takes
+   its colour from the line it sits on, so it darkens along with `.is-active`
+   and no second marker is needed. `context-stroke` is SVG 2; the flat value in
+   front of it is what an engine without it keeps. */
+.net-arrow-head {
+  fill: var(--border-main);
+  fill: context-stroke;
+  stroke: none;
+}
+
+/* What a tie says. Silent until one of its two people is highlighted, and
+   stroked in the stage colour first so it stays legible over whatever lines
+   and faces it happens to cross. */
+.net-tie-label {
+  fill: var(--muted);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  opacity: 0;
+  paint-order: stroke;
+  stroke: var(--bg-deep);
+  stroke-width: 3.5;
+  stroke-linejoin: round;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.net-tie-label.is-active {
+  opacity: 1;
+}
+
+.net-node {
+  cursor: pointer;
+  /* How much of the person shows. Only the contents obey it — the disc under
+     them stays opaque, so a tie can pass behind somebody but never through
+     them. Fading the whole group instead would let every crossing line show
+     straight through the face. */
+  --net-dim: 1;
+}
+
+/* One frame for everyone — no per-person variation. */
+.net-frame {
+  fill: var(--bg-body);
+  stroke: var(--border-main);
+  stroke-width: 1.5;
+  stroke-opacity: var(--net-dim);
+  transition: stroke 0.25s ease, stroke-width 0.25s ease, stroke-opacity 0.25s ease;
+}
+
+/* Focus ring, and also the hit area: `none` would not be hit-testable, which
+   makes only the avatar disc itself clickable. */
+.net-halo {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 1.5;
+  transition: stroke 0.25s ease;
+}
+
+.net-avatar {
+  opacity: var(--net-dim);
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.net-mono {
+  fill: var(--faint);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  opacity: var(--net-dim);
+  pointer-events: none;
+  transition: fill 0.25s ease, opacity 0.25s ease;
+}
+
+.net-name {
+  fill: var(--muted);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 12px;
+  opacity: var(--net-dim);
+  transition: fill 0.25s ease, opacity 0.25s ease;
+}
+
+.net-node:hover .net-frame {
+  stroke: var(--text-main);
+}
+
+.net-node:hover .net-name {
+  fill: var(--text-main);
+}
+
+.net-node:focus-visible {
+  outline: none;
+}
+
+.net-node:focus-visible .net-halo {
+  stroke: var(--text-main);
+  stroke-dasharray: 3 3;
+}
+
+.net-node.is-far {
+  --net-dim: 0.26;
+}
+
+/* Nothing selected: everyone stays legible, the whole field just sits back. */
+.net-svg.is-idle .net-node {
+  --net-dim: 0.72;
+}
+
+.net-svg.is-idle .net-edges line {
+  opacity: 0.38;
+}
+
+.net-svg.is-idle .net-node:hover {
+  --net-dim: 1;
+}
+
+.net-caption.is-idle {
+  display: none;
+}
+
+/* [ universe ]: nobody is selected, so nobody is dimmed either. The ties lift
+   a little without going dark, since none of them is the one being asked about. */
+.net-svg.is-universe .net-node {
+  --net-dim: 1;
+}
+
+.net-svg.is-universe .net-edges line {
+  opacity: 0.72;
+}
+
+.net-svg.is-universe .net-name {
+  fill: var(--text-main);
+}
+
+/* Neighbour: brighter than the far field, no ring. */
+.net-node.is-neighbour .net-frame {
+  stroke: var(--muted);
+}
+
+.net-node.is-neighbour .net-name,
+.net-node.is-neighbour .net-mono {
+  fill: var(--text-main);
+}
+
+/* Focused: solid ring plus a heavier frame — the only thing wearing a halo. */
+.net-node.is-focused .net-halo {
+  stroke: var(--text-main);
+  stroke-dasharray: none;
+}
+
+.net-node.is-focused .net-frame {
+  stroke: var(--text-main);
+  stroke-width: 2.5;
+}
+
+.net-node.is-focused .net-name {
+  fill: var(--text-main);
+  font-weight: 600;
+}
+
+.net-node.is-focused .net-mono {
+  fill: var(--text-main);
+}
+
+.net-controls {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: flex;
+  gap: 0.5rem;
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.75rem;
+}
+
+.net-controls button {
+  padding: 0.15rem 0.1rem;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.net-controls button:hover {
+  color: var(--text-main);
+}
+
+.net-caption {
+  margin: 1.5rem 0 0;
+  padding: 0;
+  max-width: var(--content);
+}
+
+.net-caption figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.75rem;
+}
+
+.net-caption strong {
+  color: var(--text-main);
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+
+.net-caption figcaption span {
+  color: var(--faint);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+}
+
+.net-caption p {
+  margin: 0.625rem 0 0;
+  padding: 0.15rem 0 0.15rem 0.75rem;
+  border-left: 1px solid var(--border-main);
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.net-caption a {
+  display: inline-block;
+  margin-top: 0.625rem;
+  color: var(--muted);
+  font-family: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #net-camera.is-gliding {
+    transition: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .net-page {
+    padding: 1.5rem;
+  }
+
+  .net-svg {
+    height: min(62vh, 460px);
+  }
+}

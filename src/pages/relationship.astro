@@ -1,0 +1,651 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import { edges, initials, placed, tieWidth } from "../lib/network";
+
+const byId = new Map(placed.map((person) => [person.id, person]));
+
+/** Focus-ring offset. The halo below sits here, and arrows must clear it. */
+const RING = 8;
+/** Arrowhead length in user units; matches the marker in <defs>. */
+const ARROW = 10;
+
+// Both text layers are mono at a known size, so their boxes are arithmetic.
+const LABEL_CHAR = 6.6;
+const LABEL_SIZE = 11;
+/** Clear air between a caption and the line it belongs to. */
+const LABEL_LIFT = 6;
+const NAME_CHAR = 7.2;
+const NAME_SIZE = 12;
+/** Matches the y on <text class="net-name"> further down. */
+const NAME_DROP = 20;
+
+const round = (value: number) => Math.round(value * 10) / 10;
+
+type Box = [number, number][];
+
+function boxAt(cx: number, cy: number, w: number, h: number, deg: number): Box {
+  const a = (deg * Math.PI) / 180;
+  const ca = Math.cos(a);
+  const sa = Math.sin(a);
+  const corners: Box = [
+    [-w / 2, -h / 2],
+    [w / 2, -h / 2],
+    [w / 2, h / 2],
+    [-w / 2, h / 2],
+  ];
+  return corners.map(([x, y]) => [cx + x * ca - y * sa, cy + x * sa + y * ca] as [number, number]);
+}
+
+/** Separation of two convex quads, by separating axis. Negative overlaps. */
+function boxGap(p: Box, q: Box) {
+  let best = -Infinity;
+  for (const [one, two] of [
+    [p, q],
+    [q, p],
+  ]) {
+    for (let i = 0; i < 4; i++) {
+      const [x1, y1] = one[i];
+      const [x2, y2] = one[(i + 1) % 4];
+      const len = Math.hypot(y1 - y2, x2 - x1) || 1;
+      const ax = (y1 - y2) / len;
+      const ay = (x2 - x1) / len;
+      const a = one.map(([x, y]) => ax * x + ay * y);
+      const b = two.map(([x, y]) => ax * x + ay * y);
+      best = Math.max(best, Math.min(...b) - Math.max(...a), Math.min(...a) - Math.max(...b));
+    }
+  }
+  return best;
+}
+
+/** Separation of a quad from a disc. Negative overlaps. */
+function discGap(box: Box, cx: number, cy: number, r: number) {
+  let near = Infinity;
+  const sides = box.map(([x1, y1], i) => {
+    const [x2, y2] = box[(i + 1) % 4];
+    const vx = x2 - x1;
+    const vy = y2 - y1;
+    const t = Math.max(0, Math.min(1, ((cx - x1) * vx + (cy - y1) * vy) / (vx * vx + vy * vy || 1)));
+    near = Math.min(near, Math.hypot(x1 + t * vx - cx, y1 + t * vy - cy));
+    return vx * (cy - y1) - vy * (cx - x1);
+  });
+  const inside = sides.every((s) => s >= 0) || sides.every((s) => s <= 0);
+  return (inside ? -near : near) - r;
+}
+
+const discs = placed.map((person) => ({ x: person.x, y: person.y, r: person.r }));
+const nameBoxes = placed.map((person) =>
+  boxAt(
+    person.x,
+    // Baseline sits at r + NAME_DROP; the ink straddles it, so the box does too.
+    person.y + person.r + NAME_DROP - 3.5,
+    person.name.length * NAME_CHAR,
+    NAME_SIZE,
+    0,
+  ),
+);
+
+/**
+ * Where to print a caption, tried in order of preference: the middle of the
+ * line on either side first, then progressively further along it.
+ *
+ * It is a search rather than a formula because a caption has to miss three
+ * different things at once — both avatars, every person's name, and any other
+ * caption that can be lit at the same moment — and the map is dense enough
+ * that no fixed offset clears all three everywhere. The layout already
+ * guarantees a labelled tie is long enough to hold its own text; this only
+ * decides where in that room the words go.
+ */
+const SPOTS = (() => {
+  const along = [0.5, 0.42, 0.58, 0.34, 0.66, 0.26, 0.74];
+  const out: { t: number; side: number; lift: number }[] = [];
+  // The middle of the line, on the near side, sitting close to it is the
+  // placement to beat. Everything after it is a fallback, in this order.
+  for (const lift of [1, 2.2]) {
+    for (const t of along) {
+      for (const side of [-1, 1]) out.push({ t, side, lift });
+    }
+  }
+  return out;
+})();
+
+const geometry = edges.map((edge) => {
+  // Drawn advisor → student, so that marker-end puts the head on the student.
+  const [fromId, toId] = edge.advisor === edge.b ? [edge.b, edge.a] : [edge.a, edge.b];
+  const from = byId.get(fromId)!;
+  const to = byId.get(toId)!;
+
+  // Plain ties run centre to centre and let the opaque discs clip them. A
+  // directed one cannot: an arrowhead aimed at the centre would be buried
+  // under the student's face, so it stops outside their avatar and focus ring.
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const d = Math.hypot(dx, dy) || 1;
+  const back = edge.advisor ? to.r + RING + 4 : 0;
+  const x2 = to.x - (dx / d) * back;
+  const y2 = to.y - (dy / d) * back;
+
+  // Rotating past vertical would print the caption upside down, so past that
+  // it turns the other way and reads back along the line instead.
+  let angle = (Math.atan2(y2 - from.y, x2 - from.x) * 180) / Math.PI;
+  if (angle > 90 || angle < -90) angle += 180;
+
+  return { edge, a: fromId, b: toId, from, to, x2, y2, angle, width: tieWidth(edge) };
+});
+
+/** Captions already placed, so later ones can be kept off earlier ones. */
+const settled: { a: string; b: string; box: Box }[] = [];
+
+const placedEdges = geometry.map((line) => {
+  const { edge, a, b, from, x2, y2, angle } = line;
+  if (!edge.label) {
+    return { a, b, label: undefined, at: undefined, directed: Boolean(edge.advisor), width: line.width, x1: from.x, y1: from.y, x2: round(x2), y2: round(y2) };
+  }
+
+  const w = edge.label.length * LABEL_CHAR;
+  const len = Math.hypot(x2 - from.x, y2 - from.y) || 1;
+  const nx = -(y2 - from.y) / len;
+  const ny = (x2 - from.x) / len;
+  // Only a caption on a tie sharing an end can be lit at the same time.
+  const rivals = settled.filter((other) => [other.a, other.b].some((id) => id === a || id === b));
+
+  let best = { clear: -Infinity, cx: 0, cy: 0, box: [] as Box };
+  for (const { t, side, lift } of SPOTS) {
+    const off = LABEL_LIFT * lift + LABEL_SIZE / 2;
+    const cx = from.x + (x2 - from.x) * t + nx * side * off;
+    const cy = from.y + (y2 - from.y) * t + ny * side * off;
+    const box = boxAt(cx, cy, w, LABEL_SIZE, angle);
+    const clear = Math.min(
+      ...discs.map((disc) => discGap(box, disc.x, disc.y, disc.r)),
+      ...nameBoxes.map((name) => boxGap(box, name)),
+      ...rivals.map((rival) => boxGap(box, rival.box)),
+    );
+    if (clear > best.clear) best = { clear, cx, cy, box };
+    if (clear >= 12) break; // roomy enough; leave it where it first fits
+  }
+  settled.push({ a, b, box: best.box });
+
+  return {
+    a,
+    b,
+    label: edge.label,
+    at: `translate(${round(best.cx)},${round(best.cy)}) rotate(${round(angle)})`,
+    directed: Boolean(edge.advisor),
+    width: line.width,
+    x1: from.x,
+    y1: from.y,
+    x2: round(x2),
+    y2: round(y2),
+  };
+});
+
+// Everything the caption needs, resolved at build time.
+const cards = Object.fromEntries(
+  placed.map((person) => [
+    person.id,
+    {
+      x: person.x,
+      y: person.y,
+      name: person.name,
+      affiliation: person.affiliation,
+      href: person.href ?? "",
+      bio: person.bio,
+    },
+  ]),
+);
+
+const radii = [...new Set(placed.map((person) => person.r))];
+---
+
+<BaseLayout
+  title="Relationship"
+  description="Runze Tian's co-authorship network, seeded from SAT-Mask and grown one hop outward."
+  wide
+>
+  <section class="net-page" aria-label="Co-authorship network">
+    <header class="net-header">
+      <h1>Relationship</h1>
+      <p>{placed.length} people · click anyone to recentre</p>
+    </header>
+
+    <div class="net-stage">
+      <svg
+        class="net-svg"
+        id="net-svg"
+        viewBox="-620 -360 1240 720"
+        role="group"
+        aria-label="Co-authorship network. Click a person to bring them to the centre."
+      >
+        <defs>
+          <marker
+            id="net-arrow"
+            viewBox="0 0 10 7"
+            refX="10"
+            refY="3.5"
+            markerWidth={ARROW}
+            markerHeight="7"
+            markerUnits="userSpaceOnUse"
+            orient="auto"
+          >
+            <path class="net-arrow-head" d="M0,0 L10,3.5 L0,7 L2.8,3.5 Z" />
+          </marker>
+          {
+            radii.map((radius) => (
+              <clipPath id={`net-clip-${radius}`}>
+                <circle cx="0" cy="0" r={radius} />
+              </clipPath>
+            ))
+          }
+        </defs>
+
+        <g id="net-camera">
+          <g class="net-edges" aria-hidden="true">
+            {
+              placedEdges.map((edge) => (
+                <line
+                  data-a={edge.a}
+                  data-b={edge.b}
+                  marker-end={edge.directed ? "url(#net-arrow)" : undefined}
+                  stroke-width={edge.width}
+                  x1={edge.x1}
+                  y1={edge.y1}
+                  x2={edge.x2}
+                  y2={edge.y2}
+                />
+              ))
+            }
+          </g>
+
+          <g class="net-nodes">
+            {
+              placed.map((person) => (
+                <g
+                  class="net-node"
+                  data-id={person.id}
+                  transform={`translate(${person.x},${person.y})`}
+                  role="button"
+                  tabindex="0"
+                  aria-label={`${person.name}. ${person.affiliation}. Recentre on them.`}
+                >
+                  <circle class="net-halo" r={person.r + RING} />
+                  <circle class="net-frame" r={person.r} />
+                  {person.avatar ? (
+                    <image
+                      class="net-avatar"
+                      href={person.avatar}
+                      x={-person.r}
+                      y={-person.r}
+                      width={person.r * 2}
+                      height={person.r * 2}
+                      preserveAspectRatio="xMidYMid slice"
+                      clip-path={`url(#net-clip-${person.r})`}
+                    />
+                  ) : (
+                    <text class="net-mono" text-anchor="middle" dominant-baseline="central">
+                      {initials(person.name)}
+                    </text>
+                  )}
+                  <text class="net-name" y={person.r + 20} text-anchor="middle">
+                    {person.name}
+                  </text>
+                </g>
+              ))
+            }
+          </g>
+
+          <g class="net-tie-labels" aria-hidden="true">
+            {
+              placedEdges
+                .filter((edge) => edge.label)
+                .map((edge) => (
+                  <text
+                    class="net-tie-label"
+                    data-a={edge.a}
+                    data-b={edge.b}
+                    transform={edge.at}
+                    text-anchor="middle"
+                    dominant-baseline="central"
+                  >
+                    {edge.label}
+                  </text>
+                ))
+            }
+          </g>
+        </g>
+      </svg>
+
+      <div class="net-controls" aria-label="View">
+        <button type="button" id="net-zoom-out" aria-label="Zoom out">[ − ]</button>
+        <button type="button" id="net-home" aria-label="Centre on me and the people I work with">[ fit ]</button>
+        <button type="button" id="net-universe" aria-label="Show everyone at once">[ universe ]</button>
+        <button type="button" id="net-zoom-in" aria-label="Zoom in">[ + ]</button>
+      </div>
+    </div>
+
+    <figure class="net-caption" id="net-caption" aria-live="polite">
+      <figcaption>
+        <strong id="net-caption-name"></strong>
+        <span id="net-caption-affiliation"></span>
+      </figcaption>
+      <p id="net-caption-bio"></p>
+      <a id="net-caption-link" href="#" target="_blank" rel="noopener noreferrer" hidden>Homepage &#8599;</a>
+    </figure>
+  </section>
+
+  <script is:inline define:vars={{ cards }}>
+    (function () {
+      let cleanupFn = null;
+
+      function init() {
+        if (cleanupFn) {
+          cleanupFn();
+          cleanupFn = null;
+        }
+
+        const svg = document.getElementById("net-svg");
+        const camera = document.getElementById("net-camera");
+        if (!svg || !camera) return;
+
+        const abort = new AbortController();
+        const nodeEls = Array.from(svg.querySelectorAll(".net-node"));
+        const edgeEls = Array.from(svg.querySelectorAll(".net-edges line"));
+        const labelEls = Array.from(svg.querySelectorAll(".net-tie-label"));
+
+        // Coordinates are baked in at build time; only the camera ever moves.
+        const neighbours = new Map(Object.keys(cards).map((id) => [id, new Set()]));
+        edgeEls.forEach(function (edge) {
+          neighbours.get(edge.dataset.a).add(edge.dataset.b);
+          neighbours.get(edge.dataset.b).add(edge.dataset.a);
+        });
+
+        let scale = 1;
+        let panX = 0;
+        let panY = 0;
+
+        function applyCamera() {
+          camera.setAttribute(
+            "transform",
+            `translate(${panX.toFixed(1)},${panY.toFixed(1)}) scale(${scale.toFixed(3)})`,
+          );
+        }
+
+        /** Point the camera at exactly these people, and no wider. */
+        function frame(ids) {
+          const box = { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity };
+          ids.forEach(function (id) {
+            const card = cards[id];
+            if (!card) return;
+            box.minX = Math.min(box.minX, card.x - 60);
+            box.maxX = Math.max(box.maxX, card.x + 60);
+            box.minY = Math.min(box.minY, card.y - 60);
+            box.maxY = Math.max(box.maxY, card.y + 80); // the name sits below
+          });
+          const view = svg.viewBox.baseVal;
+          scale = Math.min(
+            2.5,
+            Math.max(0.3, Math.min(view.width / (box.maxX - box.minX), view.height / (box.maxY - box.minY))),
+          );
+          panX = -((box.minX + box.maxX) / 2) * scale;
+          panY = -((box.minY + box.maxY) / 2) * scale;
+          applyCamera();
+        }
+
+        const everyone = Object.keys(cards);
+
+        function fitAll() {
+          frame(everyone);
+        }
+
+        /**
+         * Scale that keeps everyone in `ids` in view with the camera sitting on
+         * `hub` — their avatar and name included, not just their centre.
+         */
+        function zoomToHold(hub, ids) {
+          const middle = cards[hub];
+          let halfW = 0;
+          let halfH = 0;
+          ids.forEach(function (id) {
+            const card = cards[id];
+            if (!card) return;
+            halfW = Math.max(halfW, Math.abs(card.x - middle.x) + 60);
+            halfH = Math.max(halfH, Math.abs(card.y - middle.y) + 80);
+          });
+          const view = svg.viewBox.baseVal;
+          return Math.min(
+            2.5,
+            Math.max(0.3, Math.min(view.width / (2 * halfW), view.height / (2 * halfH))),
+          );
+        }
+
+        /**
+         * Home: me in the middle, with everyone I actually work with around me
+         * and all of them whole. Framing their bounding box and then recentring
+         * on me is not the same thing — it quietly cut the top off Yuxuan Song —
+         * so the scale is worked out from my own position outwards.
+         *
+         * The outer ring is left off the edge on purpose. Cramming all ten in
+         * leaves every face small and says nothing about where to start looking;
+         * [ universe ] is there for when you want the lot.
+         */
+        function fitMe() {
+          scale = zoomToHold("me", ["me"].concat(Array.from(neighbours.get("me"))));
+          focus("me", { centre: true, hash: true });
+        }
+
+        function toSvg(event) {
+          const ctm = svg.getScreenCTM();
+          if (!ctm) return { x: 0, y: 0 };
+          const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(ctm.inverse());
+          return { x: point.x, y: point.y };
+        }
+
+        function zoomAt(factor, at) {
+          const next = Math.min(2.5, Math.max(0.3, scale * factor));
+          if (next === scale) return;
+          const anchor = at || { x: 0, y: 0 };
+          panX = anchor.x - ((anchor.x - panX) / scale) * next;
+          panY = anchor.y - ((anchor.y - panY) / scale) * next;
+          scale = next;
+          applyCamera();
+        }
+
+        const captionName = document.getElementById("net-caption-name");
+        const captionAffiliation = document.getElementById("net-caption-affiliation");
+        const captionBio = document.getElementById("net-caption-bio");
+        const captionLink = document.getElementById("net-caption-link");
+        const caption = document.getElementById("net-caption");
+
+        /** Nobody selected: the whole network stays readable, just quieter. */
+        function clearFocus(options) {
+          nodeEls.forEach(function (el) {
+            el.classList.remove("is-focused", "is-neighbour", "is-far");
+          });
+          edgeEls.forEach(function (edge) {
+            edge.classList.remove("is-active");
+          });
+          labelEls.forEach(function (label) {
+            label.classList.remove("is-active");
+          });
+          svg.classList.add("is-idle");
+          svg.classList.remove("is-universe");
+          if (caption) caption.classList.add("is-idle");
+          if (captionName) captionName.textContent = "";
+          if (captionAffiliation) captionAffiliation.textContent = "";
+          if (captionBio) captionBio.textContent = "";
+          if (captionLink) captionLink.hidden = true;
+          if (options && options.hash) history.replaceState(null, "", location.pathname);
+        }
+
+        /** The whole map, with nobody singled out and nobody dimmed. */
+        function universe() {
+          nodeEls.forEach(function (el) {
+            el.classList.remove("is-focused", "is-neighbour", "is-far");
+          });
+          edgeEls.forEach(function (edge) {
+            edge.classList.remove("is-active");
+          });
+          // Captions stay put: all twelve at once overlap each other, and they
+          // belong to a selection anyway.
+          labelEls.forEach(function (label) {
+            label.classList.remove("is-active");
+          });
+          svg.classList.remove("is-idle");
+          svg.classList.add("is-universe");
+          if (caption) caption.classList.add("is-idle");
+          if (captionName) captionName.textContent = "";
+          if (captionAffiliation) captionAffiliation.textContent = "";
+          if (captionBio) captionBio.textContent = "";
+          if (captionLink) captionLink.hidden = true;
+          frame(everyone);
+          history.replaceState(null, "", location.pathname);
+        }
+
+        function focus(id, options) {
+          const card = cards[id];
+          if (!card) return;
+          svg.classList.remove("is-idle", "is-universe");
+          if (caption) caption.classList.remove("is-idle");
+
+          const near = neighbours.get(id);
+          nodeEls.forEach(function (el) {
+            const other = el.dataset.id;
+            el.classList.toggle("is-focused", other === id);
+            el.classList.toggle("is-neighbour", other !== id && near.has(other));
+            el.classList.toggle("is-far", other !== id && !near.has(other));
+          });
+          edgeEls.forEach(function (edge) {
+            edge.classList.toggle("is-active", edge.dataset.a === id || edge.dataset.b === id);
+          });
+          labelEls.forEach(function (label) {
+            label.classList.toggle("is-active", label.dataset.a === id || label.dataset.b === id);
+          });
+
+          if (captionName) captionName.textContent = card.name;
+          if (captionAffiliation) captionAffiliation.textContent = card.affiliation;
+          if (captionBio) captionBio.textContent = card.bio;
+          if (captionLink) {
+            captionLink.hidden = !card.href;
+            if (card.href) captionLink.href = card.href;
+          }
+
+          if (options && options.centre) {
+            panX = -card.x * scale;
+            panY = -card.y * scale;
+            camera.classList.add("is-gliding");
+            applyCamera();
+            window.setTimeout(function () {
+              camera.classList.remove("is-gliding");
+            }, 520);
+          }
+          if (options && options.hash) {
+            history.replaceState(null, "", id === "me" ? location.pathname : `#${id}`);
+          }
+        }
+
+        // Dragging pans the whole picture; it never moves a person.
+        let drag = null;
+
+        svg.addEventListener(
+          "pointerdown",
+          function (event) {
+            if (event.button !== 0) return;
+            const at = toSvg(event);
+            // Resolve the node now: setPointerCapture retargets every later
+            // event for this pointer to the <svg>, so by pointerup the
+            // original target is gone and a click would never find its node.
+            drag = {
+              nodeEl: event.target.closest(".net-node"),
+              startX: at.x,
+              startY: at.y,
+              panX,
+              panY,
+              moved: false,
+            };
+            svg.setPointerCapture(event.pointerId);
+          },
+          { signal: abort.signal },
+        );
+
+        svg.addEventListener(
+          "pointermove",
+          function (event) {
+            if (!drag) return;
+            const at = toSvg(event);
+            const dx = at.x - drag.startX;
+            const dy = at.y - drag.startY;
+            if (!drag.moved && Math.hypot(dx, dy) > 4) {
+              drag.moved = true;
+              svg.classList.add("is-grabbing");
+            }
+            if (!drag.moved) return;
+            panX = drag.panX + dx;
+            panY = drag.panY + dy;
+            applyCamera();
+          },
+          { signal: abort.signal },
+        );
+
+        function endDrag(event) {
+          if (!drag) return;
+          const { moved, nodeEl } = drag;
+          drag = null;
+          svg.classList.remove("is-grabbing");
+          if (svg.hasPointerCapture(event.pointerId)) svg.releasePointerCapture(event.pointerId);
+          if (moved) return;
+          if (nodeEl) focus(nodeEl.dataset.id, { centre: true, hash: true });
+          else clearFocus({ hash: true });
+        }
+
+        svg.addEventListener("pointerup", endDrag, { signal: abort.signal });
+        svg.addEventListener("pointercancel", endDrag, { signal: abort.signal });
+
+        svg.addEventListener(
+          "wheel",
+          function (event) {
+            event.preventDefault();
+            zoomAt(event.deltaY < 0 ? 1.12 : 1 / 1.12, toSvg(event));
+          },
+          { passive: false, signal: abort.signal },
+        );
+
+        nodeEls.forEach(function (el) {
+          el.addEventListener(
+            "keydown",
+            function (event) {
+              if (event.key !== "Enter" && event.key !== " ") return;
+              event.preventDefault();
+              focus(el.dataset.id, { centre: true, hash: true });
+            },
+            { signal: abort.signal },
+          );
+        });
+
+        const zoomIn = document.getElementById("net-zoom-in");
+        const zoomOut = document.getElementById("net-zoom-out");
+        const goHome = document.getElementById("net-home");
+        const goWide = document.getElementById("net-universe");
+        if (zoomIn) zoomIn.addEventListener("click", () => zoomAt(1.25), { signal: abort.signal });
+        if (zoomOut) zoomOut.addEventListener("click", () => zoomAt(1 / 1.25), { signal: abort.signal });
+        if (goHome) goHome.addEventListener("click", fitMe, { signal: abort.signal });
+        if (goWide) goWide.addEventListener("click", universe, { signal: abort.signal });
+
+        fitAll();
+        const fromHash = decodeURIComponent(location.hash.replace("#", ""));
+        const start = cards[fromHash] ? fromHash : "me";
+        focus(start, { centre: Boolean(cards[fromHash]) });
+
+        cleanupFn = function () {
+          abort.abort();
+        };
+      }
+
+      document.addEventListener("DOMContentLoaded", init);
+      document.addEventListener("astro:page-load", init);
+      document.addEventListener("astro:before-swap", function () {
+        if (cleanupFn) {
+          cleanupFn();
+          cleanupFn = null;
+        }
+      });
+    })();
+  </script>
+</BaseLayout>
