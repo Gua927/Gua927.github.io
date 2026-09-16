@@ -151,6 +151,18 @@ export const people: Person[] = [
     group: "westlake",
     href: "https://cs.stanford.edu/people/jure/",
   },
+  {
+    id: "ziming-liu",
+    name: "Ziming Liu",
+    affiliation: "Assistant Professor, College of AI, Tsinghua University",
+    bio:
+      "Assistant Professor in Tsinghua's College of AI and founder of MetaCircle. Works on the " +
+      "physics of AI — grokking, interpretability, Kolmogorov-Arnold Networks. Did his PhD with " +
+      "Max Tegmark a few years after Tailin Wu, then a postdoc at Stanford: the same path, one " +
+      "cohort down.",
+    group: "westlake",
+    href: "https://kindxiaoming.github.io/",
+  },
 ];
 
 // Author lists are as published; co-authors outside this roster are omitted so
@@ -269,6 +281,10 @@ export const advising: [string, string][] = [
   ["tailin-wu", "me"],
   ["max-tegmark", "tailin-wu"],
   ["jure-leskovec", "tailin-wu"],
+  // Ziming Liu hangs off Tegmark rather than off Tailin Wu, because that is the
+  // relation there is: a shared adviser, which the hop distance then renders as
+  // the two of them standing one step apart.
+  ["max-tegmark", "ziming-liu"],
 ];
 
 /**
@@ -303,6 +319,7 @@ export const tieLabels: [string, string, string][] = [
   ["yaqin-zhang", "hao-zhou", "Boss @ THU-AIR"],
   ["max-tegmark", "tailin-wu", "PhD adviser @ MIT"],
   ["jure-leskovec", "tailin-wu", "Postdoc adviser @ Stanford"],
+  ["max-tegmark", "ziming-liu", "PhD adviser @ MIT"],
 ];
 
 /**
