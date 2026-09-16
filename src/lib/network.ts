@@ -1089,7 +1089,11 @@ const EVEN_COST = 2.5;
 const ZOOM_COST = 1.5;
 const ANGLE_COST = 1;
 const CROSSING_COST = 0.5;
-/** Must match the viewBox and the padding that the page's `fitAll` uses. */
+/**
+ * The desktop stage the drawing is judged against, in the page's units of one
+ * CSS pixel each. The page itself sizes its viewBox to whatever stage it gets,
+ * a phone's included; legibility there is the page's business, not the layout's.
+ */
 const VIEW_W = 1240;
 const VIEW_H = 720;
 

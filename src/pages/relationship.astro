@@ -379,6 +379,21 @@ const radii = [...new Set(placed.map((person) => person.r))];
           );
         }
 
+        /**
+         * The drawing has its own units — a face is 30 across, a hop about
+         * 345 — and the viewBox says how many of them the stage is wide and
+         * tall. Sizing it to the stage itself, one unit per CSS pixel, is what
+         * lets a phone held upright spend its whole height on the map instead
+         * of letterboxing a landscape frame into a portrait box. The camera is
+         * kept in the same units about the same origin, so the point under the
+         * middle of the frame, and the zoom, both survive a resize untouched.
+         */
+        function fitStage() {
+          const w = Math.max(1, Math.round(svg.clientWidth));
+          const h = Math.max(1, Math.round(svg.clientHeight));
+          svg.setAttribute("viewBox", `${-w / 2} ${-h / 2} ${w} ${h}`);
+        }
+
         /** Where a person stands with the drawing opened to `t`. */
         function standing(id, t) {
           const card = cards[id];
@@ -439,6 +454,9 @@ const radii = [...new Set(placed.map((person) => person.r))];
 
         const everyone = Object.keys(cards);
 
+        /** Least zoom at which a name still reads: 12-unit type, under 10px. */
+        const LEGIBLE = 0.8;
+
         /**
          * The [ fit ] zoom: with me in the middle of the open drawing, the
          * scale that keeps everyone I work with directly whole — avatar and
@@ -454,6 +472,11 @@ const radii = [...new Set(placed.map((person) => person.r))];
          * keeps whatever zoom the reader has and only pans, so the map does
          * not breathe in and out under them; unfolding out of [ universe ] is
          * the exception, since the folded zoom was fitted to nobody.
+         *
+         * It never drops below LEGIBLE. On a desk it is well above; on a phone
+         * held upright, holding my whole ring would mean 0.35, which fits it
+         * only in the sense that all of it is on screen and none of it can be
+         * read. Better to hold what reads and leave the rest to be panned to.
          */
         function fitZoom() {
           const middle = cards.me;
@@ -465,7 +488,9 @@ const radii = [...new Set(placed.map((person) => person.r))];
             halfH = Math.max(halfH, Math.abs(card.y - middle.y) + 80);
           });
           const view = svg.viewBox.baseVal;
-          return clampZoom(Math.min(view.width / (2 * halfW), view.height / (2 * halfH)));
+          return clampZoom(
+            Math.max(LEGIBLE, Math.min(view.width / (2 * halfW), view.height / (2 * halfH))),
+          );
         }
 
         const stillness = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -638,14 +663,36 @@ const radii = [...new Set(placed.map((person) => person.r))];
           }
         }
 
-        // Dragging pans the whole picture; it never moves a person.
+        // Dragging pans the whole picture; it never moves a person. Two
+        // fingers pinch: the picture zooms about the point between them and
+        // follows them as they move, the way a map does.
         let drag = null;
+        const fingers = new Map();
+        let pinch = null;
+
+        /** Where the two fingers are, and how far apart. */
+        function grip() {
+          const [a, b] = Array.from(fingers.values());
+          return { dist: Math.hypot(a.x - b.x, a.y - b.y) || 1, x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+        }
 
         svg.addEventListener(
           "pointerdown",
           function (event) {
             if (event.button !== 0) return;
             const at = toSvg(event);
+            fingers.set(event.pointerId, at);
+            svg.setPointerCapture(event.pointerId);
+            if (fingers.size === 2) {
+              // A second finger turns a drag or a tap into a pinch. Nothing
+              // is clicked at the end of one.
+              drag = null;
+              svg.classList.add("is-grabbing");
+              letGo();
+              pinch = grip();
+              return;
+            }
+            if (fingers.size > 2) return;
             // Resolve the node now: setPointerCapture retargets every later
             // event for this pointer to the <svg>, so by pointerup the
             // original target is gone and a click would never find its node.
@@ -657,7 +704,6 @@ const radii = [...new Set(placed.map((person) => person.r))];
               panY,
               moved: false,
             };
-            svg.setPointerCapture(event.pointerId);
           },
           { signal: abort.signal },
         );
@@ -665,6 +711,19 @@ const radii = [...new Set(placed.map((person) => person.r))];
         svg.addEventListener(
           "pointermove",
           function (event) {
+            if (fingers.has(event.pointerId)) fingers.set(event.pointerId, toSvg(event));
+            if (pinch) {
+              if (fingers.size < 2) return;
+              const now = grip();
+              const next = clampZoom((scale * now.dist) / pinch.dist);
+              // Whatever was under the fingers stays under them.
+              panX = now.x - ((pinch.x - panX) / scale) * next;
+              panY = now.y - ((pinch.y - panY) / scale) * next;
+              scale = next;
+              pinch = now;
+              applyCamera();
+              return;
+            }
             if (!drag) return;
             const at = toSvg(event);
             const dx = at.x - drag.startX;
@@ -685,11 +744,21 @@ const radii = [...new Set(placed.map((person) => person.r))];
         );
 
         function endDrag(event) {
+          fingers.delete(event.pointerId);
+          if (svg.hasPointerCapture(event.pointerId)) svg.releasePointerCapture(event.pointerId);
+          if (pinch) {
+            // Lifting either finger ends the pinch. Whichever finger stays
+            // down pans nothing and taps nothing until it is lifted too.
+            if (fingers.size === 0) {
+              pinch = null;
+              svg.classList.remove("is-grabbing");
+            }
+            return;
+          }
           if (!drag) return;
           const { moved, nodeEl } = drag;
           drag = null;
           svg.classList.remove("is-grabbing");
-          if (svg.hasPointerCapture(event.pointerId)) svg.releasePointerCapture(event.pointerId);
           if (moved) return;
           if (nodeEl) focus(nodeEl.dataset.id, { centre: true, hash: true });
           else clearFocus({ hash: true });
@@ -728,7 +797,14 @@ const radii = [...new Set(placed.map((person) => person.r))];
         if (goHome) goHome.addEventListener("click", fitMe, { signal: abort.signal });
         if (goWide) goWide.addEventListener("click", universe, { signal: abort.signal });
 
-        setCamera(framing(everyone, 1));
+        window.addEventListener("resize", fitStage, { signal: abort.signal });
+        fitStage();
+
+        // Everyone at once where the stage has room to read them. Where that
+        // would come out as a smudge — a phone held upright puts it near 0.25 —
+        // start on me at the [ fit ] zoom instead and let the reader pan out.
+        const all = framing(everyone, 1);
+        setCamera(all.scale >= 0.5 ? all : { scale: fitZoom(), cx: cards.me.x, cy: cards.me.y });
         const fromHash = decodeURIComponent(location.hash.replace("#", ""));
         const start = cards[fromHash] ? fromHash : "me";
         focus(start, { centre: Boolean(cards[fromHash]), instant: true });

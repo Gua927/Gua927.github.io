@@ -3979,6 +3979,18 @@ html.dark .markdown-content .paper-results-table .sat-row td {
   }
 
   .net-svg {
-    height: min(62vh, 460px);
+    height: min(68vh, 560px);
+  }
+}
+
+/* Fingers, not a pointer: room to hit the controls without hitting the map. */
+@media (pointer: coarse) {
+  .net-controls {
+    gap: 0.25rem;
+    font-size: 0.8125rem;
+  }
+
+  .net-controls button {
+    padding: 0.5rem 0.4rem;
   }
 }
