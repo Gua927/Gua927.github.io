@@ -111,31 +111,32 @@ Featured
         const everyone = Object.keys(cards);
 
         /**
-         * Camera for one person in the open drawing: them in the middle, at the
-         * zoom that keeps everyone they work with directly whole — avatar and
+         * The [ fit ] zoom: with me in the middle of the open drawing, the
+         * scale that keeps everyone I work with directly whole — avatar and
          * name, not just centre. Framing that group's bounding box and then
          * recentring is not the same thing — it quietly cut the top off Yuxuan
-         * Song — so the scale is worked out from the person outwards.
+         * Song — so the scale is worked out from my own position outwards.
          *
-         * Anyone further out is left off the edge on purpose. Cramming them in
+         * The outer ring is left off the edge on purpose. Cramming all ten in
          * leaves every face small and says nothing about where to start
          * looking; [ universe ] is there for when you want the lot.
+         *
+         * This is the one zoom a click ever sets. Moving from person to person
+         * keeps whatever zoom the reader has and only pans, so the map does
+         * not breathe in and out under them; unfolding out of [ universe ] is
+         * the exception, since the folded zoom was fitted to nobody.
          */
-        function holding(id) {
-          const middle = cards[id];
+        function fitZoom() {
+          const middle = cards.me;
           let halfW = 0;
           let halfH = 0;
-          [id].concat(Array.from(neighbours.get(id))).forEach(function (other) {
+          ["me"].concat(Array.from(neighbours.get("me"))).forEach(function (other) {
             const card = cards[other];
             halfW = Math.max(halfW, Math.abs(card.x - middle.x) + 60);
             halfH = Math.max(halfH, Math.abs(card.y - middle.y) + 80);
           });
           const view = svg.viewBox.baseVal;
-          return {
-            scale: clampZoom(Math.min(view.width / (2 * halfW), view.height / (2 * halfH))),
-            cx: middle.x,
-            cy: middle.y,
-          };
+          return clampZoom(Math.min(view.width / (2 * halfW), view.height / (2 * halfH)));
         }
 
         const stillness = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -186,7 +187,7 @@ Featured
         }
 
         function fitMe() {
-          focus("me", { centre: true, hash: true });
+          focus("me", { centre: true, zoom: true, hash: true });
         }
 
         function toSvg(event) {
@@ -297,10 +298,11 @@ Featured
             if (card.href) captionLink.href = card.href;
           }
 
-          // Unfold the drawing and settle the camera on them, together — the
-          // same framing [ fit ] gives me, worked out for whoever was clicked.
+          // Unfold the drawing and settle the camera on them, together. The
+          // zoom is kept, unless the drawing was folded or [ fit ] asked.
           if (options && options.centre) {
-            glideTo({ spread: 1, ...holding(id) }, open ? null : light, options.instant ? 0 : undefined);
+            const zoom = open && !options.zoom ? scale : fitZoom();
+            glideTo({ spread: 1, scale: zoom, cx: card.x, cy: card.y }, open ? null : light, options.instant ? 0 : undefined);
           }
           if (options && options.hash) {
             history.replaceState(null, "", id === "me" ? location.pathname : `#${id}`);
