@@ -3708,9 +3708,14 @@ html.dark .markdown-content .paper-results-table .sat-row td {
 }
 
 .net-stage {
+  --net-stage-bg: #fff;
   position: relative;
   border: 1px solid var(--border-main);
-  background: var(--bg-deep);
+  background: var(--net-stage-bg);
+}
+
+html.dark .net-stage {
+  --net-stage-bg: var(--bg-deep);
 }
 
 .net-svg {
@@ -3759,7 +3764,7 @@ html.dark .markdown-content .paper-results-table .sat-row td {
   letter-spacing: 0.04em;
   opacity: 0;
   paint-order: stroke;
-  stroke: var(--bg-deep);
+  stroke: var(--net-stage-bg);
   stroke-width: 3.5;
   stroke-linejoin: round;
   pointer-events: none;
@@ -3830,7 +3835,7 @@ html.dark .markdown-content .paper-results-table .sat-row td {
   fill: var(--text-main);
 }
 
-.net-node:focus-visible {
+.net-node:focus {
   outline: none;
 }
 
@@ -3884,17 +3889,8 @@ html.dark .markdown-content .paper-results-table .sat-row td {
   fill: var(--text-main);
 }
 
-/* Focused: solid ring plus a heavier frame — the only thing wearing a halo. */
-.net-node.is-focused .net-halo {
-  stroke: var(--text-main);
-  stroke-dasharray: none;
-}
-
-.net-node.is-focused .net-frame {
-  stroke: var(--text-main);
-  stroke-width: 2.5;
-}
-
+/* Selection is carried by the name and connected ties; keyboard focus keeps
+   its own dotted halo so it remains visible without boxing mouse selections. */
 .net-node.is-focused .net-name {
   fill: var(--text-main);
   font-weight: 600;

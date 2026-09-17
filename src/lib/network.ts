@@ -18,6 +18,7 @@ export type GroupKey =
   | "sbdd"
   | "protein"
   | "cityu"
+  | "oxford"
   | "pku"
   | "stanford"
   | "mila"
@@ -139,10 +140,70 @@ export const people: Person[] = [
     bio:
       "Assistant Professor at City University of Hong Kong, in the Department of Data Science and " +
       "the Hong Kong Institute of AI for Science. Was Hao Zhou's colleague at ByteDance AI Lab, " +
-      "working on constrained and controllable text generation with him and Yuxuan Song, then did " +
-      "a PhD at Oxford on getting language models to check their own reasoning.",
+      "working on text generation with him and Yuxuan Song. Completed an Oxford DPhil under " +
+      "Tom Rainforth and Yee Whye Teh, studying inductive biases in machine learning.",
     group: "cityu",
     href: "https://www.ningmiao.space/",
+  },
+
+  // ── Ning Miao's Oxford PhD lineage ──────────────────────────────────────
+  // Miao names Rainforth and Teh as co-supervisors; Rainforth names Wood and
+  // Osborne as his DPhil supervisors; Hinton lists Teh as a former PhD student.
+  // https://www.ningmiao.space/index.html
+  // https://www.stats.ox.ac.uk/people/tom-rainforth
+  // https://www.cs.toronto.edu/~hinton/gradstuphd.html
+  {
+    id: "tom-rainforth",
+    name: "Tom Rainforth",
+    affiliation: "Professor of Statistical Machine Learning, Oxford",
+    bio:
+      "Professor of Statistical Machine Learning at Oxford and leader of the RainML lab. " +
+      "Co-supervised Ning Miao's DPhil with Yee Whye Teh; his own DPhil was supervised by " +
+      "Frank Wood and Maike Osborne.",
+    group: "oxford",
+    href: "https://www.stats.ox.ac.uk/people/tom-rainforth",
+  },
+  {
+    id: "yee-whye-teh",
+    name: "Yee Whye Teh",
+    affiliation: "Professor of Statistical Machine Learning, Oxford",
+    bio:
+      "Professor of Statistical Machine Learning at Oxford. Co-supervised Ning Miao's DPhil " +
+      "with Tom Rainforth, after completing his own PhD at Toronto with Geoffrey Hinton.",
+    group: "oxford",
+    href: "https://www.stats.ox.ac.uk/people/yee-whye-teh",
+  },
+  {
+    id: "frank-wood",
+    name: "Frank Wood",
+    affiliation: "Professor of Computer Science, UBC",
+    bio:
+      "Professor of Computer Science at the University of British Columbia. Co-supervised " +
+      "Tom Rainforth's Oxford DPhil with Maike Osborne; works on probabilistic programming " +
+      "and machine learning.",
+    group: "oxford",
+    href: "https://www.cs.ubc.ca/people/frank-wood",
+  },
+  {
+    id: "maike-osborne",
+    name: "Maike Osborne",
+    affiliation: "Professor of Machine Learning, Oxford",
+    bio:
+      "Professor of Machine Learning at Oxford. Co-supervised Tom Rainforth's DPhil with " +
+      "Frank Wood; works on Bayesian optimisation and probabilistic numerics.",
+    group: "oxford",
+    href: "https://www.robots.ox.ac.uk/~mosb/",
+  },
+  {
+    id: "geoffrey-hinton",
+    name: "Geoffrey Hinton",
+    affiliation: "University Professor Emeritus, Toronto",
+    bio:
+      "University Professor Emeritus at the University of Toronto and a pioneer of deep learning. " +
+      "Supervised Yee Whye Teh's PhD, making him Ning Miao's academic grand-adviser through " +
+      "Teh's side of the lineage.",
+    group: "oxford",
+    href: "https://www.cs.utoronto.ca/~hinton/",
   },
 
   // ── Peking University, where Zhilong Zhang did his master's ─────────────
@@ -503,13 +564,11 @@ export const papers: Paper[] = [
 ];
 
 /**
- * Who advises whom, as `[advisor, student]`.
+ * Directed adviser and supervisor ties, as `[senior, junior]`.
  *
- * This is the one relation a paper cannot tell you — an author list is a set,
- * with no direction in it — so it has to be stated by hand. Each pair turns
- * the tie the two already share into an arrow pointing from the advisor to
- * the student; every tie left over stays a plain line, meaning co-authorship
- * and nothing more.
+ * An author list has no direction, so these ties are stated by hand. Each pair
+ * turns the tie the two already share into an arrow pointing from the adviser
+ * or manager to the student or colleague. Other paper ties stay plain lines.
  */
 export const advising: [string, string][] = [
   ["hao-zhou", "me"],
@@ -521,10 +580,14 @@ export const advising: [string, string][] = [
   ["weiying-ma", "zhilong-zhang"],
   ["weiying-ma", "keyue-qiu"],
   ["yaqin-zhang", "hao-zhou"],
-  // CityU. Ning Miao's group sits in the Hong Kong Institute of AI for Science,
-  // which Wei-Ying Ma directs; the two share no paper on this map, so the
-  // arrow stands on its own.
+  // CityU. Wei-Ying Ma directs the institute where Ning Miao's group sits.
   ["weiying-ma", "ning-miao"],
+  // Oxford: Ning Miao's two DPhil supervisors and both branches above them.
+  ["tom-rainforth", "ning-miao"],
+  ["yee-whye-teh", "ning-miao"],
+  ["frank-wood", "tom-rainforth"],
+  ["maike-osborne", "tom-rainforth"],
+  ["geoffrey-hinton", "yee-whye-teh"],
   // Peking University.
   ["bin-cui", "ling-yang"],
   ["bin-cui", "wentao-zhang"],
@@ -591,6 +654,11 @@ export const tieLabels: [string, string, string][] = [
   ["yaqin-zhang", "hao-zhou", "Boss @ THU-AIR"],
   ["weiying-ma", "ning-miao", "Boss @ CityU"],
   ["hao-zhou", "ning-miao", "Colleagues @ ByteDance AI Lab"],
+  ["tom-rainforth", "ning-miao", "PhD adviser @ Oxford"],
+  ["yee-whye-teh", "ning-miao", "PhD adviser @ Oxford"],
+  ["frank-wood", "tom-rainforth", "PhD adviser @ Oxford"],
+  ["maike-osborne", "tom-rainforth", "PhD adviser @ Oxford"],
+  ["geoffrey-hinton", "yee-whye-teh", "PhD adviser @ Toronto"],
   ["bin-cui", "ling-yang", "PhD adviser @ PKU"],
   ["bin-cui", "wentao-zhang", "PhD adviser @ PKU"],
   ["stefano-ermon", "yang-song", "PhD adviser @ Stanford"],

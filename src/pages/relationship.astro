@@ -203,10 +203,10 @@ const radii = [...new Set(placed.map((person) => person.r))];
 
 <BaseLayout
   title="Relationship"
-  description="Runze Tian's co-authorship network, seeded from SAT-Mask and grown one hop outward."
+  description="Runze Tian's research network: collaborators, mentors, and academic lineages."
   wide
 >
-  <section class="net-page" aria-label="Co-authorship network">
+  <section class="net-page" aria-label="Research relationship network">
     <header class="net-header">
       <h1>Relationship</h1>
       <p>{placed.length} people · click anyone to recentre</p>
@@ -218,7 +218,7 @@ const radii = [...new Set(placed.map((person) => person.r))];
         id="net-svg"
         viewBox="-620 -360 1240 720"
         role="group"
-        aria-label="Co-authorship network. Click a person to bring them to the centre."
+        aria-label="Research relationship network. Click a person to bring them to the centre."
       >
         <defs>
           <marker
