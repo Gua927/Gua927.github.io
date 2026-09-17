@@ -1128,7 +1128,9 @@ function radialStart(salt: string): Map<string, number> {
  * The open one (`captions: true`) leaves every labelled tie long enough to
  * print its caption between the two faces, and is what a click on a person
  * unfolds into. The folded one ignores captions altogether: it is built from
- * the relations alone and is what [ universe ] shows. Solving the folded one
+ * the relations alone and is what [ universe ] shows. It also relaxes radial
+ * hop ordering and branch separation: overview size matters more than rings.
+ * Solving the folded one
  * *from* the open one (`from`) is what makes the unfolding read as one picture
  * opening rather than two pictures swapped — every person slides in or out
  * along much the same line, and the drawing keeps its orientation.
@@ -1176,7 +1178,7 @@ function layout({ salt, angleMin, clearGain, falloff, unit }: Tune, rounds: numb
   function wanted(a: Body, b: Body) {
     // Nothing to do with each other: the most the drawing can say is that, and
     // it says it by standing them on opposite sides of me.
-    if (!related(a.person.id, b.person.id)) {
+    if (mode.captions && !related(a.person.id, b.person.id)) {
       return Math.max(radius(a) + radius(b), a.r + b.r + MIN_SEPARATION);
     }
     const hop = hops.get(a.person.id)!.get(b.person.id)!;
@@ -1403,7 +1405,7 @@ function layout({ salt, angleMin, clearGain, falloff, unit }: Tune, rounds: numb
         }
       }
       // Last word, so that pushing people apart cannot reshuffle the rings.
-      orderRings();
+      if (mode.captions) orderRings();
     }
   }
 
@@ -1734,63 +1736,89 @@ function solve(): { place: Placed[]; tune: Tune } {
 }
 
 /**
- * Hop lengths to try for the folded drawing, smallest first. The search stops
- * at the first that says nothing false and clears every legibility floor: the
- * folded drawing exists to be small, so nothing above the floors is weighed
- * against that.
- *
- * On this roster the AIR clique is what sets the floor. Seven faces of radius
- * 30 joined nearly every way round cannot be packed much under a hop of 240
- * without some chord grazing a face — Keyue Qiu to Wei-Ying Ma passed eight
- * units from Hao Zhou at 150 — and a line that grazes a face reads as ending
- * there. That is a fact about the graph, not a tuning to be argued with. The
- * list runs up close to the open hop so that there is always something to
- * fall back to; the build log says where it landed.
+ * Overview footprints include the avatar, its focus target, and its name.
+ * Names remain horizontal after layout rotation, so resolve these boxes last.
  */
-const FOLD_UNIT_TRIES = [150, 170, 190, 210, 225, 240, 260, 280, 300];
+function overviewBox(person: Placed) {
+  const halfW = Math.max(person.r + 8, person.name.length * 7.2 / 2) + 6;
+  return { halfW, top: person.y - person.r - 8, bottom: person.y + person.r + 26 };
+}
 
-/**
- * The folded drawing: the open one re-solved with every caption floor taken
- * away, at a much shorter hop, started from where the open one left everybody.
- * Only the start is inherited from the open drawing's winning tune. Hop length
- * and falloff are searched again, since those are what the caption floors had
- * been forcing; so are clearance and fan, because what wins at a long hop —
- * no clearance at all, say, since long ties pass nobody closely — is not what
- * a packed drawing needs.
- *
- * Searched the way the open drawing is: every tuning at a hop is settled
- * coarsely, the best few are redone in full, and the hop is accepted at the
- * first that says nothing false and clears every floor.
- */
-function fold({ place, tune }: { place: Placed[]; tune: Tune }): Placed[] {
-  const from = { place, unit: tune.unit };
-  const mode = { captions: false, from };
-  let best: { place: Placed[]; mark: Grade; unit: number } | null = null;
-  // A fold must be a fold: only hops shorter than the open drawing's.
-  for (const unit of FOLD_UNIT_TRIES.filter((unit) => unit < tune.unit)) {
-    const grid: Tune[] = [];
-    for (const falloff of FALLOFF_TRIES) {
-      for (const clearGain of CLEAR_TRIES) {
-        for (const angleMin of ANGLE_TRIES) grid.push({ ...tune, unit, falloff, clearGain, angleMin });
+function overviewOverlap(a: Placed, b: Placed) {
+  const aa = overviewBox(a);
+  const bb = overviewBox(b);
+  return {
+    x: aa.halfW + bb.halfW - Math.abs(a.x - b.x),
+    y: Math.min(aa.bottom - bb.top, bb.bottom - aa.top),
+  };
+}
+
+function clearOverviewNames(place: Placed[]) {
+  for (let pass = 0; pass < 120; pass++) {
+    let moved = false;
+    for (let i = 0; i < place.length; i++) {
+      for (let j = i + 1; j < place.length; j++) {
+        const a = place[i];
+        const b = place[j];
+        const overlap = overviewOverlap(a, b);
+        if (overlap.x <= 0 || overlap.y <= 0) continue;
+        // Keep me anchored while each other pair shares the displacement.
+        const share = a.id === me.id ? 0 : b.id === me.id ? 1 : 0.5;
+        const axis = overlap.x < overlap.y ? "x" : "y";
+        const shift = (overlap[axis] + 0.2) * Math.sign(b[axis] - a[axis] || 1);
+        a[axis] -= shift * share;
+        b[axis] += shift * (1 - share);
+        moved = true;
       }
     }
-    const shortlist = grid
-      .map((t) => ({ tune: t, mark: grade(layout(t, SEARCH_ROUNDS, mode), { behindMe: true }) }))
-      .sort((x, y) => (beats(x.mark, y.mark) ? -1 : 1))
-      .slice(0, SHORTLIST / 2);
-    for (const { tune: t } of shortlist) {
-      const candidate = layout(t, ROUNDS, mode);
-      const mark = grade(candidate, { behindMe: true });
-      if (!best || beats(mark, best.mark)) best = { place: candidate, mark, unit };
-    }
-    if (best!.mark.faults === 0 && best!.mark.short === 0) break;
+    if (!moved) break;
   }
-  const { mark, unit } = best!;
+  return place;
+}
+
+/** Extra room beyond collision clearance, with avatar and type sizes fixed. */
+const OVERVIEW_SPACING = 1.65;
+
+/**
+ * Universe has its own priorities: readable people and a small footprint.
+ * Hop ordering, minimum fans, equal tie lengths and generous line clearance
+ * belong to the open drawing. In this overview, crossings and lines hidden
+ * behind opaque avatars are allowed. A small clearance preference still helps
+ * distinguish ties when two equally compact arrangements are available.
+ */
+function fold({ place, tune }: { place: Placed[]; tune: Tune }): Placed[] {
+  const mode: Mode = { captions: false, from: { place, unit: tune.unit } };
+  let best: { place: Placed[]; overlaps: number; cost: number; zoom: number; unit: number } | null = null;
+  for (const unit of [130, 150, 170, 190]) {
+    for (const falloff of [0.2, 0.35, 0.5]) {
+      for (const clearGain of [0, 0.1]) {
+        const candidate = clearOverviewNames(layout(
+          { ...tune, unit, falloff, clearGain, angleMin: 0 }, ROUNDS, mode,
+        )).map((person) => ({
+          ...person,
+          x: person.x * OVERVIEW_SPACING,
+          y: person.y * OVERVIEW_SPACING,
+        }));
+        let overlaps = 0;
+        for (let i = 0; i < candidate.length; i++) {
+          for (let j = i + 1; j < candidate.length; j++) {
+            const gap = overviewOverlap(candidate[i], candidate[j]);
+            if (gap.x > 0 && gap.y > 0) overlaps++;
+          }
+        }
+        const mark = grade(candidate, { behindMe: true });
+        // Inverse zoom keeps rewarding a smaller footprint even above 1:1.
+        const cost = 1 / mark.zoom + 0.1 * mark.crossings / Math.max(1, edges.length) +
+          0.1 * Math.max(0, -mark.daylight) / NODE_R;
+        if (!best || overlaps < best.overlaps || (overlaps === best.overlaps && cost < best.cost)) {
+          best = { place: candidate, overlaps, cost, zoom: mark.zoom, unit };
+        }
+      }
+    }
+  }
   console.log(
-    `[network] folded at unit ${unit}: faults ${mark.faults}, floors missed ${mark.short},` +
-      ` narrowest fan ${Math.round((mark.narrowest * 180) / Math.PI)}°, ties clear faces by` +
-      ` ${mark.daylight.toFixed(0)}, tie lengths vary by ${(mark.uneven * 100).toFixed(0)}%,` +
-      ` crossings ${mark.crossings}`,
+    `[network] universe at unit ${best!.unit}: avatar/name overlaps ${best!.overlaps},` +
+      ` zoom ${best!.zoom.toFixed(2)}`,
   );
   return best!.place;
 }
