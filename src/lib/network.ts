@@ -11,7 +11,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-export type GroupKey = "hub" | "air" | "dlm" | "sbdd" | "protein" | "westlake";
+export type GroupKey = "hub" | "air" | "dlm" | "sbdd" | "protein" | "cityu" | "westlake";
 
 export type Person = {
   id: string;
@@ -53,20 +53,21 @@ export const people: Person[] = [
     name: "Hao Zhou",
     affiliation: "Research Assoc. Prof, THU-AIR · leads GenSI",
     bio:
-      "Research Associate Professor at THU-AIR, where he leads the GenSI group. Works on " +
-      "generative modelling for language and for biomolecules, and is senior author on seven of " +
-      "the papers behind this map.",
+      "Research Associate Professor at THU-AIR, where he leads the GenSI group; before that a " +
+      "researcher at ByteDance AI Lab. Works on generative modelling for language and for " +
+      "biomolecules, and is senior author on seven of the papers behind this map.",
     group: "air",
     href: "https://zhouh.github.io/",
   },
   {
     id: "weiying-ma",
     name: "Wei-Ying Ma",
-    affiliation: "Huiyan Chair Professor & Chief Scientist, THU-AIR",
+    affiliation: "Chief Scientist, THU-AIR · Head of Department, CityU",
     bio:
-      "Huiyan Chair Professor and Chief Scientist at THU-AIR. A long-standing figure in " +
-      "information retrieval and multimedia who now co-advises much of the lab's generative work; " +
-      "co-author on six papers here.",
+      "Huiyan Chair Professor and Chief Scientist at THU-AIR, and now also a department head at " +
+      "City University of Hong Kong, where Ning Miao's group reports to him. A long-standing " +
+      "figure in information retrieval and multimedia who co-advises much of AIR's generative " +
+      "work; co-author on six papers here.",
     group: "air",
     href: "https://air.tsinghua.edu.cn/en/info/1046/1189.htm",
   },
@@ -90,7 +91,7 @@ export const people: Person[] = [
     bio:
       "Research Scientist at ByteDance Seed and a THU-AIR PhD. Works on diffusion and flow-based " +
       "generative models across language and molecules, including Seed Diffusion; co-author on " +
-      "seven papers here.",
+      "nine papers here, more than anyone else on the map.",
     group: "dlm",
     href: "https://yuxuansong.com/",
   },
@@ -111,10 +112,22 @@ export const people: Person[] = [
     name: "Keyue Qiu",
     affiliation: "PhD student, THU-AIR",
     bio:
-      "PhD student at THU-AIR and the most frequent collaborator on this map, on seven of the " +
-      "papers listed. Works on structure-based drug design and multimodal biomolecular co-design.",
+      "PhD student at THU-AIR, on seven of the papers listed here. Works on structure-based " +
+      "drug design and multimodal biomolecular co-design.",
     group: "sbdd",
     href: "https://qky18.github.io/",
+  },
+
+  // ── CityU, by way of ByteDance AI Lab ───────────────────────────────────
+  {
+    id: "ning-miao",
+    name: "Ning Miao",
+    affiliation: "Assistant Professor, City University of Hong Kong",
+    bio:
+      "Assistant Professor at City University of Hong Kong. Was Hao Zhou's colleague at ByteDance " +
+      "AI Lab, working on constrained and controllable text generation with him and Yuxuan Song, " +
+      "then did a PhD at Oxford on getting language models to check their own reasoning.",
+    group: "cityu",
   },
 
   // ── Westlake, and the lineage behind it ─────────────────────────────────
@@ -255,6 +268,19 @@ export const papers: Paper[] = [
     venue: "ByteDance Seed × THU-AIR, 2025",
     authors: ["yuxuan-song", "zheng-zhang", "ge-zhang"],
   },
+  // ByteDance AI Lab years, before any of them were at THU-AIR.
+  {
+    id: "density-ratio",
+    title: "Improving Maximum Likelihood Training for Text Generation with Density Ratio Estimation",
+    venue: "AISTATS 2020",
+    authors: ["yuxuan-song", "ning-miao", "hao-zhou", "lantao-yu", "mingxuan-wang", "lei-li"],
+  },
+  {
+    id: "right-scissors",
+    title: "Do You Have the Right Scissors? Tailoring Pre-trained Language Models via Monte-Carlo Methods",
+    venue: "ACL 2020",
+    authors: ["ning-miao", "yuxuan-song", "hao-zhou", "lei-li"],
+  },
 ];
 
 /**
@@ -276,6 +302,9 @@ export const advising: [string, string][] = [
   ["weiying-ma", "zhilong-zhang"],
   ["weiying-ma", "keyue-qiu"],
   ["yaqin-zhang", "hao-zhou"],
+  // CityU. Ning Miao's group reports to Wei-Ying Ma there; the two share no
+  // paper on this map, so the arrow stands on its own.
+  ["weiying-ma", "ning-miao"],
   // Westlake. None of these rest on a shared paper, which is the point of
   // letting advising stand on its own.
   ["tailin-wu", "me"],
@@ -317,6 +346,9 @@ export const tieLabels: [string, string, string][] = [
   ["weiying-ma", "keyue-qiu", "PhD adviser @ THU-AIR"],
   ["weiying-ma", "hao-zhou", "Boss @ THU-AIR"],
   ["yaqin-zhang", "hao-zhou", "Boss @ THU-AIR"],
+  ["weiying-ma", "ning-miao", "Boss @ CityU"],
+  ["hao-zhou", "ning-miao", "Colleagues @ ByteDance AI Lab"],
+  ["yuxuan-song", "ning-miao", "Co-authors, 2020"],
   ["max-tegmark", "tailin-wu", "PhD adviser @ MIT"],
   ["jure-leskovec", "tailin-wu", "Postdoc adviser @ Stanford"],
   ["max-tegmark", "ziming-liu", "PhD adviser @ MIT"],
@@ -1313,35 +1345,48 @@ function solve(): { place: Placed[]; tune: Tune } {
  * folded drawing exists to be small, so nothing above the floors is weighed
  * against that.
  *
- * On this roster the AIR clique is what sets the floor. Six faces of radius 30
- * joined nearly every way round cannot be packed much under a hop of 240
- * without some chord grazing a face — Keyue Qiu to Wei-Ying Ma passes eight
+ * On this roster the AIR clique is what sets the floor. Seven faces of radius
+ * 30 joined nearly every way round cannot be packed much under a hop of 240
+ * without some chord grazing a face — Keyue Qiu to Wei-Ying Ma passed eight
  * units from Hao Zhou at 150 — and a line that grazes a face reads as ending
- * there. That is a fact about the graph, not a tuning to be argued with.
+ * there. That is a fact about the graph, not a tuning to be argued with. The
+ * list runs up close to the open hop so that there is always something to
+ * fall back to; the build log says where it landed.
  */
-const FOLD_UNIT_TRIES = [150, 170, 190, 210, 225, 240, 260];
+const FOLD_UNIT_TRIES = [150, 170, 190, 210, 225, 240, 260, 280, 300];
 
 /**
  * The folded drawing: the open one re-solved with every caption floor taken
  * away, at a much shorter hop, started from where the open one left everybody.
- * Fan and start are inherited from the open drawing's winning tune. Hop length
+ * Only the start is inherited from the open drawing's winning tune. Hop length
  * and falloff are searched again, since those are what the caption floors had
- * been forcing; so is clearance, because the open drawing can win with none —
- * its long ties pass nobody closely — and packed at half the hop that leaves
- * lines grazing faces.
+ * been forcing; so are clearance and fan, because what wins at a long hop —
+ * no clearance at all, say, since long ties pass nobody closely — is not what
+ * a packed drawing needs.
+ *
+ * Searched the way the open drawing is: every tuning at a hop is settled
+ * coarsely, the best few are redone in full, and the hop is accepted at the
+ * first that says nothing false and clears every floor.
  */
 function fold({ place, tune }: { place: Placed[]; tune: Tune }): Placed[] {
+  const from = { place, unit: tune.unit };
+  const mode = { captions: false, from };
   let best: { place: Placed[]; mark: Grade; unit: number } | null = null;
   for (const unit of FOLD_UNIT_TRIES) {
+    const grid: Tune[] = [];
     for (const falloff of FALLOFF_TRIES) {
       for (const clearGain of CLEAR_TRIES) {
-        const candidate = layout({ ...tune, unit, falloff, clearGain }, ROUNDS, {
-          captions: false,
-          from: { place, unit: tune.unit },
-        });
-        const mark = grade(candidate, { behindMe: true });
-        if (!best || beats(mark, best.mark)) best = { place: candidate, mark, unit };
+        for (const angleMin of ANGLE_TRIES) grid.push({ ...tune, unit, falloff, clearGain, angleMin });
       }
+    }
+    const shortlist = grid
+      .map((t) => ({ tune: t, mark: grade(layout(t, SEARCH_ROUNDS, mode), { behindMe: true }) }))
+      .sort((x, y) => (beats(x.mark, y.mark) ? -1 : 1))
+      .slice(0, SHORTLIST / 2);
+    for (const { tune: t } of shortlist) {
+      const candidate = layout(t, ROUNDS, mode);
+      const mark = grade(candidate, { behindMe: true });
+      if (!best || beats(mark, best.mark)) best = { place: candidate, mark, unit };
     }
     if (best!.mark.faults === 0 && best!.mark.short === 0) break;
   }
