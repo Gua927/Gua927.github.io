@@ -11,7 +11,17 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-export type GroupKey = "hub" | "air" | "dlm" | "sbdd" | "protein" | "cityu" | "pku" | "westlake";
+export type GroupKey =
+  | "hub"
+  | "air"
+  | "dlm"
+  | "sbdd"
+  | "protein"
+  | "cityu"
+  | "pku"
+  | "stanford"
+  | "mila"
+  | "westlake";
 
 export type Person = {
   id: string;
@@ -189,9 +199,39 @@ export const people: Person[] = [
     affiliation: "Associate Professor of CS, Stanford",
     bio:
       "Associate Professor of Computer Science at Stanford. Works on machine learning and " +
-      "generative AI; advised Yang Song's PhD, and co-authored two of the PKU diffusion papers here.",
+      "generative AI; advised Yang Song's PhD and co-advised Minkai Xu's, and co-authored two of " +
+      "the PKU diffusion papers here.",
     group: "pku",
     href: "https://cs.stanford.edu/~ermon/",
+  },
+
+  // ── Stanford and Mila, by way of Minkai Xu ──────────────────────────────
+  // Minkai Xu co-wrote two of the PKU papers with Zhilong Zhang, and his own
+  // advisers pull in the other direction: Ermon and Leskovec at Stanford, Jian
+  // Tang at Mila before that. Leskovec is already on the map through Tailin Wu,
+  // so this is where the Westlake side and the PKU side meet.
+  {
+    id: "minkai-xu",
+    name: "Minkai Xu",
+    affiliation: "Research Scientist, Google DeepMind · PhD, Stanford",
+    bio:
+      "Research Scientist at Google DeepMind. His Stanford PhD with Stefano Ermon and Jure " +
+      "Leskovec, after a master's at Mila with Jian Tang, produced GeoDiff and GeoLDM — diffusion " +
+      "models for molecular geometry — and he co-wrote ContextDiff and Consistency Flow Matching " +
+      "with Zhilong Zhang.",
+    group: "stanford",
+    href: "https://minkaixu.com/",
+  },
+  {
+    id: "jian-tang",
+    name: "Jian Tang",
+    affiliation: "Associate Professor, Mila & HEC Montréal",
+    bio:
+      "Associate Professor at Mila and HEC Montréal. Works on graph neural networks and " +
+      "generative models for drug discovery and molecular design; advised Minkai Xu's master's, " +
+      "and is senior author on GeoDiff.",
+    group: "mila",
+    href: "https://jian-tang.com/",
   },
 
   // ── Westlake, and the lineage behind it ─────────────────────────────────
@@ -447,6 +487,19 @@ export const papers: Paper[] = [
       "bin-cui",
     ],
   },
+  // Minkai Xu's own line of work, from Mila to Stanford.
+  {
+    id: "geodiff",
+    title: "GeoDiff: A Geometric Diffusion Model for Molecular Conformation Generation",
+    venue: "ICLR 2022",
+    authors: ["minkai-xu", "lantao-yu", "yang-song", "chence-shi", "stefano-ermon", "jian-tang"],
+  },
+  {
+    id: "geoldm",
+    title: "Geometric Latent Diffusion Models for 3D Molecule Generation",
+    venue: "ICML 2023",
+    authors: ["minkai-xu", "alexander-powers", "ron-dror", "stefano-ermon", "jure-leskovec"],
+  },
 ];
 
 /**
@@ -475,8 +528,13 @@ export const advising: [string, string][] = [
   // Peking University.
   ["bin-cui", "ling-yang"],
   ["bin-cui", "wentao-zhang"],
-  // Stanford. No shared paper on this map; the arrow stands on its own.
+  // Stanford. Ermon and Yang Song share no paper on this map; that arrow
+  // stands on its own. Minkai Xu was co-advised, so he gets two.
   ["stefano-ermon", "yang-song"],
+  ["stefano-ermon", "minkai-xu"],
+  ["jure-leskovec", "minkai-xu"],
+  // Mila, before Stanford.
+  ["jian-tang", "minkai-xu"],
   // Westlake. None of these rest on a shared paper, which is the point of
   // letting advising stand on its own.
   ["tailin-wu", "me"],
@@ -504,8 +562,14 @@ export const hiddenTies: [string, string][] = [
   // ties to Bin Cui and Wentao Zhang rest on nothing else, and are not drawn.
   ["yang-song", "bin-cui"],
   ["yang-song", "wentao-zhang"],
-  // Likewise Ermon and Wentao Zhang, who share one nine-author preprint.
+  // Likewise Ermon and Wentao Zhang, who share one nine-author preprint — and
+  // Minkai Xu and Wentao Zhang, on the same preprint.
   ["stefano-ermon", "wentao-zhang"],
+  ["minkai-xu", "wentao-zhang"],
+  // GeoDiff joins Jian Tang to Yang Song and to Ermon, once each. Jian Tang is
+  // on the map as Minkai Xu's adviser, and that is the one tie he keeps.
+  ["jian-tang", "yang-song"],
+  ["jian-tang", "stefano-ermon"],
 ];
 
 /**
@@ -530,6 +594,9 @@ export const tieLabels: [string, string, string][] = [
   ["bin-cui", "ling-yang", "PhD adviser @ PKU"],
   ["bin-cui", "wentao-zhang", "PhD adviser @ PKU"],
   ["stefano-ermon", "yang-song", "PhD adviser @ Stanford"],
+  ["stefano-ermon", "minkai-xu", "PhD adviser @ Stanford"],
+  ["jure-leskovec", "minkai-xu", "PhD adviser @ Stanford"],
+  ["jian-tang", "minkai-xu", "MSc adviser @ Mila"],
   ["max-tegmark", "tailin-wu", "PhD adviser @ MIT"],
   ["jure-leskovec", "tailin-wu", "Postdoc adviser @ Stanford"],
   ["max-tegmark", "ziming-liu", "PhD adviser @ MIT"],
@@ -926,6 +993,68 @@ function seed(key: string) {
 type Tune = { salt: string; angleMin: number; clearGain: number; falloff: number; unit: number };
 
 /**
+ * Where everybody starts: on a radial tree. Breadth-first from me, each of my
+ * direct contacts is given a slice of the circle in proportion to how many
+ * people hang off them, their own contacts a slice of that slice, and so on
+ * outwards. Majorisation is a local method and keeps whatever arrangement it
+ * is handed: started from people scattered at random angles it left the
+ * Peking clique strung out around me and me at the edge of the picture. A
+ * tree start hands it the drawing it is looking for — me in the middle, each
+ * branch in a sector of its own — and leaves it only the tidying. The salt
+ * decides the order children take round the circle, and where it begins.
+ *
+ * Returns each person's bearing from me. Anyone the tree cannot reach is
+ * left out, and takes a random bearing instead.
+ */
+function radialStart(salt: string): Map<string, number> {
+  const near = new Map<string, string[]>(roster.map((person) => [person.id, []]));
+  for (const edge of edges) {
+    near.get(edge.a)!.push(edge.b);
+    near.get(edge.b)!.push(edge.a);
+  }
+  const children = new Map<string, string[]>(roster.map((person) => [person.id, []]));
+  const claimed = new Set<string>([me.id]);
+  let front = [me.id];
+  while (front.length > 0) {
+    const next: string[] = [];
+    for (const id of front) {
+      const kids = near
+        .get(id)!
+        .filter((other) => !claimed.has(other))
+        .sort((x, y) => seed(x + salt) - seed(y + salt));
+      for (const kid of kids) {
+        claimed.add(kid);
+        children.get(id)!.push(kid);
+        next.push(kid);
+      }
+    }
+    front = next;
+  }
+  // How many leaves hang off each person: the share of the circle they need.
+  const leaves = new Map<string, number>();
+  const count = (id: string): number => {
+    const kids = children.get(id)!;
+    const n = kids.length === 0 ? 1 : kids.reduce((sum, kid) => sum + count(kid), 0);
+    leaves.set(id, n);
+    return n;
+  };
+  count(me.id);
+  const bearing = new Map<string, number>();
+  const spread = (id: string, from: number, to: number) => {
+    let at = from;
+    for (const kid of children.get(id)!) {
+      const span = ((to - from) * leaves.get(kid)!) / leaves.get(id)!;
+      bearing.set(kid, at + span / 2);
+      spread(kid, at, at + span);
+      at += span;
+    }
+  };
+  const turn = seed(salt) * Math.PI * 2;
+  spread(me.id, turn, turn + Math.PI * 2);
+  return bearing;
+}
+
+/**
  * Two drawings of the same graph come out of the one solver.
  *
  * The open one (`captions: true`) leaves every labelled tie long enough to
@@ -943,8 +1072,9 @@ const OPEN: Mode = { captions: true };
 function layout({ salt, angleMin, clearGain, falloff, unit }: Tune, rounds: number, mode: Mode = OPEN): Placed[] {
   const start = new Map(mode.from?.place.map((person) => [person.id, person]));
   const shrink = mode.from ? unit / mode.from.unit : 1;
+  const bearings = mode.from ? new Map<string, number>() : radialStart(salt);
   const nodes = roster.map((person) => {
-    const angle = seed(person.id + salt) * Math.PI * 2;
+    const angle = bearings.get(person.id) ?? seed(person.id + salt) * Math.PI * 2;
     const hop = hops.get(me.id)!.get(person.id)!;
     const out = unit * (1 + falloff * (hop - 1));
     const from = start.get(person.id);
@@ -1036,11 +1166,10 @@ function layout({ salt, angleMin, clearGain, falloff, unit }: Tune, rounds: numb
     node.y = about.y + Math.sin(at) * d;
   }
 
-  const views = nodes.map((node) => {
+  // My view only: see orderRings.
+  const views = nodes.filter((node) => node.pinned).map((node) => {
     const seen = hops.get(node.person.id)!;
-    // Only along this person's own branch, plus me. Their distance to an
-    // unrelated branch is not theirs to order.
-    const others = nodes.filter((other) => other !== node && related(node.person.id, other.person.id));
+    const others = nodes.filter((other) => other !== node);
     const levels = [...new Set(others.map((other) => seen.get(other.person.id)!))].sort(
       (x, y) => x - y,
     );
@@ -1053,10 +1182,18 @@ function layout({ salt, angleMin, clearGain, falloff, unit }: Tune, rounds: numb
 
   /**
    * Insist on the one thing the target distances only ask for politely: from
-   * every person's own point of view, whoever they work with directly is
-   * nearer than whoever they only know through somebody else. Worked radially
-   * about the person whose view is wrong, so it changes how far off somebody
-   * is and never which direction they lie in.
+   * my point of view, whoever I work with directly is nearer than whoever I
+   * only know through somebody else, ring by ring outwards. Worked radially
+   * about me, so it changes how far off somebody is and never which direction
+   * they lie in.
+   *
+   * It used to be asked of everybody's point of view, and could be while the
+   * map was two branches meeting at me. Once Jure Leskovec joined the Westlake
+   * side to the Peking side the map became one cyclic piece with an
+   * eleven-way clique in it, and the demand became unsatisfiable in a plane:
+   * every person's push raised the floor for the next, round on round, until
+   * the coordinates overflowed. I am pinned, so pushes from my view cannot
+   * cascade. Everybody else's ordering is left to the target distances.
    */
   function orderRings() {
     for (const { node, rings } of views) {
@@ -1253,13 +1390,12 @@ function layout({ salt, angleMin, clearGain, falloff, unit }: Tune, rounds: numb
  *     has nothing to do with. An avatar is opaque, so a tie passing over one is
  *     cut in two and reads as two different ties — it invents a relationship
  *     that does not exist. This is the only tier that can veto a drawing.
- *  2. DISTANCE MEANS HOPS ALONG A BRANCH, for everybody and not just me:
- *     whoever a person works with directly sits nearer to them than whoever
- *     they only know through somebody else *on the same branch*. Across
- *     branches hop count says nothing — Wei-Ying Ma being four hops from Max
- *     Tegmark is an artefact of my being in the middle, not a fact about
- *     either of them — so instead the two branches are simply stood on
- *     opposite sides of me. This is what the picture is for.
+ *  2. DISTANCE FROM ME MEANS HOPS FROM ME: whoever I work with directly sits
+ *     nearer to me than whoever I only know through somebody else, ring by
+ *     ring. This is what the picture is for. It was asked of everybody's
+ *     view while the map was two branches meeting at me; now that it is one
+ *     cyclic piece that cannot be had in a plane (see orderRings), so for
+ *     everybody else the target distances ask for it without insisting.
  *  3. THE DRAWING IS COMPACT. An oversized drawing is what "why are the lines
  *     over here so long" turns out to mean. This used to be a floor — how much
  *     of the drawing fit the frame was what set the captions' size on screen —
@@ -1302,6 +1438,14 @@ const EVEN_COST = 2.5;
 const ZOOM_COST = 1.5;
 const ANGLE_COST = 1;
 const CROSSING_COST = 0.5;
+/**
+ * Room above the daylight floor, priced like the room above the fan floor.
+ * Until this existed the cost saw no difference between a tie one unit off a
+ * face and one nineteen off it, so when no candidate cleared the floor — as
+ * none does at nineteen people — the folded drawing came back with a line
+ * touching a face, which is the one thing a fold must not do.
+ */
+const DAYLIGHT_COST = 1.5;
 /**
  * The desktop stage the drawing is judged against, in the page's units of one
  * CSS pixel each. The page itself sizes its viewBox to whatever stage it gets,
@@ -1364,7 +1508,8 @@ function grade(place: Placed[], { behindMe = false } = {}): Grade {
   }
 
   // ── tier 2 ────────────────────────────────────────────────────────────────
-  for (const person of place) {
+  // From my view only, for the reason given at orderRings.
+  for (const person of place.filter((person) => person.id === me.id)) {
     const rings = new Map<number, { near: number; far: number }>();
     for (const other of place) {
       if (other.id === person.id) continue;
@@ -1445,6 +1590,7 @@ function grade(place: Placed[], { behindMe = false } = {}): Grade {
     CENTRE_COST * offCentre +
     EVEN_COST * uneven +
       ANGLE_COST * Math.max(0, 1 - narrowest / (Math.PI / 6)) +
+    DAYLIGHT_COST * Math.max(0, 1 - daylight / DAYLIGHT_MIN) +
     (CROSSING_COST * crossings) / Math.max(1, edges.length);
 
   const short = (daylight < DAYLIGHT_MIN ? 1 : 0) + (narrowest < FAN_MIN ? 1 : 0);
@@ -1507,7 +1653,7 @@ function solve(): { place: Placed[]; tune: Tune } {
       `[network] ${roster.length} people, ${edges.length} ties, best of ${tried} candidates`,
       `  faults ${mark.faults}${mark.faults === 0 ? " (nothing false)" : " \u2605 SOMETHING IS WRONG"}`,
       `  floors missed ${mark.short}${mark.short === 0 ? " (all legible)" : " \u2605 BELOW A FLOOR"}`,
-      `  hops honoured: ${mark.faults === 0 ? "yes, for everyone" : "no"}`,
+      `  hops honoured from my view: ${mark.faults === 0 ? "yes" : "no"}`,
       `  I am ${(mark.offCentre * 100).toFixed(1)}% off centre`,
       `  tie lengths vary by ${(mark.uneven * 100).toFixed(0)}%`,
       `  narrowest fan ${deg(mark.narrowest)}, ties clear faces by ${mark.daylight.toFixed(0)}`,
@@ -1552,7 +1698,8 @@ function fold({ place, tune }: { place: Placed[]; tune: Tune }): Placed[] {
   const from = { place, unit: tune.unit };
   const mode = { captions: false, from };
   let best: { place: Placed[]; mark: Grade; unit: number } | null = null;
-  for (const unit of FOLD_UNIT_TRIES) {
+  // A fold must be a fold: only hops shorter than the open drawing's.
+  for (const unit of FOLD_UNIT_TRIES.filter((unit) => unit < tune.unit)) {
     const grid: Tune[] = [];
     for (const falloff of FALLOFF_TRIES) {
       for (const clearGain of CLEAR_TRIES) {

@@ -458,39 +458,42 @@ const radii = [...new Set(placed.map((person) => person.r))];
         const LEGIBLE = 0.8;
 
         /**
-         * The [ fit ] zoom: with me in the middle of the open drawing, the
-         * scale that keeps everyone I work with directly whole — avatar and
-         * name, not just centre. Framing that group's bounding box and then
+         * Camera for one person in the open drawing: them in the middle, at
+         * the zoom that keeps everyone they work with directly whole — avatar
+         * and name, not just centre. Framing that group's bounding box and then
          * recentring is not the same thing — it quietly cut the top off Yuxuan
-         * Song — so the scale is worked out from my own position outwards.
+         * Song — so the scale is worked out from the person outwards.
          *
-         * The outer ring is left off the edge on purpose. Cramming all ten in
+         * Anyone further out is left off the edge on purpose. Cramming them in
          * leaves every face small and says nothing about where to start
          * looking; [ universe ] is there for when you want the lot.
-         *
-         * This is the one zoom a click ever sets. Moving from person to person
-         * keeps whatever zoom the reader has and only pans, so the map does
-         * not breathe in and out under them; unfolding out of [ universe ] is
-         * the exception, since the folded zoom was fitted to nobody.
-         *
-         * It never drops below LEGIBLE. On a desk it is well above; on a phone
-         * held upright, holding my whole ring would mean 0.35, which fits it
-         * only in the sense that all of it is on screen and none of it can be
-         * read. Better to hold what reads and leave the rest to be panned to.
          */
-        function fitZoom() {
-          const middle = cards.me;
+        function holding(id) {
+          const middle = cards[id];
           let halfW = 0;
           let halfH = 0;
-          ["me"].concat(Array.from(neighbours.get("me"))).forEach(function (other) {
+          [id].concat(Array.from(neighbours.get(id))).forEach(function (other) {
             const card = cards[other];
             halfW = Math.max(halfW, Math.abs(card.x - middle.x) + 60);
             halfH = Math.max(halfH, Math.abs(card.y - middle.y) + 80);
           });
           const view = svg.viewBox.baseVal;
-          return clampZoom(
-            Math.max(LEGIBLE, Math.min(view.width / (2 * halfW), view.height / (2 * halfH))),
-          );
+          return {
+            scale: clampZoom(Math.min(view.width / (2 * halfW), view.height / (2 * halfH))),
+            cx: middle.x,
+            cy: middle.y,
+          };
+        }
+
+        /**
+         * Where to open on a stage too small to show everyone: me, at the
+         * zoom that holds my ring — but never below LEGIBLE. On a phone held
+         * upright the ring wants 0.35, which fits it only in the sense that
+         * all of it is on screen and none of it can be read. Better to hold
+         * what reads and leave the rest to be panned to.
+         */
+        function fitZoom() {
+          return clampZoom(Math.max(LEGIBLE, holding("me").scale));
         }
 
         const stillness = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -541,7 +544,7 @@ const radii = [...new Set(placed.map((person) => person.r))];
         }
 
         function fitMe() {
-          focus("me", { centre: true, zoom: true, hash: true });
+          focus("me", { centre: true, hash: true });
         }
 
         function toSvg(event) {
@@ -652,11 +655,10 @@ const radii = [...new Set(placed.map((person) => person.r))];
             if (card.href) captionLink.href = card.href;
           }
 
-          // Unfold the drawing and settle the camera on them, together. The
-          // zoom is kept, unless the drawing was folded or [ fit ] asked.
+          // Unfold the drawing and settle the camera on them, together, at the
+          // zoom that shows everyone they are directly tied to.
           if (options && options.centre) {
-            const zoom = open && !options.zoom ? scale : fitZoom();
-            glideTo({ spread: 1, scale: zoom, cx: card.x, cy: card.y }, open ? null : light, options.instant ? 0 : undefined);
+            glideTo({ spread: 1, ...holding(id) }, open ? null : light, options.instant ? 0 : undefined);
           }
           if (options && options.hash) {
             history.replaceState(null, "", id === "me" ? location.pathname : `#${id}`);
