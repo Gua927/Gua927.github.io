@@ -62,12 +62,13 @@ export const people: Person[] = [
   {
     id: "weiying-ma",
     name: "Wei-Ying Ma",
-    affiliation: "Chief Scientist, THU-AIR · Head of Department, CityU",
+    affiliation: "Chief Scientist, THU-AIR · Chief of AI, CityU",
     bio:
-      "Huiyan Chair Professor and Chief Scientist at THU-AIR, and now also a department head at " +
-      "City University of Hong Kong, where Ning Miao's group reports to him. A long-standing " +
-      "figure in information retrieval and multimedia who co-advises much of AIR's generative " +
-      "work; co-author on six papers here.",
+      "Huiyan Chair Professor and Chief Scientist at THU-AIR; now also Chair Professor of AI for " +
+      "Science in CityU's Department of Computer Science, the university's Chief of AI, and " +
+      "Director of the Hong Kong Institute of AI for Science, where Ning Miao's group sits. A " +
+      "long-standing figure in information retrieval and multimedia who co-advises much of AIR's " +
+      "generative work; co-author on six papers here.",
     group: "air",
     href: "https://air.tsinghua.edu.cn/en/info/1046/1189.htm",
   },
@@ -122,12 +123,14 @@ export const people: Person[] = [
   {
     id: "ning-miao",
     name: "Ning Miao",
-    affiliation: "Assistant Professor, City University of Hong Kong",
+    affiliation: "Assistant Professor, Data Science & HKAI-Sci, CityU",
     bio:
-      "Assistant Professor at City University of Hong Kong. Was Hao Zhou's colleague at ByteDance " +
-      "AI Lab, working on constrained and controllable text generation with him and Yuxuan Song, " +
-      "then did a PhD at Oxford on getting language models to check their own reasoning.",
+      "Assistant Professor at City University of Hong Kong, in the Department of Data Science and " +
+      "the Hong Kong Institute of AI for Science. Was Hao Zhou's colleague at ByteDance AI Lab, " +
+      "working on constrained and controllable text generation with him and Yuxuan Song, then did " +
+      "a PhD at Oxford on getting language models to check their own reasoning.",
     group: "cityu",
+    href: "https://www.ningmiao.space/",
   },
 
   // ── Westlake, and the lineage behind it ─────────────────────────────────
@@ -302,8 +305,9 @@ export const advising: [string, string][] = [
   ["weiying-ma", "zhilong-zhang"],
   ["weiying-ma", "keyue-qiu"],
   ["yaqin-zhang", "hao-zhou"],
-  // CityU. Ning Miao's group reports to Wei-Ying Ma there; the two share no
-  // paper on this map, so the arrow stands on its own.
+  // CityU. Ning Miao's group sits in the Hong Kong Institute of AI for Science,
+  // which Wei-Ying Ma directs; the two share no paper on this map, so the
+  // arrow stands on its own.
   ["weiying-ma", "ning-miao"],
   // Westlake. None of these rest on a shared paper, which is the point of
   // letting advising stand on its own.
@@ -348,7 +352,6 @@ export const tieLabels: [string, string, string][] = [
   ["yaqin-zhang", "hao-zhou", "Boss @ THU-AIR"],
   ["weiying-ma", "ning-miao", "Boss @ CityU"],
   ["hao-zhou", "ning-miao", "Colleagues @ ByteDance AI Lab"],
-  ["yuxuan-song", "ning-miao", "Co-authors, 2020"],
   ["max-tegmark", "tailin-wu", "PhD adviser @ MIT"],
   ["jure-leskovec", "tailin-wu", "Postdoc adviser @ Stanford"],
   ["max-tegmark", "ziming-liu", "PhD adviser @ MIT"],
