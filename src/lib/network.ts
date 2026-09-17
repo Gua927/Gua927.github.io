@@ -11,7 +11,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 
-export type GroupKey = "hub" | "air" | "dlm" | "sbdd" | "protein" | "cityu" | "westlake";
+export type GroupKey = "hub" | "air" | "dlm" | "sbdd" | "protein" | "cityu" | "pku" | "westlake";
 
 export type Person = {
   id: string;
@@ -102,7 +102,9 @@ export const people: Person[] = [
     affiliation: "PhD student, THU-AIR",
     bio:
       "PhD student at THU-AIR, working on diffusion language models and on structure-based " +
-      "molecule design. Co-author on SAT-Mask.",
+      "molecule design; co-author on SAT-Mask. Before that a master's student at Peking " +
+      "University, where he co-wrote the diffusion-models survey and a string of diffusion papers " +
+      "with Ling Yang in Bin Cui's lab.",
     group: "dlm",
     href: "https://scholar.google.com/citations?user=irQZ_qgAAAAJ",
   },
@@ -131,6 +133,65 @@ export const people: Person[] = [
       "a PhD at Oxford on getting language models to check their own reasoning.",
     group: "cityu",
     href: "https://www.ningmiao.space/",
+  },
+
+  // ── Peking University, where Zhilong Zhang did his master's ─────────────
+  // PKU-DAIR is Bin Cui's lab; Ling Yang led the diffusion work there that
+  // Zhilong Zhang grew up on. Yang Song and Stefano Ermon come in through the
+  // same papers and through Ermon having advised Song's PhD.
+  {
+    id: "ling-yang",
+    name: "Ling Yang",
+    affiliation: "Incoming Asst. Prof, PKU · Postdoc, Princeton",
+    bio:
+      "Incoming Assistant Professor at Peking University, currently a postdoc at Princeton with " +
+      "Mengdi Wang. Did his PhD at PKU with Bin Cui; first author of the diffusion-models survey " +
+      "and of most of Zhilong Zhang's PKU-era papers, now working on LLM post-training and " +
+      "recursive self-improvement.",
+    group: "pku",
+    href: "https://yangling0818.github.io/",
+  },
+  {
+    id: "yang-song",
+    name: "Yang Song",
+    affiliation: "Research Principal, Meta Superintelligence Labs",
+    bio:
+      "Research Principal at Meta Superintelligence Labs, previously at OpenAI. His Stanford PhD " +
+      "with Stefano Ermon produced score-based diffusion models — the foundation of much of what " +
+      "this map works on — and he co-authored the diffusion-models survey.",
+    group: "pku",
+    href: "https://yang-song.net/",
+  },
+  {
+    id: "bin-cui",
+    name: "Bin Cui",
+    affiliation: "Boya Distinguished Professor & Vice Dean, School of CS, PKU",
+    bio:
+      "Boya Distinguished Professor and Vice Dean of the School of Computer Science at Peking " +
+      "University, leading the PKU-DAIR lab. Works on database and AI systems; senior author on " +
+      "the diffusion papers Zhilong Zhang wrote there as a master's student.",
+    group: "pku",
+    href: "https://cuibinpku.github.io/",
+  },
+  {
+    id: "wentao-zhang",
+    name: "Wentao Zhang",
+    affiliation: "Assistant Professor, PKU · Data-Centric AI",
+    bio:
+      "Assistant Professor at Peking University, leading the Data-Centric AI group; PhD at PKU " +
+      "with Bin Cui, then Mila, Tencent and Apple. Works on data-centric AI and LLM data systems.",
+    group: "pku",
+    href: "https://zwt233.github.io/",
+  },
+  {
+    id: "stefano-ermon",
+    name: "Stefano Ermon",
+    affiliation: "Associate Professor of CS, Stanford",
+    bio:
+      "Associate Professor of Computer Science at Stanford. Works on machine learning and " +
+      "generative AI; advised Yang Song's PhD, and co-authored two of the PKU diffusion papers here.",
+    group: "pku",
+    href: "https://cs.stanford.edu/~ermon/",
   },
 
   // ── Westlake, and the lineage behind it ─────────────────────────────────
@@ -284,6 +345,108 @@ export const papers: Paper[] = [
     venue: "ACL 2020",
     authors: ["ning-miao", "yuxuan-song", "hao-zhou", "lei-li"],
   },
+  // Zhilong Zhang's master's years at Peking University, in Bin Cui's lab.
+  {
+    id: "diffusion-survey",
+    title: "Diffusion Models: A Comprehensive Survey of Methods and Applications",
+    venue: "ACM Computing Surveys, 2023",
+    authors: [
+      "ling-yang",
+      "zhilong-zhang",
+      "yang-song",
+      "shenda-hong",
+      "runsheng-xu",
+      "yue-zhao",
+      "yingxia-shao",
+      "wentao-zhang",
+      "bin-cui",
+      "minghsuan-yang",
+    ],
+  },
+  {
+    id: "context-prediction",
+    title: "Improving Diffusion-Based Image Synthesis with Context Prediction",
+    venue: "NeurIPS 2023",
+    authors: [
+      "ling-yang",
+      "jingwei-liu",
+      "shenda-hong",
+      "zhilong-zhang",
+      "zhilin-huang",
+      "zheming-cai",
+      "wentao-zhang",
+      "bin-cui",
+    ],
+  },
+  {
+    id: "contextdiff",
+    title: "Cross-Modal Contextualized Diffusion Models for Text-Guided Visual Generation and Editing",
+    venue: "ICLR 2024",
+    authors: [
+      "ling-yang",
+      "zhilong-zhang",
+      "zhaochen-yu",
+      "jingwei-liu",
+      "minkai-xu",
+      "stefano-ermon",
+      "bin-cui",
+    ],
+  },
+  {
+    id: "ipdiff",
+    title: "Protein-Ligand Interaction Prior for Binding-Aware 3D Molecule Diffusion Models",
+    venue: "ICLR 2024",
+    authors: [
+      "zhilin-huang",
+      "ling-yang",
+      "xiangxin-zhou",
+      "zhilong-zhang",
+      "wentao-zhang",
+      "xiawu-zheng",
+      "jie-chen",
+      "yu-wang",
+      "bin-cui",
+      "wenming-yang",
+    ],
+  },
+  {
+    id: "sadm",
+    title: "Structure-Guided Adversarial Training of Diffusion Models",
+    venue: "CVPR 2024",
+    authors: ["ling-yang", "haotian-qian", "zhilong-zhang", "jingwei-liu", "bin-cui"],
+  },
+  {
+    id: "graphusion",
+    title: "Graphusion: Latent Diffusion for Graph Generation",
+    venue: "IEEE TKDE, 2024",
+    authors: [
+      "ling-yang",
+      "zhilin-huang",
+      "zhilong-zhang",
+      "zhongyi-liu",
+      "shenda-hong",
+      "wentao-zhang",
+      "wenming-yang",
+      "bin-cui",
+      "luxia-zhang",
+    ],
+  },
+  {
+    id: "consistency-fm",
+    title: "Consistency Flow Matching: Defining Straight Flows with Velocity Consistency",
+    venue: "Preprint, 2024",
+    authors: [
+      "ling-yang",
+      "zixiang-zhang",
+      "zhilong-zhang",
+      "xingchao-liu",
+      "minkai-xu",
+      "wentao-zhang",
+      "chenlin-meng",
+      "stefano-ermon",
+      "bin-cui",
+    ],
+  },
 ];
 
 /**
@@ -309,6 +472,11 @@ export const advising: [string, string][] = [
   // which Wei-Ying Ma directs; the two share no paper on this map, so the
   // arrow stands on its own.
   ["weiying-ma", "ning-miao"],
+  // Peking University.
+  ["bin-cui", "ling-yang"],
+  ["bin-cui", "wentao-zhang"],
+  // Stanford. No shared paper on this map; the arrow stands on its own.
+  ["stefano-ermon", "yang-song"],
   // Westlake. None of these rest on a shared paper, which is the point of
   // letting advising stand on its own.
   ["tailin-wu", "me"],
@@ -331,6 +499,13 @@ export const hiddenTies: [string, string][] = [
   // on it. Being authors 5 and 2 on one technical report is not a relation.
   ["yaqin-zhang", "yuxuan-song"],
   ["yaqin-zhang", "keyue-qiu"],
+  // The diffusion survey has ten authors. It is what joins Yang Song to Ling
+  // Yang and to Zhilong Zhang, who wrote it with him, and those ties stay; his
+  // ties to Bin Cui and Wentao Zhang rest on nothing else, and are not drawn.
+  ["yang-song", "bin-cui"],
+  ["yang-song", "wentao-zhang"],
+  // Likewise Ermon and Wentao Zhang, who share one nine-author preprint.
+  ["stefano-ermon", "wentao-zhang"],
 ];
 
 /**
@@ -352,6 +527,9 @@ export const tieLabels: [string, string, string][] = [
   ["yaqin-zhang", "hao-zhou", "Boss @ THU-AIR"],
   ["weiying-ma", "ning-miao", "Boss @ CityU"],
   ["hao-zhou", "ning-miao", "Colleagues @ ByteDance AI Lab"],
+  ["bin-cui", "ling-yang", "PhD adviser @ PKU"],
+  ["bin-cui", "wentao-zhang", "PhD adviser @ PKU"],
+  ["stefano-ermon", "yang-song", "PhD adviser @ Stanford"],
   ["max-tegmark", "tailin-wu", "PhD adviser @ MIT"],
   ["jure-leskovec", "tailin-wu", "Postdoc adviser @ Stanford"],
   ["max-tegmark", "ziming-liu", "PhD adviser @ MIT"],
@@ -1082,11 +1260,13 @@ function layout({ salt, angleMin, clearGain, falloff, unit }: Tune, rounds: numb
  *     Tegmark is an artefact of my being in the middle, not a fact about
  *     either of them — so instead the two branches are simply stood on
  *     opposite sides of me. This is what the picture is for.
- *  3. THE CAPTIONS CAN BE READ. How much of the drawing fits in the frame is
- *     what sets their size on screen, so an oversized drawing is an unreadable
- *     one — and an oversized drawing is also what "why are the lines over here
- *     so long" turns out to mean. Above composition, because a picture nobody
- *     can read is not worth composing.
+ *  3. THE DRAWING IS COMPACT. An oversized drawing is what "why are the lines
+ *     over here so long" turns out to mean. This used to be a floor — how much
+ *     of the drawing fit the frame was what set the captions' size on screen —
+ *     but the page no longer shows the open drawing whole: [ universe ] shows
+ *     the folded one, and a click focuses at a zoom the captions read at. So
+ *     it is a cost now, weighed above composition but able to give way; on a
+ *     roster of seventeen the whole drawing simply does not fit at 0.8.
  *  4. I AM IN THE MIDDLE.
  *  5. TIES COME OUT SIMILAR LENGTHS. Every tie is one hop, so if one is twice
  *     another the length has stopped meaning anything. It cannot be had
@@ -1116,8 +1296,6 @@ function layout({ salt, angleMin, clearGain, falloff, unit }: Tune, rounds: numb
 const DAYLIGHT_MIN = 20;
 /** Least angle any two ties meeting at a person may make. */
 const FAN_MIN = (14 * Math.PI) / 180;
-/** Least zoom at which the captions still read. */
-const ZOOM_MIN = 0.8;
 /** Above the floors it is only taste, so these are small and only break ties. */
 const CENTRE_COST = 3;
 const EVEN_COST = 2.5;
@@ -1269,8 +1447,7 @@ function grade(place: Placed[], { behindMe = false } = {}): Grade {
       ANGLE_COST * Math.max(0, 1 - narrowest / (Math.PI / 6)) +
     (CROSSING_COST * crossings) / Math.max(1, edges.length);
 
-  const short =
-    (daylight < DAYLIGHT_MIN ? 1 : 0) + (narrowest < FAN_MIN ? 1 : 0) + (zoom < ZOOM_MIN ? 1 : 0);
+  const short = (daylight < DAYLIGHT_MIN ? 1 : 0) + (narrowest < FAN_MIN ? 1 : 0);
 
   return { faults, short, daylight, cost, offCentre, uneven, narrowest, zoom, crossings };
 }
