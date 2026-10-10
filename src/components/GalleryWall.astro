@@ -1,0 +1,217 @@
+---
+import type { GalleryPhoto } from "../lib/gallery";
+
+interface Props {
+  photos: (GalleryPhoto & { collectionKey?: string; collectionTitle?: string })[];
+}
+const { photos } = Astro.props;
+---
+
+<div class="photo-wall">
+  {photos.map((photo, index) => (
+    <figure
+      class:list={["photo-tile", { "is-featured": photo.featured }]}
+      id={`photo-${photo.id}`}
+      data-photo-id={photo.id}
+      data-collection-key={photo.collectionKey ?? ""}
+      data-themes={JSON.stringify(photo.themes)}
+      data-tags={JSON.stringify(photo.tags ?? [])}
+      data-taken-at={photo.takenAt ?? ""}
+      data-search={[String(index + 1).padStart(2, "0"), photo.id, photo.title, ...photo.themes, ...(photo.tags ?? []).map((tag) => `#${tag}`), photo.location, photo.notes, photo.caption, photo.collectionTitle, photo.takenAt, photo.camera, photo.lens].filter(Boolean).join(" ")}
+    >
+      <a
+        class="gallery-photo"
+        href={photo.src}
+        target="_blank"
+        rel="noopener"
+        data-photo={JSON.stringify(photo)}
+        data-caption={photo.caption}
+        aria-label={`View photograph: ${photo.title}`}
+        aria-haspopup="dialog"
+      >
+        <img
+          src={photo.src}
+          alt={photo.alt}
+          width={photo.width}
+          height={photo.height}
+          loading={index < 3 ? "eager" : "lazy"}
+          fetchpriority={index === 0 ? "high" : "auto"}
+          decoding="async"
+        />
+        <span class="photo-expand" aria-hidden="true">↗</span>
+      </a>
+      <figcaption>
+        <span class="photo-name">{photo.title}</span>
+        <span class="photo-meta">
+          {photo.takenAt
+            ? <time datetime={photo.takenAt}>{photo.takenAt.slice(0, 10).replaceAll("-", ".")}</time>
+            : <span>Undated</span>}
+          {photo.location && <span class="photo-location">{photo.location}</span>}
+        </span>
+      </figcaption>
+    </figure>
+  ))}
+</div>
+
+<script>
+  // Masonry: each tile spans as many 1px grid rows as its photograph and caption need,
+  // so photographs keep their own proportions and settle into the shortest column.
+  let observer: ResizeObserver | undefined;
+
+  function initPhotoWall() {
+    observer?.disconnect();
+    const wall = document.querySelector<HTMLElement>(".photo-wall");
+    if (!wall) return;
+    // Rows have no gap of their own; each tile adds the column gap below itself.
+    const gap = parseFloat(getComputedStyle(wall).columnGap) || 0;
+    observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const tile = entry.target as HTMLElement;
+        tile.style.gridRowEnd = `span ${Math.ceil(tile.getBoundingClientRect().height) + Math.round(gap)}`;
+      }
+    });
+    wall.querySelectorAll(".photo-tile").forEach((tile) => observer!.observe(tile));
+    wall.classList.add("is-masonry");
+  }
+
+  document.addEventListener("astro:page-load", initPhotoWall);
+  document.addEventListener("astro:before-swap", () => observer?.disconnect());
+  initPhotoWall();
+</script>
+
+<style>
+  .photo-wall {
+    --photo-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-auto-flow: row dense;
+    align-items: start;
+    gap: 12px;
+  }
+
+  /* Once tiles have measured themselves, rows become 1px tracks they span. */
+  .photo-wall.is-masonry {
+    grid-auto-rows: 1px;
+    row-gap: 0;
+  }
+
+  .photo-tile {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    margin: 0;
+    overflow: hidden;
+    background: var(--panel);
+    border: 1px solid var(--border-subtle);
+    scroll-margin-top: 90px;
+    transition: border-color 240ms ease;
+  }
+
+  .photo-tile:hover {
+    border-color: var(--border-main);
+  }
+
+  .photo-tile.is-featured {
+    grid-column: span 2;
+  }
+
+  .gallery-photo {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: var(--bg-deep);
+    cursor: zoom-in;
+  }
+
+  .gallery-photo img {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 500ms cubic-bezier(0.2, 0.65, 0.3, 1);
+  }
+
+  .photo-tile figcaption {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 6px;
+    padding: 13px 15px 15px;
+  }
+
+  .photo-name {
+    overflow: hidden;
+    color: var(--text-main);
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.35;
+    letter-spacing: -0.006em;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  /* Date in small mono figures; the place in the text face, so the row reads as one line. */
+  .photo-meta {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--faint);
+    font-size: 0.75rem;
+    line-height: 1.4;
+  }
+
+  .photo-meta > :first-child {
+    flex: none;
+    font-family: var(--photo-mono);
+    font-size: 0.65625rem;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 0.02em;
+  }
+
+  .photo-location {
+    min-width: 0;
+    overflow: hidden;
+    color: var(--muted);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .photo-expand {
+    position: absolute;
+    right: 12px;
+    bottom: 12px;
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    color: #fff;
+    background: rgb(0 0 0 / 0.5);
+    opacity: 0;
+    transition: opacity 180ms ease;
+  }
+
+  .gallery-photo:hover img {
+    transform: scale(1.015);
+  }
+
+  .gallery-photo:hover .photo-expand,
+  .gallery-photo:focus-visible .photo-expand {
+    opacity: 1;
+  }
+
+  /* Two columns only where the content column is narrow: beside the sidebar, or on small screens. */
+  @media (min-width: 861px) and (max-width: 1000px), (max-width: 700px) {
+    .photo-wall {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 480px) {
+    .photo-wall {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .photo-tile.is-featured {
+      grid-column: auto;
+    }
+  }
+</style>

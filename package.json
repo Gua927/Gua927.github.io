@@ -10,6 +10,7 @@
   "dependencies": {
     "@astrojs/sitemap": "^3.7.3",
     "astro": "^6.4.6",
+    "codex": "^0.2.3",
     "katex": "^0.17.0",
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.1",

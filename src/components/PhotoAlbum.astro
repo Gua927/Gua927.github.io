@@ -1,0 +1,90 @@
+---
+import type { GalleryPhoto } from "../lib/gallery";
+import { photoDate, photoDetails } from "../lib/gallery-details";
+import "../styles/photo-album.css";
+import "../styles/gallery-focus.css";
+
+interface Props {
+  id: string;
+  photos?: GalleryPhoto[];
+  title?: string;
+}
+const { id, photos = [], title = "Photographs" } = Astro.props;
+const first = photos[0];
+const fields = photoDetails(first);
+---
+
+<photo-album
+  class="photo-album"
+  id={id}
+  data-photos={JSON.stringify(photos)}
+  data-label={title}
+>
+  <figure class="album-main" data-album-main>
+    <img
+      class="is-shown"
+      src={first?.src}
+      alt={first?.alt ?? ""}
+      width={first?.width}
+      height={first?.height}
+      decoding="async"
+      fetchpriority="high"
+    />
+    <button class="album-arrow album-arrow-prev" type="button" data-album-prev tabindex="-1" aria-hidden="true" disabled><span>←</span></button>
+    <button class="album-arrow album-arrow-next" type="button" data-album-next tabindex="-1" aria-hidden="true" disabled={photos.length < 2}><span>→</span></button>
+  </figure>
+
+  <aside class="album-sidebar" aria-label="Album and photograph information">
+  <div class="album-collection-heading">
+    <span class="album-eyebrow">Collection</span>
+    <span class="album-label" data-album-label>{title}</span>
+  </div>
+  <div class="album-thumbs" data-album-thumbs aria-label="Photographs in this collection">
+    {photos.map((photo, index) => (
+      <button
+        class:list={["album-thumb", { "is-current": index === 0 }]}
+        type="button"
+        data-album-photo={index}
+        aria-pressed={index === 0 ? "true" : "false"}
+        aria-label={`Show photograph: ${photo.title}`}
+      >
+        <img src={photo.src} alt="" width={photo.width} height={photo.height} loading="lazy" decoding="async" />
+      </button>
+    ))}
+  </div>
+
+  <div class="album-controls">
+    <nav class="album-navigation" aria-label="Photograph navigation">
+      <button type="button" data-album-prev aria-label="Previous photograph" disabled>← prev</button>
+      <span class="album-position" data-album-position aria-live="polite">{photos.length ? "01" : "00"} / {String(photos.length).padStart(2, "0")}</span>
+      <button type="button" data-album-next aria-label="Next photograph" disabled={photos.length < 2}>next →</button>
+    </nav>
+  </div>
+
+  <section class="album-details" aria-label="Photograph information">
+    <div class="album-heading" data-album-fade aria-live="polite">
+      <p class="album-eyebrow">Photograph</p>
+      <h2 id={`${id}-title`} data-album-title>{first?.title ?? ""}</h2>
+      <p class="album-date" data-album-date>{photoDate(first?.takenAt)}</p>
+      <p class="album-location" data-album-location aria-label="Location">{first?.location || "—"}</p>
+      <p class="album-tags" data-album-tags aria-label="Tags">{first?.tags?.map((tag) => `#${tag}`).join(" ")}</p>
+    </div>
+    <div class="album-note" data-album-fade>
+      <h3 class="album-eyebrow">Notes</h3>
+      <p data-album-notes>{first?.notes || first?.caption || "No notes added."}</p>
+    </div>
+    <div class="album-equipment">
+      <h3 class="album-eyebrow">Details</h3>
+      <dl class="album-specs">
+        {fields.map(([label, value]) => (
+          <div><dt>{label}</dt><dd data-album-field={label}>{value || "—"}</dd></div>
+        ))}
+      </dl>
+    </div>
+  </section>
+  </aside>
+</photo-album>
+
+<script>
+  import "../scripts/photo-album";
+</script>

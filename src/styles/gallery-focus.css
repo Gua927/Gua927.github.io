@@ -1,0 +1,29 @@
+/* Gallery focus uses text and underlines, never a rectangular white frame. */
+:where(.gallery-page, .collection-page, .gallery-viewer, .photo-album) :is(a, button, input, select, summary, [tabindex]):focus {
+  outline: none;
+}
+
+:where(.gallery-page, .collection-page, .gallery-viewer, .photo-album) :is(a, button):focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.photo-tile:has(.gallery-photo:focus-visible) .photo-name,
+.gallery-collection-choice:focus-visible .gallery-collection-name {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.gallery-page :is(input, select):focus-visible {
+  box-shadow: 0 1px 0 var(--muted);
+}
+
+.photo-album .album-thumb:focus-visible::before {
+  content: "";
+  position: absolute;
+  bottom: -7px;
+  left: 35%;
+  right: 35%;
+  height: 2px;
+  background: var(--muted);
+}

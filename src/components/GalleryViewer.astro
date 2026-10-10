@@ -1,0 +1,143 @@
+---
+import PhotoAlbum from "./PhotoAlbum.astro";
+import type { GalleryPhoto } from "../lib/gallery";
+
+interface Props {
+  photos: GalleryPhoto[];
+  title?: string;
+  autoOpen?: boolean;
+}
+const { photos, title = "All", autoOpen = false } = Astro.props;
+---
+
+<dialog
+  class="gallery-viewer"
+  id="gallery-viewer"
+  aria-labelledby="viewer-album-title"
+  data-photos={JSON.stringify(photos)}
+  data-title={title}
+  data-auto-open={autoOpen}
+  open={autoOpen}
+>
+  <header class="viewer-toolbar">
+    <span>Gallery <span class="viewer-keyboard-hint">/ ← → to browse · Esc to close</span></span>
+    {autoOpen
+      ? <a href="/gallery/" data-viewer-close aria-label="Close collection and return to Gallery"><span aria-hidden="true">×</span></a>
+      : <button type="button" data-viewer-close aria-label="Close photograph viewer"><span aria-hidden="true">×</span></button>}
+  </header>
+  <div class="viewer-body">
+    <PhotoAlbum id="viewer-album" photos={autoOpen ? photos : []} title={title} />
+  </div>
+</dialog>
+
+<script>
+  import type { GalleryPhoto } from "../lib/gallery";
+  import { PhotoAlbumElement } from "../scripts/photo-album";
+  import { orderGallery } from "../lib/gallery-order";
+  import { navigate } from "astro:transitions/client";
+
+  let cleanupViewer: (() => void) | undefined;
+  let activeDialog: HTMLDialogElement | undefined;
+
+  function initViewer() {
+    const dialog = document.querySelector<HTMLDialogElement>("#gallery-viewer");
+    if (dialog === activeDialog) return;
+    cleanupViewer?.();
+    const album = dialog?.querySelector("photo-album");
+    const allPhotos = Array.from(document.querySelectorAll<HTMLAnchorElement>(".gallery-photo"));
+    if (!dialog || !(album instanceof PhotoAlbumElement)) return;
+    activeDialog = dialog;
+    const photos: GalleryPhoto[] = JSON.parse(dialog.dataset.photos ?? "[]");
+    const title = dialog.dataset.title ?? "All";
+    const autoOpen = dialog.dataset.autoOpen === "true";
+    const abort = new AbortController();
+    const options = { signal: abort.signal };
+    let savedOverflow = "";
+    let scrollLocked = false;
+    let opener: HTMLAnchorElement | undefined;
+
+    function restoreScroll() {
+      if (!scrollLocked) return;
+      document.documentElement.style.overflow = savedOverflow;
+      scrollLocked = false;
+    }
+
+    function openViewer() {
+      savedOverflow = document.documentElement.style.overflow;
+      document.documentElement.style.overflow = "hidden";
+      scrollLocked = true;
+      // A collection is already visible in the server-rendered page. Upgrade
+      // it to a modal so the surrounding site is also inert to keyboard input.
+      if (dialog!.open) dialog!.removeAttribute("open");
+      dialog!.showModal();
+      dialog!.querySelector(".viewer-body")?.scrollTo(0, 0);
+      dialog!.querySelector<HTMLElement>("[data-viewer-close]")?.focus({ preventScroll: true });
+    }
+
+    allPhotos.forEach((link) => {
+      link.addEventListener("click", (event) => {
+        if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+        event.preventDefault();
+        opener = link;
+        const selected: GalleryPhoto = JSON.parse(link.dataset.photo!);
+        const direction = document.querySelector<HTMLSelectElement>("[data-gallery-sort]")?.value === "asc" ? "asc" : "desc";
+        const ordered = orderGallery(photos, direction);
+        album.setPhotos(ordered, ordered.findIndex((photo) => photo.id === selected.id), title);
+        openViewer();
+      }, options);
+    });
+
+    if (!autoOpen) {
+      dialog.querySelector("[data-viewer-close]")?.addEventListener("click", () => dialog.close(), options);
+    }
+    dialog.addEventListener("cancel", (event) => {
+      if (!autoOpen) return;
+      event.preventDefault();
+      void navigate("/gallery/");
+    }, options);
+    dialog.addEventListener("keydown", (event) => {
+      if (event.key === "ArrowLeft" || event.key === "ArrowRight") {
+        event.preventDefault();
+        album.move(event.key === "ArrowRight" ? 1 : -1);
+      }
+    }, options);
+    dialog.addEventListener("close", () => {
+      restoreScroll();
+      opener?.focus({ preventScroll: true });
+    }, options);
+
+    cleanupViewer = () => {
+      abort.abort();
+      if (dialog.open) dialog.close();
+      restoreScroll();
+      activeDialog = undefined;
+      cleanupViewer = undefined;
+    };
+
+    if (autoOpen) openViewer();
+  }
+
+  document.addEventListener("astro:page-load", initViewer);
+  document.addEventListener("astro:before-swap", () => cleanupViewer?.());
+  initViewer();
+</script>
+
+<style>
+  .gallery-viewer { position: fixed; inset: 0; width: 100%; height: 100dvh; max-width: none; max-height: none; margin: 0; padding: 0; border: 0; overflow: hidden; background: var(--bg-body); color: var(--text-main); }
+  .gallery-viewer[open] { display: grid; grid-template-rows: 64px minmax(0, 1fr); }
+  .gallery-viewer::backdrop { background: var(--bg-body); }
+  .viewer-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0 2rem; border-bottom: 1px solid var(--border-subtle); font: .75rem "JetBrains Mono", "SFMono-Regular", Consolas, monospace; }
+  .viewer-keyboard-hint { margin-left: 1.5rem; color: var(--muted); font-size: .625rem; }
+  .viewer-toolbar :is(button, a) { display: grid; place-items: center; width: 44px; height: 44px; margin-right: -12px; padding: 0; border: 0; background: transparent; color: var(--muted); font: inherit; text-decoration: none; cursor: pointer; transition: color 180ms ease; }
+  .viewer-toolbar :is(button, a):hover, .viewer-toolbar :is(button, a):focus-visible { color: var(--text-main); }
+  .viewer-toolbar :is(button, a) > span { font: 400 1.5rem Inter, sans-serif; }
+  .viewer-body { min-height: 0; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; scrollbar-color: var(--border-main) var(--bg-body); padding: 2rem; }
+  .viewer-body :global(.photo-album) { --album-image-height: calc(100dvh - 128px); --album-image-top: 0px; max-width: 1600px; margin: 0 auto; }
+  @media (max-width: 700px) {
+    .gallery-viewer[open] { grid-template-rows: 56px minmax(0, 1fr); }
+    .viewer-toolbar { padding: 0 1rem; }
+    .viewer-keyboard-hint { display: none; }
+    .viewer-body { padding: 1.5rem; }
+    .viewer-body :global(.photo-album) { --album-image-height: min(65dvh, 620px); }
+  }
+</style>

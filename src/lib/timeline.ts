@@ -1,8 +1,8 @@
 import { getCollection } from "astro:content";
-import type { CollectionEntry } from "astro:content";
 import { curatedMedia, youtubeId } from "./media";
+import { galleryCollections, gallerySingles } from "./gallery";
 
-export type TimelineCategory = "publication" | "blog" | "media" | "project" | "site-update";
+export type TimelineCategory = "publication" | "blog" | "media" | "gallery" | "site-update";
 
 export interface TimelineEntry {
   id: string;
@@ -17,7 +17,7 @@ export const timelineLabels: Record<TimelineCategory, string> = {
   publication: "Publication",
   blog: "Blog",
   media: "Media",
-  project: "Project",
+  gallery: "Gallery",
   "site-update": "Site Update",
 };
 
@@ -25,7 +25,7 @@ export const timelineOrder: TimelineCategory[] = [
   "publication",
   "blog",
   "media",
-  "project",
+  "gallery",
   "site-update",
 ];
 
@@ -50,19 +50,37 @@ function parseMediaDate(value: string) {
   return new Date();
 }
 
-async function getOptionalProjects(): Promise<CollectionEntry<"projects">[]> {
-  try {
-    return await getCollection("projects");
-  } catch {
-    return [];
-  }
+// A collection is one entry dated by its earliest photograph; a photograph outside
+// any collection is its own entry. Undated photographs stay off the timeline.
+function galleryEntries(): TimelineEntry[] {
+  const collections = galleryCollections.flatMap((collection) => {
+    const first = collection.photos.flatMap((photo) => (photo.takenAt ? [photo.takenAt] : [])).sort()[0];
+    if (!first) return [];
+    const count = collection.photos.length;
+    return [{
+      id: `gallery-${collection.slug}`,
+      date: new Date(first),
+      title: collection.title,
+      category: "gallery" as const,
+      href: `/gallery/${collection.slug}/`,
+      description: `${count} ${count === 1 ? "photograph" : "photographs"} · ${collection.description}`,
+    }];
+  });
+  const singles = gallerySingles.flatMap((photo) => (photo.takenAt ? [{
+    id: `gallery-${photo.id}`,
+    date: new Date(photo.takenAt),
+    title: photo.title,
+    category: "gallery" as const,
+    href: `/gallery/#photo-${photo.id}`,
+    description: photo.notes,
+  }] : []));
+  return [...collections, ...singles];
 }
 
 export async function getTimelineEntries() {
-  const [manualEntries, blogPosts, projects, publications] = await Promise.all([
+  const [manualEntries, blogPosts, publications] = await Promise.all([
     getCollection("timeline"),
     getCollection("blog"),
-    getOptionalProjects(),
     getCollection("publications"),
   ]);
 
@@ -86,15 +104,6 @@ export async function getTimelineEntries() {
       description: post.data.excerpt,
     }));
 
-  const project: TimelineEntry[] = projects.map((project) => ({
-    id: `project-${project.id}`,
-    date: project.data.date,
-    title: project.data.title,
-    category: "project",
-    href: project.data.href ?? `/project/#${project.id}`,
-    description: project.data.description,
-  }));
-
   const publication: TimelineEntry[] = publications.map((paper) => ({
     id: `publication-${paper.id}`,
     date: paper.data.date,
@@ -116,7 +125,7 @@ export async function getTimelineEntries() {
     };
   });
 
-  return [...manual, ...blog, ...project, ...publication, ...media].sort(sortTimeline);
+  return [...manual, ...blog, ...publication, ...media, ...galleryEntries()].sort(sortTimeline);
 }
 
 export function getTimelineFilters(entries: TimelineEntry[]) {

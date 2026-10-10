@@ -1,0 +1,18 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import GalleryViewer from "../../components/GalleryViewer.astro";
+import { galleryCollections } from "../../lib/gallery";
+
+export function getStaticPaths() {
+  return galleryCollections.map((collection) => ({
+    params: { slug: collection.slug },
+    props: { collection },
+  }));
+}
+
+const { collection } = Astro.props;
+---
+
+<BaseLayout title={collection.title} description={collection.description}>
+  <GalleryViewer photos={collection.photos} title={collection.title} autoOpen />
+</BaseLayout>

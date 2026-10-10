@@ -1,0 +1,567 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import GalleryWall from "../components/GalleryWall.astro";
+import GalleryViewer from "../components/GalleryViewer.astro";
+import { galleryCollections, gallerySingles, galleryThemes } from "../lib/gallery";
+import { orderGallery } from "../lib/gallery-order";
+import { collectionSpan } from "../lib/gallery-details";
+
+const photos = orderGallery([
+  ...galleryCollections.flatMap((collection) =>
+    collection.photos.map((photo) => ({
+      ...photo,
+      collectionKey: collection.slug,
+      collectionTitle: collection.title,
+    })),
+  ),
+  ...gallerySingles,
+]);
+const themeCounts = new Map<string, number>();
+for (const photo of photos) {
+  for (const theme of new Set(photo.themes)) {
+    themeCounts.set(theme, (themeCounts.get(theme) ?? 0) + 1);
+  }
+}
+// Most used tags first, then alphabetical.
+const tagCounts = new Map<string, number>();
+for (const photo of photos) {
+  for (const tag of new Set(photo.tags)) tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+}
+const tagFilters = Array.from(tagCounts).sort(([a, aCount], [b, bCount]) => bCount - aCount || a.localeCompare(b));
+const hasPreview = galleryCollections.some((collection) => collection.preview);
+const collectionCards = galleryCollections.filter((collection) => collection.photos.length > 0).map((collection) => ({
+  collection,
+  span: collectionSpan(collection.photos),
+  cover: collection.photos.slice(0, 3),
+}));
+---
+
+<BaseLayout title="Gallery" description="Photographs from Runze Tian's travels and everyday life.">
+  <section class="gallery-page" aria-labelledby="gallery-title" data-gallery-page>
+    <header class="gallery-header">
+      <h1 id="gallery-title">Gallery</h1>
+      {photos.length > 0 && (
+        <div class="gallery-header-tools">
+        <label class="gallery-search">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+            <circle cx="8.5" cy="8.5" r="5.5" />
+            <path d="m13 13 4 4" />
+          </svg>
+          <input type="search" data-gallery-search aria-label="Search photographs" placeholder="Search title, place, notes…" autocomplete="off" />
+        </label>
+        <div class="gallery-tools">
+          <label class="gallery-sort">
+            <span>Date</span>
+            <select data-gallery-sort aria-label="Sort by photography date">
+              <option value="desc">Newest first ↓</option>
+              <option value="asc">Oldest first ↑</option>
+            </select>
+          </label>
+          <span class="gallery-result-count" data-gallery-count role="status" aria-live="polite">{photos.length} {photos.length === 1 ? "photograph" : "photographs"}</span>
+        </div>
+        </div>
+      )}
+      <p>{photos.length} {photos.length === 1 ? "photograph" : "photographs"} · travels and everyday life</p>
+    </header>
+
+    {photos.length > 0 && (
+      <section class="gallery-index" aria-label="Photograph themes, collections, and filters">
+        <div class="gallery-filter-row">
+          <span class="gallery-control-label">Themes</span>
+          <div class="gallery-filters" aria-label="Filter by theme">
+            <button type="button" class="gallery-filter" data-theme="all" aria-pressed="true">
+              [ All <span>{photos.length}</span> ]
+            </button>
+            {galleryThemes.map((theme) => (
+              <button type="button" class="gallery-filter" data-theme={theme} aria-pressed="false" disabled={!themeCounts.has(theme)}>
+                [ {theme} <span>{themeCounts.get(theme) ?? 0}</span> ]
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {tagFilters.length > 0 && (
+          <div class="gallery-filter-row gallery-tag-row">
+            <span class="gallery-control-label">Tags</span>
+            <div class="gallery-tags" aria-label="Filter by tag">
+              {tagFilters.map(([tag, count]) => (
+                <button type="button" class="gallery-tag" data-tag={tag} aria-pressed="false">
+                  #{tag} <span>{count}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <nav class="gallery-collections" aria-label="Photography collections">
+          <div class="gallery-collections-heading">
+            <span class="gallery-control-label">Collections</span>
+          </div>
+          <div class="gallery-collection-choices">
+            {collectionCards.map(({ collection, span, cover }) => (
+              <a class="gallery-collection-choice" href={`/gallery/${collection.slug}/`}>
+                <span class="gallery-collection-stack" aria-hidden="true">
+                  {[1, 2].map((layer) => (
+                    <span class={`gallery-collection-print print-${layer}`}>
+                      {cover[layer] && <img src={cover[layer].src} alt="" width={cover[layer].width} height={cover[layer].height} loading="lazy" decoding="async" />}
+                    </span>
+                  ))}
+                  <span class="gallery-collection-print print-0">
+                    <img src={cover[0].src} alt="" width={cover[0].width} height={cover[0].height} decoding="async" />
+                  </span>
+                </span>
+                <span class="gallery-collection-copy">
+                  <span class="gallery-collection-meta">{[span, collection.subject].filter(Boolean).join(" · ")}</span>
+                  <span class="gallery-collection-name">{collection.title}</span>
+                  <span class="gallery-collection-description">{collection.description}</span>
+                  <span class="gallery-collection-foot">
+                    <span>{String(collection.photos.length).padStart(2, "0")} {collection.photos.length === 1 ? "photograph" : "photographs"}</span>
+                    <span class="gallery-collection-arrow">View collection <span aria-hidden="true">→</span></span>
+                  </span>
+                </span>
+              </a>
+            ))}
+          </div>
+        </nav>
+
+      </section>
+    )}
+
+    <GalleryWall photos={photos} />
+    <div class="gallery-empty" data-gallery-empty hidden={photos.length > 0}>
+      <p>{photos.length ? "No photographs match these filters." : "Photographs coming soon."}</p>
+      {photos.length > 0 && <button type="button" data-gallery-reset>[ Show all photographs ]</button>}
+    </div>
+
+    <footer class="gallery-footer">
+      <span>{hasPreview ? "Site archive · layout preview" : "Runze Tian · Photography"}</span>
+      <span>Click a photograph to explore <span aria-hidden="true">↗</span></span>
+    </footer>
+  </section>
+  <GalleryViewer photos={photos} />
+</BaseLayout>
+
+<script>
+  import "../scripts/gallery-filters";
+</script>
+
+<style>
+  .gallery-page {
+    --gallery-mono: "JetBrains Mono", "SFMono-Regular", Consolas, monospace;
+    min-width: 0;
+    padding: 3rem;
+  }
+
+  .gallery-header {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(14rem, 22rem);
+    grid-template-areas: "title tools" "description tools";
+    align-items: start;
+    gap: 0.5rem 2rem;
+    margin-bottom: 2rem;
+  }
+
+  .gallery-header h1 {
+    grid-area: title;
+    margin: 0;
+    color: var(--text-main);
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.12;
+    letter-spacing: 0;
+  }
+
+  .gallery-header p {
+    grid-area: description;
+    margin: 0;
+    color: var(--muted);
+    font-family: var(--gallery-mono);
+    font-size: 0.875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .gallery-index {
+    margin-bottom: 1.75rem;
+    border-bottom: 1px solid var(--border-main);
+  }
+
+  .gallery-header-tools {
+    grid-area: tools;
+    min-width: 0;
+  }
+
+  .gallery-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.625rem 1rem;
+    font-family: var(--gallery-mono);
+    font-size: 0.875rem;
+  }
+
+  .gallery-filter,
+  .gallery-empty button {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .gallery-filter {
+    min-height: 32px;
+    white-space: nowrap;
+  }
+
+  .gallery-filter span {
+    opacity: 0.55;
+  }
+
+  .gallery-tag-row {
+    margin-top: 0.75rem;
+  }
+
+  .gallery-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem 1rem;
+    font-family: var(--gallery-mono);
+    font-size: 0.8125rem;
+  }
+
+  .gallery-tag {
+    min-height: 28px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--faint);
+    font: inherit;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+
+  .gallery-tag span {
+    opacity: 0.6;
+  }
+
+  .gallery-tag:hover,
+  .gallery-tag[aria-pressed="true"] {
+    color: var(--text-main);
+  }
+
+  .gallery-tag[aria-pressed="true"] {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+
+  .gallery-filter:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .gallery-filter[aria-pressed="true"],
+  .gallery-filter:hover:not(:disabled),
+  .gallery-empty button:hover {
+    color: var(--text-main);
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+  }
+
+  .gallery-tools {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    margin: 0.25rem 0 0;
+    color: var(--muted);
+    font-family: var(--gallery-mono);
+    font-size: 0.6875rem;
+  }
+
+  .gallery-search {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    min-width: 0;
+    color: var(--muted);
+    font: 0.6875rem var(--gallery-mono);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .gallery-search:focus-within {
+    border-bottom-color: var(--text-main);
+  }
+
+  .gallery-search svg {
+    width: 14px;
+    height: 14px;
+    flex: none;
+    stroke: currentColor;
+    stroke-width: 1.25;
+  }
+
+  .gallery-search input {
+    width: 100%;
+    min-width: 0;
+    height: 34px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text-main);
+    font: inherit;
+  }
+
+  .gallery-search input::placeholder {
+    color: var(--muted);
+    opacity: 1;
+  }
+
+  .gallery-sort {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .gallery-sort select {
+    min-height: 34px;
+    max-width: 10rem;
+    border: 0;
+    background: var(--bg-body);
+    color: var(--text-main);
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .gallery-result-count {
+    margin-left: auto;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .gallery-filter-row {
+    display: grid;
+    gap: 0.375rem;
+  }
+
+  .gallery-control-label {
+    color: var(--muted);
+    font-family: var(--gallery-mono);
+    font-size: 0.6875rem;
+  }
+
+  .gallery-collections {
+    margin-top: 1rem;
+    padding: 1rem 0;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .gallery-collections-heading {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .gallery-collection-choices {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 25rem), 1fr));
+    gap: 1rem;
+  }
+
+  .gallery-collection-choice {
+    display: grid;
+    grid-template-columns: 9.5rem minmax(0, 1fr);
+    align-items: center;
+    gap: 2.25rem;
+    min-width: 0;
+    max-width: 34rem;
+    padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+    border: 1px solid var(--border-subtle);
+    background: transparent;
+    color: var(--text-main);
+    text-decoration: none;
+    transition: border-color 240ms ease, background-color 240ms ease;
+  }
+
+  .gallery-collection-choice:hover,
+  .gallery-collection-choice:focus-visible {
+    border-color: var(--border-main);
+    background: var(--bg-deep);
+  }
+
+  /* A small pile of prints: the cover on top, the next photographs peeking out behind. */
+  .gallery-collection-stack {
+    position: relative;
+    display: block;
+    aspect-ratio: 4 / 3;
+  }
+
+  .gallery-collection-print {
+    position: absolute;
+    inset: 0;
+    display: block;
+    overflow: hidden;
+    padding: 3px;
+    background: var(--panel);
+    border: 1px solid var(--border-main);
+    box-shadow: 0 6px 16px rgb(0 0 0 / 0.18);
+    transition: transform 420ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  .gallery-collection-print img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .print-2 { transform: translate(14px, -8px) rotate(7deg) scale(0.94); }
+  .print-1 { transform: translate(-10px, -5px) rotate(-5deg) scale(0.96); }
+  .print-1 img, .print-2 img { filter: brightness(0.85); }
+  .gallery-collection-choice:hover .print-2 { transform: translate(20px, -11px) rotate(10deg) scale(0.94); }
+  .gallery-collection-choice:hover .print-1 { transform: translate(-18px, -8px) rotate(-8deg) scale(0.96); }
+  .gallery-collection-choice:hover .print-0 { transform: translateY(-3px); }
+
+  .gallery-collection-copy {
+    display: grid;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  .gallery-collection-meta,
+  .gallery-collection-foot {
+    color: var(--muted);
+    font-family: var(--gallery-mono);
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .gallery-collection-name {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  .gallery-collection-choice:hover .gallery-collection-name,
+  .gallery-collection-choice:focus-visible .gallery-collection-name {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .gallery-collection-description {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--muted);
+    font-size: 0.75rem;
+    line-height: 1.6;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+
+  .gallery-collection-foot {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.25rem 1rem;
+    margin-top: 0.35rem;
+  }
+
+  .gallery-collection-arrow {
+    color: var(--text-main);
+    white-space: nowrap;
+  }
+
+  .gallery-collection-arrow span {
+    display: inline-block;
+    transition: transform 240ms ease;
+  }
+
+  .gallery-collection-choice:hover .gallery-collection-arrow span {
+    transform: translateX(3px);
+  }
+
+  @media (max-width: 600px) {
+    .gallery-collection-choice {
+      grid-template-columns: 5.5rem minmax(0, 1fr);
+      gap: 1.5rem;
+      padding: 1rem 1rem 1rem 1.25rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .gallery-collection-print,
+    .gallery-collection-arrow span {
+      transition: none;
+    }
+  }
+
+  .gallery-footer {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    margin-top: 1.25rem;
+    border-top: 1px solid var(--border-subtle);
+    color: var(--muted);
+    font-family: var(--gallery-mono);
+    font-size: 0.6875rem;
+  }
+
+  .gallery-empty {
+    padding: 2.5rem 0;
+    color: var(--muted);
+    font-family: var(--gallery-mono);
+    font-size: 0.8125rem;
+  }
+
+  @media (max-width: 860px) {
+    .gallery-page {
+      padding: 1.5rem;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .gallery-header {
+      grid-template-columns: auto minmax(0, 1fr);
+      grid-template-areas: "title tools" "description description";
+      column-gap: 1.25rem;
+    }
+
+    .gallery-header p {
+      font-size: 0.75rem;
+    }
+
+    .gallery-filters {
+      gap: 0.375rem 0.75rem;
+      font-size: 0.75rem;
+    }
+
+    .gallery-tools {
+      column-gap: 1rem;
+    }
+
+    .gallery-search {
+      width: 100%;
+    }
+
+    .gallery-footer > span:last-child {
+      display: none;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .gallery-header {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-areas: "title" "description" "tools";
+      row-gap: 0.75rem;
+    }
+  }
+</style>

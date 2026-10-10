@@ -6,6 +6,11 @@
   padding-right: var(--blog-page-inset);
 }
 
+/* English essays: a Latin serif first, so quotes and apostrophes are not set as full-width CJK glyphs. */
+.blog-post-shell.essay-post-shell:lang(en) {
+  --essay-serif: Georgia, "Times New Roman", serif;
+}
+
 html.dark .essay-post-shell {
   --essay-accent: #c6a879;
 }
