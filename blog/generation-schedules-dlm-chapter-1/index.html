@@ -1,0 +1,924 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="generator" content="Astro v6.4.6"><meta name="description" content="Diffusion language models inherit a recipe from images, but language has no natural generation space in which noise, distance, frequency, and meaning line up. A language-native DLM needs both a structured generation space and a semantic generation schedule."><meta name="theme-color" content="#0a0a0a"><meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)"><link rel="icon" type="image/png" href="/assets/img/moonshot.png"><link rel="apple-touch-icon" href="/assets/img/moonshot.png"><title>Generation Schedules for Diffusion Language Models | What Kind of DLM Do We Actually Want? | Runze Tian</title><meta name="astro-view-transitions-enabled" content="true"><meta name="astro-view-transitions-fallback" content="animate"><script type="module" src="/_astro/ClientRouter.astro_astro_type_script_index_0_lang.CZ1STEZH.js"></script><script>
+      (function () {
+        const theme = localStorage.getItem("theme");
+        if (theme !== "light") {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script><link rel="stylesheet" href="/_astro/BaseLayout.B8whdW9c.css">
+<link rel="stylesheet" href="/_astro/_slug_.qfm2UXKS.css"></head> <body> <div class="site-frame"> <aside class="site-sidebar" aria-label="Site sidebar"> <div class="sidebar-top"> <a class="brand" href="/" aria-label="Runze Tian home"> <span>Runze Tian</span> </a> <div class="sidebar-actions"> <button class="mobile-menu-toggle" id="mobile-menu-toggle" type="button" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="nav-content"> <span id="mobile-menu-icon" aria-hidden="true">[ ≡ ]</span> </button> <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme"> <span class="theme-icon-light" aria-hidden="true">🌕</span> <span class="theme-icon-dark" aria-hidden="true">🌑</span> </button> </div> </div> <div class="nav-content" id="nav-content"> <nav class="nav" aria-label="Primary"> <a href="/timeline/"> <span>[</span> Timeline <span>]</span> </a><a href="/publication/"> <span>[</span> Publication <span>]</span> </a><a class="active" href="/blog/"> <span>[</span> Blog <span>]</span> </a><a href="/media/"> <span>[</span> Media <span>]</span> </a><a href="/gallery/"> <span>[</span> Gallery <span>]</span> </a><a href="/relationship/"> <span>[</span> Relationship <span>]</span> </a> </nav> <div class="sidebar-nav-divider" aria-hidden="true"></div> <div class="social-links" aria-label="Social links"> <a href="https://github.com/Gua927" target="_blank" rel="noopener noreferrer" aria-label="GitHub"> <svg viewBox="0 0 24 24" aria-hidden="true"> <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.79-.26.79-.58v-2.03c-3.34.73-4.04-1.42-4.04-1.42-.55-1.39-1.34-1.76-1.34-1.76-1.09-.74.08-.73.08-.73 1.21.09 1.84 1.24 1.84 1.24 1.07 1.83 2.81 1.3 3.49.99.11-.78.42-1.3.76-1.6-2.66-.31-5.46-1.34-5.46-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23.96-.27 1.98-.4 3-.4s2.05.13 3 .4c2.29-1.55 3.3-1.23 3.3-1.23.66 1.66.25 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.62-5.48 5.92.43.37.82 1.1.82 2.22v3.29c0 .32.19.69.8.58A12.01 12.01 0 0 0 24 12c0-6.63-5.37-12-12-12Z"></path> </svg> </a> <a class="social-link-openreview" href="https://openreview.net/profile?id=%7ERunze_Tian6" target="_blank" rel="noopener noreferrer" aria-label="OpenReview"> <span class="social-openreview-icon" aria-hidden="true"></span> </a> <a href="https://x.com/RunzerT60347" target="_blank" rel="noopener noreferrer" aria-label="X"> <svg viewBox="0 0 24 24" aria-hidden="true"> <path d="M18.9 2h3.3l-7.2 8.2L23.4 22h-6.6l-5.2-6.8L5.7 22H2.4l7.7-8.8L2 2h6.8l4.7 6.2L18.9 2Zm-1.2 18h1.8L7.8 3.9H5.9L17.7 20Z"></path> </svg> </a> <a href="https://www.zhihu.com/people/wei-ming-ming-78-26/posts" target="_blank" rel="noopener noreferrer" aria-label="Zhihu"> <svg viewBox="0 0 24 24" aria-hidden="true"> <path d="M5.721 0C2.251 0 0 2.25 0 5.719V18.28C0 21.751 2.252 24 5.721 24h12.56C21.751 24 24 21.75 24 18.281V5.72C24 2.249 21.75 0 18.281 0zm1.964 4.078c-.271.73-.5 1.434-.68 2.11h4.587c.545-.006.445 1.168.445 1.171H9.384a58.104 58.104 0 0 1-.112 3.797h2.712c.388.023.393 1.251.393 1.266H9.183a9.223 9.223 0 0 1-.408 2.102l.757-.604c.452.456 1.512 1.712 1.906 2.177.473.681.063 2.081.063 2.081l-2.794-3.382c-.653 2.518-1.845 3.607-1.845 3.607-.523.468-1.58.82-2.64.516 2.218-1.73 3.44-3.917 3.667-6.497H4.491c0-.015.197-1.243.806-1.266h2.71c.024-.32.086-3.254.086-3.797H6.598c-.136.406-.158.447-.268.753-.594 1.095-1.603 1.122-1.907 1.155.906-1.821 1.416-3.6 1.591-4.064.425-1.124 1.671-1.125 1.671-1.125zM13.078 6h6.377v11.33h-2.573l-2.184 1.373-.401-1.373h-1.219zm1.313 1.219v8.86h.623l.263.937 1.455-.938h1.456v-8.86z"></path> </svg> </a> </div> </div> <section class="sidebar-media-player" id="sidebar-media-player" aria-label="Media player" data-astro-transition-persist="sidebar-media-player"> <div class="sidebar-media-player-header"> <span>Media</span> <div class="sidebar-media-status" aria-label="Media player status"> <span aria-hidden="true"></span> <strong>Online</strong> </div> </div> <div class="sidebar-media-embed" id="sidebar-media-embed"> <div class="sidebar-media-empty">Select a media item.</div> </div> <div class="sidebar-media-meta" aria-live="polite" aria-atomic="true"> <strong id="sidebar-media-title">No media selected</strong> <button type="button" id="sidebar-media-source" aria-label="Switch media playlist" title="Switch playlist">
+Featured
+</button> </div> <div class="sidebar-media-controls" aria-label="Media controls"> <div class="sidebar-media-seek" id="sidebar-media-seek" role="slider" tabindex="0" aria-label="Media progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"> <div id="sidebar-media-progress"></div> </div> <div class="sidebar-media-time"> <span id="sidebar-media-current-time">0:00</span> <span id="sidebar-media-duration">0:00</span> </div> <div class="sidebar-media-buttons"> <button type="button" id="sidebar-media-prev" aria-label="Previous media" title="Previous"> <span class="media-nav-icon media-nav-prev" aria-hidden="true"> <svg class="media-nav-glyph" viewBox="0 0 18 18" fill="none" aria-hidden="true"> <path class="media-nav-stop" d="M4.25 4.25v9.5"></path> <path class="media-nav-arrow" d="M12.75 4.65 6.7 9l6.05 4.35V4.65Z"></path> </svg> </span> </button> <button type="button" id="sidebar-media-backward" aria-label="Backward 15 seconds" title="-15s"> <span aria-hidden="true">«</span> </button> <button type="button" id="sidebar-media-toggle" aria-label="Play media" title="Play"> <span id="sidebar-media-toggle-icon" aria-hidden="true">▶</span> </button> <button type="button" id="sidebar-media-forward" aria-label="Forward 15 seconds" title="+15s"> <span aria-hidden="true">»</span> </button> <button type="button" id="sidebar-media-next" aria-label="Next media" title="Next"> <span class="media-nav-icon media-nav-next" aria-hidden="true"> <svg class="media-nav-glyph" viewBox="0 0 18 18" fill="none" aria-hidden="true"> <path class="media-nav-arrow" d="M5.25 4.65 11.3 9l-6.05 4.35V4.65Z"></path> <path class="media-nav-stop" d="M13.75 4.25v9.5"></path> </svg> </span> </button> </div> </div> </section> </aside> <main id="main-content" class="page-shell has-page-topbar" tabindex="-1"> <div class="page-topbar" aria-label="Page breadcrumb"> <nav class="page-breadcrumb"> <a href="/blog/">BLOG</a> <span aria-hidden="true">/</span> <span aria-current="page">Generation Schedules for Diffusion Language Models | What Kind of DLM Do We Actually Want?</span> </nav> </div> <div class="blog-post-shell"> <header class="blog-post-header">  <h1>Generation Schedules for Diffusion Language Models | What Kind of DLM Do We Actually Want?</h1> <p class="excerpt">Diffusion language models inherit a recipe from images, but language has no natural generation space in which noise, distance, frequency, and meaning line up. A language-native DLM needs both a structured generation space and a semantic generation schedule.</p> </header> <div class="blog-post-divider" aria-hidden="true"></div> <dl class="blog-post-meta" aria-label="Post details"> <div> <dt>Author</dt> <dd><a href="/">Runze Tian</a></dd> </div> <div> <dt>Affiliation</dt> <dd><a href="https://www.gensi-thuair.com/#/portal_home" target="_blank" rel="noopener noreferrer">GenSI Lab, THU-AIR</a></dd> </div> <div> <dt>Published</dt> <dd><time datetime="2026-10-10T00:00:00.000Z">2026.10.10</time></dd> </div> <div> <dt>Category</dt> <dd><a href="/blog/?kind=research-note">RESEARCH-NOTE</a></dd> </div> </dl> <div class="blog-post-divider blog-post-divider-meta" aria-hidden="true"></div> <article class="blog-post"> <div class="markdown-content blog-post-content"> <blockquote>
+<p><strong>Takeaway</strong></p>
+<p>Diffusion language models (DLMs) are usually understood as carrying the success of image diffusion over to language modeling. That framing may hide the real problem.</p>
+<p>The difficulty of diffusing language is not only that language is discrete, nor that tokens are harder to corrupt than pixels. The deeper issue is that language has no natural generation space in which noise, distance, frequency, and semantic abstraction align on their own.</p>
+<p>In images, low and high frequencies have fairly clear physical meanings. In language, “frequency” might refer to semantic level, dependency distance, information density, degree of abstraction, discourse structure, or surface form. The spectrum of language is not given by the data domain; it is a structure that has to be modeled, learned, or even redefined.</p>
+<p>So the central question for DLMs should not only be <em>how to denoise tokens</em>, but <strong><em>where</em> language generation should happen, and <em>along what trajectory</em> it should move.</strong> A truly language-native diffusion model should not merely learn to recover tokens from noise; it should learn how meaning, structure, and surface text are connected step by step.</p>
+</blockquote>
+<h2 id="0-introduction-are-we-really-diffusing-language">0. Introduction: are we really diffusing language?</h2>
+<p>Diffusion models succeed at image generation not only because they offer an effective noising–denoising framework, but because images have a structure that suits a diffusion process.</p>
+<p>Intuitively, the reverse process of image diffusion often follows a coarse-to-fine trajectory: the overall layout appears first, then object contours, and finally textures and local detail. This feels natural because images have geometric structure: a continuous space, local neighborhoods, edges, textures, and a frequency spectrum. A blurred image is still an image, and a lightly noised image still keeps much of its spatial structure.</p>
+<p>When we try to carry diffusion over to language, the analogy quickly becomes fragile.</p>
+<p>What does it mean to <em>gradually destroy a sentence</em>? If we delete words, are we destroying syntax, semantics, or merely observability? If we perturb embeddings, are we moving along a direction of semantic abstraction, or simply moving through a continuous vector space? And if the model ultimately just reconstructs tokens, is it generating language, or filling in blanks?</p>
+<p>So the real question is not whether language <em>can</em> be noised. Of course it can: we can mask tokens, substitute words, perturb embeddings, diffuse latent variables, or define transition processes over discrete distributions. The real question is whether that noising process corresponds to a <em>linguistically meaningful</em> form of degradation.</p>
+<p>This leads to the central distinction of this note:</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>noise schedule</mtext><mo mathvariant="normal">≠</mo><mtext>generation schedule</mtext></mrow><annotation encoding="application/x-tex">\text{noise schedule} \neq \text{generation schedule}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">noise schedule</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel"><span class="mrel"><span class="mord vbox"><span class="thinbox"><span class="rlap"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="inner"><span class="mord"><span class="mrel"></span></span></span><span class="fix"></span></span></span></span></span><span class="mspace nobreak"></span><span class="mrel">=</span></span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">generation schedule</span></span></span></span></span></span>
+<p>A <strong>noise schedule</strong> answers: <em>how much information should be destroyed?</em></p>
+<p>A <strong>generation schedule</strong> answers: <em>which kind of information should be generated first?</em></p>
+<p>Moreover, a schedule cannot exist apart from a space. Before discussing the generation schedule of language, we must ask a more basic question: <em><strong>in which space does language generation actually take place?</strong></em> This is where diffusion language models truly begin.</p>
+<h2 id="1-the-implicit-biases-of-language-generation-models">1. The implicit biases of language generation models</h2>
+<p>Every generative model carries an implicit coordinate system. Sometimes it is explicit, as in a latent variable model; sometimes it hides inside the factorization, the training objective, or the noising process.</p>
+<p>Language modeling is not only about estimating <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>p</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">p(x)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">p</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span></span></span></span>; it is also about deciding <em>how</em> <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">x</span></span></span></span> should be generated.</p>
+<h3 id="11-autoregressive-models-a-surface-time-coordinate-system">1.1 Autoregressive models: a surface-time coordinate system</h3>
+<p>An autoregressive language model defines the probability of a sequence through the factorization</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>p</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo>=</mo><munderover><mo>∏</mo><mrow><mi>t</mi><mo>=</mo><mn>1</mn></mrow><mi>T</mi></munderover><mi>p</mi><mo stretchy="false">(</mo><msub><mi>x</mi><mi>t</mi></msub><mo>∣</mo><msub><mi>x</mi><mrow><mo>&#x3C;</mo><mi>t</mi></mrow></msub><mo stretchy="false">)</mo><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">p(x)=\prod_{t=1}^{T}p(x_t\mid x_{&#x3C;t}).</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">p</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:3.0954em;vertical-align:-1.2671em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.8283em;"><span style="top:-1.8829em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.05em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∏</span></span></span><span style="top:-4.3em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.1389em;">T</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.2671em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">p</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mrel mtight">&#x3C;</span><span class="mord mathnormal mtight">t</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.1774em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mord">.</span></span></span></span></span>
+<p>This factorization gives language generation a very clear coordinate system:</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>x</mi><mn>1</mn></msub><mo>→</mo><msub><mi>x</mi><mn>2</mn></msub><mo>→</mo><mo>⋯</mo><mo>→</mo><msub><mi>x</mi><mi>T</mi></msub></mrow><annotation encoding="application/x-tex">x_1 \rightarrow x_2 \rightarrow \cdots \rightarrow x_T</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.3669em;"></span><span class="minner">⋯</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.1389em;">T</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span></span>
+<p>The model generates from left to right, and at every step the training target is the next token. This is one of the main reasons autoregressive (AR) models scale so reliably: the model never has to decide <em>what to generate next</em>, because the surface order of the data already answers that question.</p>
+<p>Yet the strength of this coordinate system is also its limitation. <strong>Left-to-right order is a surface-temporal order, not a semantic order.</strong> When an AR model generates the first token of a long answer, it often already has to plan, implicitly, the global intent, the line of argument, the discourse structure, and even the final conclusion. It must predict the next token locally while keeping the whole semantically coherent.</p>
+<p>We can write this as</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><munder><munder><mrow><msub><mi>x</mi><mn>1</mn></msub><mo>→</mo><msub><mi>x</mi><mn>2</mn></msub><mo>→</mo><mo>⋯</mo><mo>→</mo><msub><mi>x</mi><mi>T</mi></msub></mrow><mo stretchy="true">⏟</mo></munder><mtext>surface order</mtext></munder><mtext>  </mtext><mo mathvariant="normal">≠</mo><mtext>  </mtext><munder><munder><mrow><mi>m</mi><mo>→</mo><mi>s</mi><mo>→</mo><mi>x</mi></mrow><mo stretchy="true">⏟</mo></munder><mtext>semantic order</mtext></munder></mrow><annotation encoding="application/x-tex">\underbrace{x_1 \rightarrow x_2 \rightarrow \cdots \rightarrow x_T}_{\text{surface order}}
+\;\neq\;
+\underbrace{m \rightarrow s \rightarrow x}_{\text{semantic order}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:2.1785em;vertical-align:-1.4841em;"></span><span class="minner munder"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.4306em;"><span style="top:-1.5159em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">surface order</span></span></span></span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="minner munder"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.4306em;"><span class="svg-align" style="top:-2.202em;"><span class="pstrut" style="height:3em;"></span><span class="stretchy" style="height:0.548em;min-width:1.6em;"><span class="brace-left" style="height:0.548em;"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="0.548em" viewBox="0 0 400000 548" preserveAspectRatio="xMinYMin slice"><path d="M0 6l6-6h17c12.688 0 19.313.3 20 1 4 4 7.313 8.3 10 13
+ 35.313 51.3 80.813 93.8 136.5 127.5 55.688 33.7 117.188 55.8 184.5 66.5.688
+ 0 2 .3 4 1 18.688 2.7 76 4.3 172 5h399450v120H429l-6-1c-124.688-8-235-61.7
+-331-161C60.687 138.7 32.312 99.3 7 54L0 41V6z"></path></svg></span><span class="brace-center" style="height:0.548em;"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="0.548em" viewBox="0 0 400000 548" preserveAspectRatio="xMidYMin slice"><path d="M199572 214
+c100.7 8.3 195.3 44 280 108 55.3 42 101.7 93 139 153l9 14c2.7-4 5.7-8.7 9-14
+ 53.3-86.7 123.7-153 211-199 66.7-36 137.3-56.3 212-62h199568v120H200432c-178.3
+ 11.7-311.7 78.3-403 201-6 8-9.7 12-11 12-.7.7-6.7 1-18 1s-17.3-.3-18-1c-1.3 0
+-5-4-11-12-44.7-59.3-101.3-106.3-170-141s-145.3-54.3-229-60H0V214z"></path></svg></span><span class="brace-right" style="height:0.548em;"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="0.548em" viewBox="0 0 400000 548" preserveAspectRatio="xMaxYMin slice"><path d="M399994 0l6 6v35l-6 11c-56 104-135.3 181.3-238 232-57.3
+ 28.7-117 45-179 50H-300V214h399897c43.3-7 81-15 113-26 100.7-33 179.7-91 237
+-174 2.7-5 6-9 10-13 .7-1 7.3-1 20-1h17z"></path></svg></span></span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="minner">⋯</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.1389em;">T</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.798em;"><span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.4841em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel"><span class="mrel"><span class="mord vbox"><span class="thinbox"><span class="rlap"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="inner"><span class="mord"><span class="mrel"></span></span></span><span class="fix"></span></span></span></span></span><span class="mspace nobreak"></span><span class="mrel">=</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.7647em;vertical-align:-1.3341em;"></span><span class="minner munder"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.4306em;"><span style="top:-1.6659em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">semantic order</span></span></span></span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="minner munder"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.4306em;"><span class="svg-align" style="top:-2.352em;"><span class="pstrut" style="height:3em;"></span><span class="stretchy" style="height:0.548em;min-width:1.6em;"><span class="brace-left" style="height:0.548em;"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="0.548em" viewBox="0 0 400000 548" preserveAspectRatio="xMinYMin slice"><path d="M0 6l6-6h17c12.688 0 19.313.3 20 1 4 4 7.313 8.3 10 13
+ 35.313 51.3 80.813 93.8 136.5 127.5 55.688 33.7 117.188 55.8 184.5 66.5.688
+ 0 2 .3 4 1 18.688 2.7 76 4.3 172 5h399450v120H429l-6-1c-124.688-8-235-61.7
+-331-161C60.687 138.7 32.312 99.3 7 54L0 41V6z"></path></svg></span><span class="brace-center" style="height:0.548em;"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="0.548em" viewBox="0 0 400000 548" preserveAspectRatio="xMidYMin slice"><path d="M199572 214
+c100.7 8.3 195.3 44 280 108 55.3 42 101.7 93 139 153l9 14c2.7-4 5.7-8.7 9-14
+ 53.3-86.7 123.7-153 211-199 66.7-36 137.3-56.3 212-62h199568v120H200432c-178.3
+ 11.7-311.7 78.3-403 201-6 8-9.7 12-11 12-.7.7-6.7 1-18 1s-17.3-.3-18-1c-1.3 0
+-5-4-11-12-44.7-59.3-101.3-106.3-170-141s-145.3-54.3-229-60H0V214z"></path></svg></span><span class="brace-right" style="height:0.548em;"><svg xmlns="http://www.w3.org/2000/svg" width="400em" height="0.548em" viewBox="0 0 400000 548" preserveAspectRatio="xMaxYMin slice"><path d="M399994 0l6 6v35l-6 11c-56 104-135.3 181.3-238 232-57.3
+ 28.7-117 45-179 50H-300V214h399897c43.3-7 81-15 113-26 100.7-33 179.7-91 237
+-174 2.7-5 6-9 10-13 .7-1 7.3-1 20-1h17z"></path></svg></span></span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">m</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mord mathnormal">s</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mord mathnormal">x</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.648em;"><span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.3341em;"><span></span></span></span></span></span></span></span></span></span>
+<p>where <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi></mrow><annotation encoding="application/x-tex">m</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">m</span></span></span></span> denotes meaning or intent, <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>s</mi></mrow><annotation encoding="application/x-tex">s</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">s</span></span></span></span> an intermediate structure, and <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>x</mi></mrow><annotation encoding="application/x-tex">x</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">x</span></span></span></span> the final text. Autoregressive generation is certainly structured, but its structure is temporal rather than semantically hierarchical.</p>
+<h3 id="12-chain-of-thought-a-hand-crafted-generation-schedule-inside-ar">1.2 Chain-of-Thought: a hand-crafted generation schedule inside AR</h3>
+<p>Chain-of-Thought (CoT) offers an illuminating clue. A standard autoregressive model typically learns</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>question</mtext><mo>→</mo><mtext>answer</mtext><mo separator="true">,</mo></mrow><annotation encoding="application/x-tex">\text{question} \rightarrow \text{answer},</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8623em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">question</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">answer</span></span><span class="mpunct">,</span></span></span></span></span>
+<p>whereas Chain-of-Thought rewrites this as</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>question</mtext><mo>→</mo><mtext>reasoning path</mtext><mo>→</mo><mtext>answer</mtext><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">\text{question} \rightarrow \text{reasoning path} \rightarrow \text{answer}.</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8623em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">question</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">reasoning path</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord text"><span class="mord">answer</span></span><span class="mord">.</span></span></span></span></span>
+<p>It is still autoregressive, but it inserts an intermediate structure before the final answer: the model is asked to produce a kind of reasoning skeleton first, and only then the output.</p>
+<p>From the perspective of this note, <strong>Chain-of-Thought can be read as a hand-crafted generation schedule embedded inside an AR model.</strong></p>
+<p>It suggests that the goal of DLMs should not be parallel decoding or token denoising alone. A more meaningful goal is to learn the intermediate process by which <em>meaning gradually becomes text</em>.</p>
+<h3 id="13-diffusion-language-models-noise-is-not-automatically-semantics">1.3 Diffusion language models: noise is not automatically semantics</h3>
+<p>Diffusion language models try to bring iterative refinement into language generation. Depending on the design, the diffusion process may live in token space, mask space, embedding space, or a latent space.</p>
+<p>In general form,</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>q</mi><mo stretchy="false">(</mo><msub><mi>z</mi><mi>t</mi></msub><mo>∣</mo><msub><mi>z</mi><mn>0</mn></msub><mo stretchy="false">)</mo><mo separator="true">,</mo><mspace width="2em"></mspace><msub><mi>p</mi><mi>θ</mi></msub><mo stretchy="false">(</mo><msub><mi>z</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>∣</mo><msub><mi>z</mi><mi>t</mi></msub><mo stretchy="false">)</mo><mo separator="true">,</mo></mrow><annotation encoding="application/x-tex">q(z_t\mid z_0),\qquad p_\theta(z_{t-1}\mid z_t),</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">q</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.044em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.044em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mpunct">,</span><span class="mspace" style="margin-right:2em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal">p</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.0278em;">θ</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.044em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">t</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2083em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.044em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mpunct">,</span></span></span></span></span>
+<p>where <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>z</mi><mn>0</mn></msub></mrow><annotation encoding="application/x-tex">z_0</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.044em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> is a representation of the clean data and <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>z</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">z_t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.044em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> is a corrupted intermediate state.</p>
+<p>If <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>z</mi></mrow><annotation encoding="application/x-tex">z</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.044em;">z</span></span></span></span> is a token sequence, diffusion is symbolic corruption; if <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>z</mi></mrow><annotation encoding="application/x-tex">z</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.044em;">z</span></span></span></span> is an embedding, diffusion is vector denoising; if <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>z</mi></mrow><annotation encoding="application/x-tex">z</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal" style="margin-right:0.044em;">z</span></span></span></span> is a latent variable, diffusion is refinement in a hidden space.</p>
+<p>None of these choices automatically yields semantic generation. Tokens are not the basic units of meaning; the dimensions of an embedding need not correspond to semantic axes; a latent variable does not naturally become a discourse plan. And a denoising trajectory is not necessarily a path from meaning to text.</p>
+<p>The common problem many current DLMs face can therefore be summarized as:</p>
+<blockquote>
+<p><em><strong>A noise schedule does not automatically become a semantic schedule.</strong></em></p>
+</blockquote>
+<p>This is not to say that DLMs are headed in the wrong direction, only that their central problem has not yet been adequately defined.</p>
+<h2 id="2-from-generation-space-to-generation-schedule">2. From generation space to generation schedule</h2>
+<p>Before discussing a generation schedule, we first need to ask which space it is defined in.</p>
+<p>For image diffusion, the question of space is almost invisible. Images live naturally in pixel space or a visual latent space, and these spaces carry intuitive geometric meaning: distance, smoothness, locality, and frequency.</p>
+<p>Language has no such natural generation space. The generation space of language is itself a modeling choice:</p>
+<ul>
+<li>If generation happens in <strong>token space</strong>, intermediate states are partially corrupted strings.</li>
+<li>If generation happens in <strong>embedding space</strong>, intermediate states are continuous vectors.</li>
+<li>If generation happens in a <strong>semantic latent space</strong>, intermediate states may correspond to intents, entities, relations, discourse plans, or reasoning skeletons.</li>
+<li>If generation happens in <strong>edit space</strong>, intermediate states are drafts and transitions are revisions.</li>
+</ul>
+<p>We can introduce a representation map</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>ϕ</mi><mo>:</mo><mi mathvariant="script">X</mi><mo>→</mo><mi mathvariant="script">Z</mi><mo separator="true">,</mo></mrow><annotation encoding="application/x-tex">\phi:\mathcal{X}\rightarrow\mathcal{Z},</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord mathnormal">ϕ</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">:</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathcal" style="margin-right:0.1464em;">X</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8778em;vertical-align:-0.1944em;"></span><span class="mord mathcal" style="margin-right:0.0794em;">Z</span><span class="mpunct">,</span></span></span></span></span>
+<p>where <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="script">X</mi></mrow><annotation encoding="application/x-tex">\mathcal{X}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathcal" style="margin-right:0.1464em;">X</span></span></span></span> is the space of observed text and <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="script">Z</mi></mrow><annotation encoding="application/x-tex">\mathcal{Z}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathcal" style="margin-right:0.0794em;">Z</span></span></span></span> is the generation space. The diffusion process is defined on <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="script">Z</mi></mrow><annotation encoding="application/x-tex">\mathcal{Z}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathcal" style="margin-right:0.0794em;">Z</span></span></span></span>:</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>q</mi><mo stretchy="false">(</mo><msub><mi>z</mi><mi>t</mi></msub><mo>∣</mo><msub><mi>z</mi><mn>0</mn></msub><mo stretchy="false">)</mo><mo separator="true">,</mo><mspace width="2em"></mspace><msub><mi>z</mi><mn>0</mn></msub><mo>=</mo><mi>ϕ</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo separator="true">,</mo></mrow><annotation encoding="application/x-tex">q(z_t\mid z_0),\qquad z_0=\phi(x),</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal" style="margin-right:0.0359em;">q</span><span class="mopen">(</span><span class="mord"><span class="mord mathnormal" style="margin-right:0.044em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.2806em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">t</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">∣</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.044em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mpunct">,</span><span class="mspace" style="margin-right:2em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.044em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">ϕ</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span><span class="mpunct">,</span></span></span></span></span>
+<p>and the reverse process is a trajectory:</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>z</mi><mi>T</mi></msub><mo>→</mo><msub><mi>z</mi><mrow><mi>T</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>→</mo><mo>⋯</mo><mo>→</mo><msub><mi>z</mi><mn>0</mn></msub><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">z_T \rightarrow z_{T-1} \rightarrow \cdots \rightarrow z_0.</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.044em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.1389em;">T</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6389em;vertical-align:-0.2083em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.044em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3283em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.1389em;">T</span><span class="mbin mtight">−</span><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.2083em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.3669em;"></span><span class="minner">⋯</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.044em;">z</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3011em;"><span style="top:-2.55em;margin-left:-0.044em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">0</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mord">.</span></span></span></span></span>
+<p>If <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="script">Z</mi></mrow><annotation encoding="application/x-tex">\mathcal{Z}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathcal" style="margin-right:0.0794em;">Z</span></span></span></span> is poorly chosen, the diffusion process may be mathematically sound and still carry no linguistic meaning. This gives two basic principles:</p>
+<blockquote>
+<p><em><strong>The generation space defines what a state is.</strong></em></p>
+<p><em><strong>The generation schedule defines how states should move.</strong></em></p>
+</blockquote>
+<p>A language-native diffusion model needs both: a meaningful generation space <em>and</em> a meaningful generation trajectory. Without the right space, a schedule has nowhere to live; without the right schedule, a space has no direction of generation.</p>
+<h3 id="21-why-does-language-have-no-single-frequency-axis">2.1 Why does language have no single frequency axis?</h3>
+<p>In images, frequency has a clear physical meaning: low frequencies correspond to overall layout, high frequencies to edges and fine detail.</p>
+<p>In language, “frequency” has no single interpretation:</p>
+<ul>
+<li><strong>By semantic level</strong>, low frequencies might correspond to topic and discourse structure, high frequencies to specific wording and punctuation.</li>
+<li><strong>By dependency distance</strong>, low frequencies might correspond to long-range dependencies, high frequencies to local collocations.</li>
+<li><strong>By information content</strong>, common function words usually carry little information, while rare technical terms may carry high semantic density, so the mapping can even run the other way.</li>
+</ul>
+<p>This non-uniqueness is not a technical detail. It is an essential difference between language diffusion and image diffusion. <strong>The spectrum of language does not exist directly in the token domain.</strong> It has to be discovered, represented, or imposed through modeling.</p>
+<h3 id="22-the-semantic-spectrum">2.2 The semantic spectrum</h3>
+<p>One possible direction is to define the frequencies of language not by surface position or token statistics, but by semantic invariance:</p>
+<blockquote>
+<p><em><strong>The low-frequency structure of language is what stays invariant across paraphrases.</strong></em></p>
+<p><em><strong>The high-frequency detail of language is what can vary without changing the core meaning.</strong></em></p>
+</blockquote>
+<p>For example, the following sentences differ in surface form:</p>
+<ol>
+<li>The model fails because its denoising trajectory is not semantically meaningful.</li>
+<li>The failure comes from the fact that the reverse process does not follow a meaningful semantic path.</li>
+<li>The problem is not denoising itself, but the lack of a semantic generation trajectory.</li>
+<li>At its core, the model’s problem is that it lacks a denoising path that carries meaning.</li>
+</ol>
+<p>They differ in wording and syntax, yet share a similar semantic core. This suggests that language diffusion should not revolve around token recovery alone, but around the transition from semantic invariants to surface variants.</p>
+<p>One possible trajectory is</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>intent</mtext><mo>→</mo><mtext>entities and relations</mtext><mo>→</mo><mtext>discourse structure</mtext><mo>→</mo><mtext>syntactic organization</mtext><mo>→</mo><mtext>surface wording</mtext><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">\text{intent} \rightarrow \text{entities and relations} \rightarrow \text{discourse structure} \rightarrow \text{syntactic organization} \rightarrow \text{surface wording}.</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6679em;"></span><span class="mord text"><span class="mord">intent</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord text"><span class="mord">entities and relations</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord text"><span class="mord">discourse structure</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8623em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">syntactic organization</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">surface wording</span></span><span class="mord">.</span></span></span></span></span>
+<p>This is not necessarily the only correct order. The point is that a meaningful generation schedule must say which content should stabilize first and which can be decided later. For language, the answer is very likely: <strong>stabilize the meaning first, then refine the expression.</strong></p>
+<h2 id="3-what-kind-of-dlm-do-we-actually-need">3. What kind of DLM do we actually need?</h2>
+<p>If we accept the analysis above, an ideal DLM should not be defined merely as a diffusion model over tokens. That definition is too weak. A stronger one would be:</p>
+<blockquote>
+<p><em><strong>A diffusion language model should learn a generation trajectory from meaning to text.</strong></em></p>
+</blockquote>
+<p>That trajectory needs a space, and it needs a schedule.</p>
+<h3 id="31-it-should-generate-in-a-semanticstructural-space">3.1 It should generate in a semantic–structural space</h3>
+<p>A useful DLM should not treat language as a flat sequence of tokens. It should have some internal space in which to represent semantic and structural states. These states might include:</p>
+<ul>
+<li>communicative intent;</li>
+<li>topic and global semantics;</li>
+<li>entities, events, and relations;</li>
+<li>a discourse plan;</li>
+<li>a reasoning skeleton;</li>
+<li>a syntactic scaffold;</li>
+<li>a draft-level surface realization.</li>
+</ul>
+<p>The point is not that these states must be annotated by hand, but that the model should be encouraged to learn intermediate representations that play similar roles.</p>
+<p>A good diagnostic question is: <em><strong>if we stop the reverse diffusion process halfway, what do we see?</strong></em></p>
+<p>If the answer is just “a corrupted string”, the model is closer to token denoising. If the answer is “a rough semantic plan”, “an unfinished draft”, or “a structure whose wording is not yet settled”, then it is closer to a language-native diffusion model.</p>
+<h3 id="32-it-should-learn-what-to-stabilize-first">3.2 It should learn what to stabilize first</h3>
+<p>Generation is not only producing content; it is also deciding which parts should remain uncertain.</p>
+<p>In a reasonable language generation process, high-level meaning should usually stabilize before surface wording. The model should first decide <em>what to say</em>, then <em>how to say it</em>.</p>
+<p>We can decompose the uncertainty of a text as</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mi>u</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo>=</mo><msub><mi>u</mi><mtext>sem</mtext></msub><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo>+</mo><msub><mi>u</mi><mtext>lex</mtext></msub><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo><mo separator="true">,</mo></mrow><annotation encoding="application/x-tex">u(x)=u_{\text{sem}}(x)+u_{\text{lex}}(x),</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathnormal">u</span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal">u</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">sem</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathnormal">u</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">lex</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathnormal">x</span><span class="mclose">)</span><span class="mpunct">,</span></span></span></span></span>
+<p>where <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>u</mi><mtext>sem</mtext></msub></mrow><annotation encoding="application/x-tex">u_{\text{sem}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">u</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">sem</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> is semantic uncertainty and <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>u</mi><mtext>lex</mtext></msub></mrow><annotation encoding="application/x-tex">u_{\text{lex}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5806em;vertical-align:-0.15em;"></span><span class="mord"><span class="mord mathnormal">u</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">lex</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span></span></span></span> is lexical or stylistic uncertainty. An ideal generation schedule should reduce them in a structured way:</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><msub><mi>u</mi><mtext>sem</mtext></msub><mo>↓</mo><mspace width="1em"></mspace><mtext>before</mtext><mspace width="1em"></mspace><msub><mi>u</mi><mtext>lex</mtext></msub><mo>↓</mo></mrow><annotation encoding="application/x-tex">u_{\text{sem}} \downarrow \quad \text{before} \quad u_{\text{lex}} \downarrow</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord"><span class="mord mathnormal">u</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.1514em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">sem</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">↓</span><span class="mspace" style="margin-right:1em;"></span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">before</span></span><span class="mspace" style="margin-right:1em;"></span><span class="mord"><span class="mord mathnormal">u</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3361em;"><span style="top:-2.55em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord text mtight"><span class="mord mtight">lex</span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">↓</span></span></span></span></span>
+<p>That is, <strong>stabilize the meaning first, then refine the expression.</strong> This is exactly what many token-level noise schedules struggle to express: they control the <em>strength</em> of corruption, but not semantic <em>priority</em>.</p>
+<h3 id="33-it-should-generate-by-iterating-not-only-by-predicting">3.3 It should generate by iterating, not only by predicting</h3>
+<p>An autoregressive model generates by appending: it predicts the next token, one step at a time.</p>
+<p>The potential advantage of a DLM should not be faster decoding alone, but a more natural ability to revise the whole. Human writing is rarely strictly left to right; it looks more like</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>idea</mtext><mo>→</mo><mtext>outline</mtext><mo>→</mo><mtext>draft</mtext><mo>→</mo><mtext>revision</mtext><mo>→</mo><mtext>final text</mtext><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">\text{idea} \rightarrow \text{outline} \rightarrow \text{draft} \rightarrow \text{revision} \rightarrow \text{final text}.</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord text"><span class="mord">idea</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord text"><span class="mord">outline</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord text"><span class="mord">draft</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6679em;"></span><span class="mord text"><span class="mord">revision</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord text"><span class="mord">final text</span></span><span class="mord">.</span></span></span></span></span>
+<p>This is closer to the spirit of diffusion than next-token prediction is. The model should be able to reorganize globally, polish locally, insert missing structure, remove redundancy, and adjust style.</p>
+<p>So an ideal DLM should not ask only <em>what is the next token?</em> It should ask <em><strong>what is the next meaningful revision?</strong></em></p>
+<h3 id="34-architecture-provides-the-space-the-objective-defines-the-direction">3.4 Architecture provides the space; the objective defines the direction</h3>
+<p>Where do the generation space and the generation schedule come from? Very likely from both the architecture and the training objective.</p>
+<p>The <strong>architecture</strong> determines what intermediate states the model can represent. It provides the space in which semantic skeletons, discourse plans, latent outlines, dependency relations, or draft states can exist.</p>
+<p>The <strong>training objective</strong> determines how the model moves between those states. It decides whether the model is actually trained to move from high-level meaning toward low-level expression.</p>
+<p>In short:</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>Architecture</mtext><mo>=</mo><mtext>where states can live</mtext><mo separator="true">,</mo><mspace width="2em"></mspace><mtext>Objective</mtext><mo>=</mo><mtext>how states should move</mtext><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">\text{Architecture} = \text{where states can live},\qquad
+\text{Objective} = \text{how states should move}.</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord text"><span class="mord">Architecture</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">where states can live</span></span><span class="mpunct">,</span><span class="mspace" style="margin-right:2em;"></span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord text"><span class="mord">Objective</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord text"><span class="mord">how states should move</span></span><span class="mord">.</span></span></span></span></span>
+<p>Architecture alone is not enough. A latent variable does not automatically become a semantic plan; without the right training pressure, it may encode only shallow statistics.</p>
+<p>An objective alone is not enough either. Without a suitable internal representation space, the objective can only force the model to learn semantic organization at the token level, which is both difficult and unstable.</p>
+<p>The core design principle for DLMs should therefore be:</p>
+<blockquote>
+<p><em><strong>A structured generation space + a semantic generation schedule.</strong></em></p>
+</blockquote>
+<p>This is what separates language-native diffusion from token denoising.</p>
+<h2 id="4-conclusion">4. Conclusion</h2>
+<p>The original vision of DLMs was to bring the power of diffusion models to language generation. But perhaps the problem was framed too narrowly from the start.</p>
+<p>The real question is not <em>how to diffuse tokens</em>, but <em><strong>in which space meaning should be diffused, and how it gradually becomes text.</strong></em></p>
+<p>Image diffusion works partly because its generation space is naturally aligned with visual structure. Language does not provide such a space for free. Its structure is hidden among semantic abstraction, dependency relations, discourse organization, information density, and surface expression.</p>
+<p>DLMs therefore cannot be reduced to token corruption, mask prediction, or embedding denoising. A good DLM should not only learn</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>noise</mtext><mo>→</mo><mtext>tokens</mtext><mo separator="true">;</mo></mrow><annotation encoding="application/x-tex">\text{noise} \rightarrow \text{tokens};</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6679em;"></span><span class="mord text"><span class="mord">noise</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.8889em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">tokens</span></span><span class="mpunct">;</span></span></span></span></span>
+<p>it should learn</p>
+<span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mtext>meaning</mtext><mo>→</mo><mtext>structure</mtext><mo>→</mo><mtext>text</mtext><mi mathvariant="normal">.</mi></mrow><annotation encoding="application/x-tex">\text{meaning} \rightarrow \text{structure} \rightarrow \text{text}.</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8623em;vertical-align:-0.1944em;"></span><span class="mord text"><span class="mord">meaning</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord text"><span class="mord">structure</span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">→</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6151em;"></span><span class="mord text"><span class="mord">text</span></span><span class="mord">.</span></span></span></span></span>
+<p>More fundamentally, it must also learn <em>where</em> this transformation should take place. The core claim of this note can be summarized as:</p>
+<blockquote>
+<p><em><strong>A good DLM should not only learn how meaning becomes text.</strong></em></p>
+<p><em><strong>It should first learn where meaning can become text.</strong></em></p>
+</blockquote>
+<p>That may be the problem a language-native diffusion model truly needs to solve.</p> </div> </article> <aside class="blog-post-toc" aria-label="Table of contents"> <span>Contents</span> <nav> <a href="#0-introduction-are-we-really-diffusing-language" class="depth-2"> 0. Introduction: are we really diffusing language? </a><a href="#1-the-implicit-biases-of-language-generation-models" class="depth-2"> 1. The implicit biases of language generation models </a><a href="#11-autoregressive-models-a-surface-time-coordinate-system" class="depth-3"> 1.1 Autoregressive models: a surface-time coordinate system </a><a href="#12-chain-of-thought-a-hand-crafted-generation-schedule-inside-ar" class="depth-3"> 1.2 Chain-of-Thought: a hand-crafted generation schedule inside AR </a><a href="#13-diffusion-language-models-noise-is-not-automatically-semantics" class="depth-3"> 1.3 Diffusion language models: noise is not automatically semantics </a><a href="#2-from-generation-space-to-generation-schedule" class="depth-2"> 2. From generation space to generation schedule </a><a href="#21-why-does-language-have-no-single-frequency-axis" class="depth-3"> 2.1 Why does language have no single frequency axis? </a><a href="#22-the-semantic-spectrum" class="depth-3"> 2.2 The semantic spectrum </a><a href="#3-what-kind-of-dlm-do-we-actually-need" class="depth-2"> 3. What kind of DLM do we actually need? </a><a href="#31-it-should-generate-in-a-semanticstructural-space" class="depth-3"> 3.1 It should generate in a semantic–structural space </a><a href="#32-it-should-learn-what-to-stabilize-first" class="depth-3"> 3.2 It should learn what to stabilize first </a><a href="#33-it-should-generate-by-iterating-not-only-by-predicting" class="depth-3"> 3.3 It should generate by iterating, not only by predicting </a><a href="#34-architecture-provides-the-space-the-objective-defines-the-direction" class="depth-3"> 3.4 Architecture provides the space; the objective defines the direction </a><a href="#4-conclusion" class="depth-2"> 4. Conclusion </a> </nav> </aside> </div><script type="module" src="/_astro/_slug_.astro_astro_type_script_index_0_lang.BIjJE5tO.js"></script>  </main> </div> <script>(function(){const mediaPlaylistGroups = [{"key":"Featured","label":"Featured","tracks":[{"title":"Whynot TV: Danfei Xu","url":"https://www.youtube.com/watch?v=__P5yygfRRQ&t=774s","videoId":"__P5yygfRRQ","source":"Podcast"},{"title":"SpaceX | Starship - Test Like You Fly","url":"https://www.youtube.com/watch?v=ANe_HW4X8oc","videoId":"ANe_HW4X8oc","source":"SpaceX"},{"title":"Lin vs. Li | 2017 All England Open Final","url":"https://www.youtube.com/watch?v=DDG8RvCUwVc","videoId":"DDG8RvCUwVc","source":"Badminton"}]},{"key":"Podcast","label":"Podcast","tracks":[{"title":"Whynot TV: Danfei Xu","url":"https://www.youtube.com/watch?v=__P5yygfRRQ&t=774s","videoId":"__P5yygfRRQ","source":"Podcast"},{"title":"Whynot TV: Jiayi Weng","url":"https://www.youtube.com/watch?v=I0DrcsDf3Os","videoId":"I0DrcsDf3Os","source":"Podcast"},{"title":"Lin Dan | 2017 Retirement Interview","url":"https://www.youtube.com/watch?v=tiTEG6gPhfU","videoId":"tiTEG6gPhfU","source":"Badminton"},{"title":"The Rise of SpaceX: Everything for Mars","url":"https://www.youtube.com/watch?v=x2meJPOn9ws","videoId":"x2meJPOn9ws","source":"SpaceX"},{"title":"Whynot TV: Tianqi Chen","url":"https://www.youtube.com/watch?v=jvqsvbntEFQ","videoId":"jvqsvbntEFQ","source":"Podcast"}]},{"key":"SpaceX","label":"SpaceX","tracks":[{"title":"Starship | First Integrated Flight Test","url":"https://www.youtube.com/watch?v=_krgcofiM6M","videoId":"_krgcofiM6M","source":"SpaceX"},{"title":"Starship | Second Flight Test","url":"https://www.youtube.com/watch?v=C3iHAgwIYtI","videoId":"C3iHAgwIYtI","source":"SpaceX"},{"title":"Starship | Third Flight Test","url":"https://www.youtube.com/watch?v=ApMrILhTulI","videoId":"ApMrILhTulI","source":"SpaceX"},{"title":"Starship | Fourth Flight Test","url":"https://www.youtube.com/watch?v=j2BdNDTlWbo","videoId":"j2BdNDTlWbo","source":"SpaceX"},{"title":"Starship | Fifth Flight Test","url":"https://www.youtube.com/watch?v=hI9HQfCAw64","videoId":"hI9HQfCAw64","source":"SpaceX"},{"title":"Starship | Sixth Flight Test","url":"https://www.youtube.com/watch?v=CMGiNKcVSek","videoId":"CMGiNKcVSek","source":"SpaceX"},{"title":"Starship | Seventh Flight Test","url":"https://www.youtube.com/watch?v=Pn6e1O5bEyA","videoId":"Pn6e1O5bEyA","source":"SpaceX"},{"title":"Starship | Tenth Flight Test","url":"https://www.youtube.com/watch?v=rcd_SQZDlnk&list=PLBQ5P5txVQr9_jeZLGa0n5EIYvsOJFAnY&index=1","videoId":"rcd_SQZDlnk","source":"SpaceX"},{"title":"SpaceX | Starship - Test Like You Fly","url":"https://www.youtube.com/watch?v=ANe_HW4X8oc","videoId":"ANe_HW4X8oc","source":"SpaceX"},{"title":"The Rise of SpaceX: Everything for Mars","url":"https://www.youtube.com/watch?v=x2meJPOn9ws","videoId":"x2meJPOn9ws","source":"SpaceX"}]},{"key":"Badminton","label":"Badminton","tracks":[{"title":"Lin Dan | 2017 Retirement Interview","url":"https://www.youtube.com/watch?v=tiTEG6gPhfU","videoId":"tiTEG6gPhfU","source":"Badminton"},{"title":"Lin vs. Li | 2017 All England Open Final","url":"https://www.youtube.com/watch?v=DDG8RvCUwVc","videoId":"DDG8RvCUwVc","source":"Badminton"}]}];
+
+      (function () {
+        let layoutCleanup = null;
+
+        function applyStoredTheme() {
+          const theme = localStorage.getItem("theme");
+          if (theme !== "light") {
+            document.documentElement.classList.add("dark");
+          } else {
+            document.documentElement.classList.remove("dark");
+          }
+        }
+
+        function initLayout() {
+          if (layoutCleanup) {
+            layoutCleanup();
+            layoutCleanup = null;
+          }
+
+          const abort = new AbortController();
+          const toggle = document.getElementById("theme-toggle");
+          const menuToggle = document.getElementById("mobile-menu-toggle");
+          const menuIcon = document.getElementById("mobile-menu-icon");
+          const navContent = document.getElementById("nav-content");
+          const html = document.documentElement;
+
+          applyStoredTheme();
+
+          function updateIcons() {
+            const isDark = html.classList.contains("dark");
+            const lightIcon = document.querySelector(".theme-icon-light");
+            const darkIcon = document.querySelector(".theme-icon-dark");
+            if (lightIcon) lightIcon.style.display = isDark ? "none" : "inline";
+            if (darkIcon) darkIcon.style.display = isDark ? "inline" : "none";
+          }
+
+          updateIcons();
+
+          if (toggle) {
+            toggle.addEventListener(
+              "click",
+              function () {
+                html.classList.toggle("dark");
+                localStorage.setItem("theme", html.classList.contains("dark") ? "dark" : "light");
+                updateIcons();
+              },
+              { signal: abort.signal },
+            );
+          }
+
+          if (menuToggle && menuIcon && navContent) {
+            function closeMenu() {
+              navContent.classList.remove("is-open");
+              menuToggle.setAttribute("aria-expanded", "false");
+              menuIcon.textContent = "[ ≡ ]";
+            }
+
+            menuToggle.addEventListener(
+              "click",
+              function () {
+                const isOpen = navContent.classList.toggle("is-open");
+                menuToggle.setAttribute("aria-expanded", String(isOpen));
+                menuIcon.textContent = isOpen ? "[ × ]" : "[ ≡ ]";
+              },
+              { signal: abort.signal },
+            );
+
+            navContent.querySelectorAll("a").forEach(function (link) {
+              link.addEventListener("click", closeMenu, { signal: abort.signal });
+            });
+          }
+
+          layoutCleanup = function () {
+            abort.abort();
+          };
+        }
+
+        function cacheMediaPlayerElement() {
+          const player = document.getElementById("sidebar-media-player");
+          if (player) window.__mediaPlayerElement = player;
+        }
+
+        function ensureMediaPlayerMounted() {
+          const sidebar = document.querySelector(".site-sidebar");
+          const cachedPlayer = window.__mediaPlayerElement;
+          const currentPlayer = document.getElementById("sidebar-media-player");
+
+          if (!sidebar) return;
+
+          if (cachedPlayer && currentPlayer !== cachedPlayer) {
+            if (currentPlayer) {
+              currentPlayer.replaceWith(cachedPlayer);
+            } else {
+              sidebar.appendChild(cachedPlayer);
+            }
+          } else if (currentPlayer) {
+            window.__mediaPlayerElement = currentPlayer;
+          }
+        }
+
+        ensureMediaPlayerMounted();
+
+        (function setupMediaPlayer() {
+          ensureMediaPlayerMounted();
+          const player = document.getElementById("sidebar-media-player");
+          const embed = document.getElementById("sidebar-media-embed");
+          const title = document.getElementById("sidebar-media-title");
+          const source = document.getElementById("sidebar-media-source");
+          const progress = document.getElementById("sidebar-media-progress");
+          const seek = document.getElementById("sidebar-media-seek");
+          const currentTime = document.getElementById("sidebar-media-current-time");
+          const duration = document.getElementById("sidebar-media-duration");
+          const toggle = document.getElementById("sidebar-media-toggle");
+          const toggleIcon = document.getElementById("sidebar-media-toggle-icon");
+          const prev = document.getElementById("sidebar-media-prev");
+          const next = document.getElementById("sidebar-media-next");
+          const backward = document.getElementById("sidebar-media-backward");
+          const forward = document.getElementById("sidebar-media-forward");
+          if (!player || !embed || !title || !source) return;
+
+          const state = window.__mediaPlayerState || {
+            playlist: [],
+            playlistGroups: [],
+            playlistMode: "Featured",
+            currentIndex: -1,
+            currentTrack: null,
+            isPlaying: false,
+            resumeRequested: false,
+            apiReady: false,
+            ytPlayer: null,
+            progressTimer: null,
+            saveStateTimer: null,
+            pendingPlayerResolve: null,
+          };
+          window.__mediaPlayerState = state;
+
+          function parseYouTubeId(url) {
+            try {
+              const parsed = new URL(url, window.location.href);
+              if (parsed.hostname.includes("youtu.be")) {
+                return parsed.pathname.split("/").filter(Boolean)[0] || "";
+              }
+              if (parsed.pathname.startsWith("/embed/")) {
+                return parsed.pathname.split("/")[2] || "";
+              }
+              if (parsed.pathname.startsWith("/shorts/")) {
+                return parsed.pathname.split("/")[2] || "";
+              }
+              return parsed.searchParams.get("v") || "";
+            } catch (_) {
+              return "";
+            }
+          }
+
+          function parseStartSeconds(url) {
+            try {
+              const parsed = new URL(url, window.location.href);
+              const value = parsed.searchParams.get("t") || parsed.searchParams.get("start") || "";
+              if (/^\d+$/.test(value)) return Number(value);
+              const match = value.match(/(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?/);
+              if (!match) return 0;
+              return Number(match[1] || 0) * 3600 + Number(match[2] || 0) * 60 + Number(match[3] || 0);
+            } catch (_) {
+              return 0;
+            }
+          }
+
+          function formatTime(seconds) {
+            if (!seconds || !isFinite(seconds)) return "0:00";
+            const total = Math.max(0, Math.floor(seconds));
+            const mins = Math.floor(total / 60);
+            const secs = total % 60;
+            return `${mins}:${String(secs).padStart(2, "0")}`;
+          }
+
+          function normalizePlaylist(items) {
+            if (!Array.isArray(items)) return [];
+            return items
+              .map(function (episode, index) {
+                const url = episode.url || episode.youtubeUrl || "";
+                const videoId = episode.videoId || parseYouTubeId(url);
+                if (!videoId) return null;
+                return {
+                  title: episode.title || `Media ${index + 1}`,
+                  source: episode.source || episode.host || "YouTube",
+                  url: url || `https://www.youtube.com/watch?v=${videoId}`,
+                  videoId,
+                  start: Number(episode.start || parseStartSeconds(url)) || 0,
+                };
+              })
+              .filter(Boolean);
+          }
+
+          function normalizePlaylistGroups(groups) {
+            if (!Array.isArray(groups)) return [];
+            return groups
+              .map(function (group) {
+                const tracks = normalizePlaylist(group.tracks);
+                if (!group.key || !tracks.length) return null;
+                return {
+                  key: group.key,
+                  label: group.label || group.key,
+                  tracks,
+                };
+              })
+              .filter(Boolean);
+          }
+
+          function findPlaylistGroup(mode) {
+            return state.playlistGroups.find(function (group) {
+              return group.key === mode;
+            });
+          }
+
+          function syncPlaylistModeButton() {
+            if (!source) return;
+            const activeGroup = findPlaylistGroup(state.playlistMode);
+            source.textContent = activeGroup ? activeGroup.label : "Featured";
+            source.disabled = state.playlistGroups.length < 2;
+            source.setAttribute(
+              "aria-label",
+              state.playlistGroups.length < 2 ? "Media playlist" : "Switch media playlist",
+            );
+            source.title = state.playlistGroups.length < 2 ? "Media playlist" : "Switch playlist";
+          }
+
+          function findPlaylistIndex(videoId) {
+            return state.playlist.findIndex(function (episode) {
+              return episode.videoId === videoId;
+            });
+          }
+
+          function getActualPlaybackState() {
+            if (
+              state.ytPlayer &&
+              typeof state.ytPlayer.getPlayerState === "function" &&
+              window.YT &&
+              window.YT.PlayerState
+            ) {
+              try {
+                return state.ytPlayer.getPlayerState();
+              } catch (_) {}
+            }
+            return null;
+          }
+
+          function isActuallyPlaying() {
+            const actualState = getActualPlaybackState();
+            if (actualState === null) return state.isPlaying;
+            return actualState === window.YT.PlayerState.PLAYING;
+          }
+
+          function syncButtons() {
+            syncPlaylistModeButton();
+            state.isPlaying = isActuallyPlaying();
+            if (toggle) {
+              toggle.disabled = !state.currentTrack;
+              toggle.setAttribute("aria-label", state.isPlaying ? "Pause media" : "Play media");
+              toggle.title = state.isPlaying ? "Pause" : "Play";
+            }
+            if (toggleIcon) toggleIcon.textContent = state.isPlaying ? "II" : "▶";
+            if (prev) prev.disabled = state.playlist.length === 0;
+            if (next) next.disabled = state.playlist.length === 0;
+            if (backward) backward.disabled = !state.currentTrack;
+            if (forward) forward.disabled = !state.currentTrack;
+          }
+
+          function saveMediaState() {
+            if (!state.currentTrack) return;
+            state.isPlaying = isActuallyPlaying();
+            let currentTime = 0;
+            if (state.ytPlayer && typeof state.ytPlayer.getCurrentTime === "function") {
+              try {
+                currentTime = state.ytPlayer.getCurrentTime();
+              } catch (_) {}
+            }
+            localStorage.setItem("media:state", JSON.stringify({
+              videoId: state.currentTrack.videoId,
+              url: state.currentTrack.url,
+              start: state.currentTrack.start,
+              title: state.currentTrack.title,
+              source: state.currentTrack.source,
+              playlistMode: state.playlistMode,
+              currentTime: currentTime || state.currentTrack.start,
+              isPlaying: state.isPlaying,
+            }));
+          }
+
+          if (!window.__mediaPlayerBeforeSwapSaveAttached) {
+            window.__mediaPlayerBeforeSwapSaveAttached = true;
+            document.addEventListener("astro:before-swap", saveMediaState);
+          }
+
+          let saveStateTimer = state.saveStateTimer;
+          function startSaveStateTimer() {
+            stopSaveStateTimer();
+            saveStateTimer = window.setInterval(saveMediaState, 2000);
+            state.saveStateTimer = saveStateTimer;
+          }
+          function stopSaveStateTimer() {
+            if (saveStateTimer) {
+              window.clearInterval(saveStateTimer);
+              saveStateTimer = null;
+              state.saveStateTimer = null;
+            }
+          }
+
+          function updateProgressUI(current, total) {
+            const percent = total > 0 && isFinite(total) ? Math.max(0, Math.min(100, (current / total) * 100)) : 0;
+            if (progress) progress.style.width = `${percent}%`;
+            if (seek) seek.setAttribute("aria-valuenow", String(Math.round(percent)));
+            if (currentTime) currentTime.textContent = formatTime(current);
+            if (duration) duration.textContent = formatTime(total);
+          }
+
+          function stopProgressTimer() {
+            if (state.progressTimer) {
+              window.clearInterval(state.progressTimer);
+              state.progressTimer = null;
+            }
+          }
+
+          function startProgressTimer() {
+            stopProgressTimer();
+            state.progressTimer = window.setInterval(function () {
+              if (!state.ytPlayer || typeof state.ytPlayer.getCurrentTime !== "function") return;
+              try {
+                updateProgressUI(state.ytPlayer.getCurrentTime(), state.ytPlayer.getDuration());
+              } catch (_) {}
+            }, 500);
+          }
+
+          function ensureYouTubeApi() {
+            if (window.YT && window.YT.Player) return Promise.resolve();
+            if (window.__youtubeApiPromise) return window.__youtubeApiPromise;
+
+            window.__youtubeApiPromise = new Promise(function (resolve) {
+              const previousReady = window.onYouTubeIframeAPIReady;
+              window.onYouTubeIframeAPIReady = function () {
+                if (typeof previousReady === "function") previousReady();
+                resolve();
+              };
+              const script = document.createElement("script");
+              script.src = "https://www.youtube.com/iframe_api";
+              script.async = true;
+              document.head.appendChild(script);
+            });
+            return window.__youtubeApiPromise;
+          }
+
+          function destroyYouTubePlayer() {
+            if (state.ytPlayer && typeof state.ytPlayer.destroy === "function") {
+              try {
+                state.ytPlayer.destroy();
+              } catch (_) {}
+            }
+            state.ytPlayer = null;
+            state.apiReady = false;
+            stopProgressTimer();
+          }
+
+          function attachYouTubePlayer(iframe) {
+            if (!iframe) return;
+            ensureYouTubeApi().then(function () {
+              try {
+                if (
+                  state.ytPlayer &&
+                  typeof state.ytPlayer.getIframe === "function" &&
+                  state.ytPlayer.getIframe() === iframe
+                ) {
+                  state.apiReady = true;
+                  startProgressTimer();
+                  syncButtons();
+                  if (state.resumeRequested && typeof state.ytPlayer.playVideo === "function") {
+                    state.ytPlayer.playVideo();
+                  }
+                  return;
+                }
+              } catch (_) {}
+
+              if (!iframe.isConnected) return;
+
+              if (state.ytPlayer && typeof state.ytPlayer.getIframe === "function") {
+                try {
+                  const oldIframe = state.ytPlayer.getIframe();
+                  if (oldIframe && oldIframe.isConnected && oldIframe !== iframe) {
+                    return;
+                  }
+                } catch (_) {}
+              }
+
+              state.ytPlayer = new window.YT.Player(iframe, {
+                events: {
+                  onReady: function () {
+                    state.apiReady = true;
+                    startProgressTimer();
+                    syncButtons();
+                    if (state.resumeRequested) {
+                      try {
+                        state.ytPlayer.playVideo();
+                      } catch (_) {}
+                    }
+                  },
+                  onStateChange: function (event) {
+                    state.isPlaying = event.data === window.YT.PlayerState.PLAYING;
+                    if (
+                      event.data === window.YT.PlayerState.PLAYING ||
+                      event.data === window.YT.PlayerState.PAUSED ||
+                      event.data === window.YT.PlayerState.CUED ||
+                      event.data === window.YT.PlayerState.ENDED
+                    ) {
+                      state.resumeRequested = false;
+                    }
+                    if (event.data === window.YT.PlayerState.ENDED) {
+                      playAdjacent(1);
+                    }
+                    syncButtons();
+                    saveMediaState();
+                  },
+                },
+              });
+            });
+          }
+
+          function reattachYouTubePlayer() {
+            const iframe = document.getElementById("sidebar-media-iframe");
+            if (!iframe || !state.currentTrack) return;
+
+            let stillAttached = false;
+            try {
+              stillAttached =
+                state.ytPlayer &&
+                typeof state.ytPlayer.getIframe === "function" &&
+                state.ytPlayer.getIframe() === iframe;
+            } catch (_) {}
+
+            if (stillAttached) {
+              syncButtons();
+              startSaveStateTimer();
+              return;
+            }
+
+            attachYouTubePlayer(iframe);
+          }
+
+          if (!window.__mediaPlayerPageLoadAttached) {
+            window.__mediaPlayerPageLoadAttached = true;
+            document.addEventListener("astro:page-load", reattachYouTubePlayer);
+          }
+
+          function renderMedia(episode, options) {
+            const videoId = episode.videoId || parseYouTubeId(episode.url || "");
+            if (!videoId) return false;
+
+            // If the same video is already loaded, don't recreate the iframe.
+            if (
+              state.currentTrack &&
+              state.currentTrack.videoId === videoId &&
+              document.getElementById("sidebar-media-iframe")
+            ) {
+              state.resumeRequested = Boolean(options && options.autoplay);
+              state.isPlaying = isActuallyPlaying();
+              if (options && options.autoplay && state.ytPlayer && typeof state.ytPlayer.playVideo === "function") {
+                try {
+                  state.ytPlayer.playVideo();
+                } catch (_) {}
+              } else {
+                reattachYouTubePlayer();
+              }
+              syncButtons();
+              startSaveStateTimer();
+              saveMediaState();
+              return true;
+            }
+
+            const autoplay = options && options.autoplay ? "1" : "0";
+            const start = Number(
+              options && options.start !== undefined
+                ? options.start
+                : (episode.start || parseStartSeconds(episode.url || "")),
+            ) || 0;
+            const startParam = start > 0 ? `&start=${Math.floor(start)}` : "";
+            const originParam = `&origin=${encodeURIComponent(window.location.origin)}`;
+            const embedUrl = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=${autoplay}&enablejsapi=1&playsinline=1&controls=0&disablekb=1&fs=0&iv_load_policy=3&showinfo=0&rel=0&modestbranding=1${startParam}${originParam}`;
+            destroyYouTubePlayer();
+            embed.innerHTML = `<iframe id="sidebar-media-iframe" src="${embedUrl}" title="${episode.title || "Media item"}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen loading="lazy"></iframe>`;
+            title.textContent = episode.title || "Untitled media";
+            syncPlaylistModeButton();
+            player.hidden = false;
+            window.__mediaPlayerHasTrack = true;
+            state.currentTrack = {
+              videoId,
+              url: episode.url || `https://www.youtube.com/watch?v=${videoId}`,
+              start,
+              title: title.textContent,
+              source: source.textContent,
+            };
+            const matchedIndex = findPlaylistIndex(videoId);
+            if (matchedIndex >= 0) state.currentIndex = matchedIndex;
+            state.resumeRequested = autoplay === "1";
+            state.isPlaying = false;
+            updateProgressUI(start, 0);
+            syncButtons();
+            saveMediaState();
+            startSaveStateTimer();
+            document.dispatchEvent(new CustomEvent("media:playing", { detail: { videoId } }));
+            attachYouTubePlayer(document.getElementById("sidebar-media-iframe"));
+            return true;
+          }
+
+          function playAtIndex(index, options) {
+            if (!state.playlist.length) return false;
+            const normalizedIndex = (index + state.playlist.length) % state.playlist.length;
+            state.currentIndex = normalizedIndex;
+            return renderMedia(state.playlist[normalizedIndex], options || { autoplay: true });
+          }
+
+          function playAdjacent(offset) {
+            if (!state.playlist.length) return false;
+            const current = state.currentIndex >= 0 ? state.currentIndex : findPlaylistIndex(state.currentTrack?.videoId);
+            return playAtIndex((current >= 0 ? current : 0) + offset, { autoplay: true });
+          }
+
+          window.playMedia = function (episode) {
+            return renderMedia(episode || {}, { autoplay: true });
+          };
+
+          window.setMediaPlaylist = function (episodes) {
+            const normalized = normalizePlaylist(episodes);
+            state.playlist = normalized;
+            if (state.currentTrack) {
+              state.currentIndex = findPlaylistIndex(state.currentTrack.videoId);
+            }
+            syncButtons();
+          };
+
+          function setMediaPlaylistMode(mode, options) {
+            const targetGroup = findPlaylistGroup(mode) || state.playlistGroups[0];
+            if (!targetGroup) return false;
+            state.playlistMode = targetGroup.key;
+            state.playlist = targetGroup.tracks;
+            state.currentIndex = state.currentTrack ? findPlaylistIndex(state.currentTrack.videoId) : -1;
+            syncButtons();
+
+            if (options && options.play) {
+              if (state.currentIndex >= 0 && options.keepCurrent !== false) {
+                return true;
+              }
+              return playAtIndex(0, { autoplay: true });
+            }
+            return true;
+          }
+
+          window.setMediaPlaylistGroups = function (groups) {
+            const normalized = normalizePlaylistGroups(groups);
+            if (!normalized.length) return false;
+            state.playlistGroups = normalized;
+            return setMediaPlaylistMode(state.playlistMode || normalized[0].key, { keepCurrent: true });
+          };
+
+          window.setMediaPlaylistMode = function (mode, options) {
+            return setMediaPlaylistMode(mode, options || { keepCurrent: true });
+          };
+
+          window.seedMediaPlayer = function (episodes) {
+            window.setMediaPlaylist(episodes);
+            if (window.__mediaPlayerHasTrack) return false;
+            if (!state.playlist.length) return false;
+            return playAtIndex(Math.floor(Math.random() * state.playlist.length), { autoplay: false });
+          };
+
+          window.setMediaPlaylistGroups(mediaPlaylistGroups);
+
+          function bindMediaControls() {
+            if (source) {
+              source.onclick = function () {
+                if (!state.playlistGroups.length) return;
+                const current = state.playlistGroups.findIndex(function (group) {
+                  return group.key === state.playlistMode;
+                });
+                const nextGroup = state.playlistGroups[(Math.max(0, current) + 1) % state.playlistGroups.length];
+                setMediaPlaylistMode(nextGroup.key, { play: true, keepCurrent: true });
+              };
+            }
+
+            if (toggle) {
+              toggle.onclick = function () {
+                if (!state.currentTrack) return;
+                if (!state.ytPlayer || typeof state.ytPlayer.playVideo !== "function") {
+                  renderMedia(state.currentTrack, { autoplay: true });
+                  return;
+                }
+                try {
+                  if (isActuallyPlaying()) {
+                    state.ytPlayer.pauseVideo();
+                  } else {
+                    state.resumeRequested = false;
+                    state.ytPlayer.playVideo();
+                  }
+                } catch (_) {}
+              };
+            }
+
+            if (prev) {
+              prev.onclick = function () {
+                playAdjacent(-1);
+              };
+            }
+
+            if (next) {
+              next.onclick = function () {
+                playAdjacent(1);
+              };
+            }
+
+            function skipSeconds(delta) {
+              if (!state.ytPlayer || typeof state.ytPlayer.seekTo !== "function") return;
+              const total = state.ytPlayer.getDuration();
+              if (!total || !isFinite(total)) return;
+              const current = state.ytPlayer.getCurrentTime();
+              state.ytPlayer.seekTo(Math.max(0, Math.min(total, current + delta)), true);
+              saveMediaState();
+            }
+
+            if (backward) {
+              backward.onclick = function () {
+                skipSeconds(-15);
+              };
+            }
+
+            if (forward) {
+              forward.onclick = function () {
+                skipSeconds(15);
+              };
+            }
+
+            if (seek) {
+              seek.onclick = function (event) {
+                if (!state.ytPlayer || typeof state.ytPlayer.seekTo !== "function") return;
+                const total = state.ytPlayer.getDuration();
+                if (!total || !isFinite(total)) return;
+                const rect = seek.getBoundingClientRect();
+                const ratio = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width));
+                state.ytPlayer.seekTo(ratio * total, true);
+                saveMediaState();
+              };
+              seek.onkeydown = function (event) {
+                if (!state.ytPlayer || typeof state.ytPlayer.seekTo !== "function") return;
+                const total = state.ytPlayer.getDuration();
+                if (!total || !isFinite(total)) return;
+                const current = state.ytPlayer.getCurrentTime();
+                let nextTime = current;
+                if (event.key === "ArrowRight" || event.key === "ArrowUp") nextTime = current + 10;
+                else if (event.key === "ArrowLeft" || event.key === "ArrowDown") nextTime = current - 10;
+                else if (event.key === "Home") nextTime = 0;
+                else if (event.key === "End") nextTime = total;
+                else return;
+                event.preventDefault();
+                state.ytPlayer.seekTo(Math.max(0, Math.min(total, nextTime)), true);
+                saveMediaState();
+              };
+            }
+          }
+
+          bindMediaControls();
+
+          // On subsequent Astro transitions, only reattach the existing player.
+          if (window.__mediaPlayerInitialized) {
+            reattachYouTubePlayer();
+            syncButtons();
+            if (state.currentTrack) {
+              document.dispatchEvent(
+                new CustomEvent("media:playing", { detail: { videoId: state.currentTrack.videoId } }),
+              );
+            }
+            return;
+          }
+
+          // First initialization only: restore from storage or auto-seed.
+          const saved = localStorage.getItem("media:state") || localStorage.getItem("media:last");
+          let restoredFromStorage = false;
+          if (!window.__mediaPlayerHasTrack && saved && saved !== "null") {
+            try {
+              const savedState = JSON.parse(saved);
+              if (savedState.playlistMode) {
+                setMediaPlaylistMode(savedState.playlistMode, { keepCurrent: true });
+              }
+              restoredFromStorage = renderMedia(savedState, {
+                autoplay: savedState.isPlaying !== false,
+                start: savedState.currentTime || savedState.start,
+              });
+              if (!restoredFromStorage) localStorage.removeItem("media:state");
+            } catch (_) {
+              localStorage.removeItem("media:state");
+            }
+          }
+
+          if (restoredFromStorage) {
+            window.__mediaPlayerInitialized = true;
+            return;
+          }
+
+          if (window.__mediaPlayerHasTrack) {
+            syncButtons();
+            const iframe = document.getElementById("sidebar-media-iframe");
+            if (iframe && !state.ytPlayer) attachYouTubePlayer(iframe);
+            if (state.currentTrack) startSaveStateTimer();
+          } else if (state.playlist.length) {
+            playAtIndex(Math.floor(Math.random() * state.playlist.length), { autoplay: true });
+          }
+
+          window.__mediaPlayerInitialized = true;
+
+          if (!window.__mediaPlayerBeforeUnloadAttached) {
+            window.__mediaPlayerBeforeUnloadAttached = true;
+            window.addEventListener("beforeunload", saveMediaState);
+          }
+        })();
+
+        document.addEventListener("DOMContentLoaded", initLayout);
+        if (!window.__mediaPlayerMountListenersAttached) {
+          window.__mediaPlayerMountListenersAttached = true;
+          document.addEventListener("astro:before-swap", cacheMediaPlayerElement);
+          document.addEventListener("astro:after-swap", ensureMediaPlayerMounted);
+        }
+        document.addEventListener("astro:after-swap", applyStoredTheme);
+        document.addEventListener("astro:page-load", function () {
+          ensureMediaPlayerMounted();
+          initLayout();
+        });
+        initLayout();
+      })();
+    })();</script> </body> </html>
