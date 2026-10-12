@@ -79,7 +79,12 @@
 .album-arrow-next span { --arrow-side: 1; }
 .album-arrow:hover span { opacity: 1; transform: none; }
 
+/* As tall as the photograph: details stay put on top, and the collection's
+   thumbnails fill the rest and scroll on their own. */
 .album-sidebar {
+  display: flex;
+  flex-direction: column;
+  height: var(--album-image-height);
   min-width: 0;
   padding-left: 1.5rem;
   border-left: 1px solid var(--border-subtle);
@@ -87,9 +92,12 @@
 
 .album-collection-heading {
   display: flex;
+  flex: none;
   align-items: baseline;
   justify-content: space-between;
   gap: 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border-subtle);
 }
 
 .album-collection-heading .album-eyebrow { margin: 0; }
@@ -98,9 +106,12 @@
 .album-thumbs {
   position: relative;
   display: grid;
+  flex: 1 1 0;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-content: start;
   gap: 14px 8px;
-  max-height: 19rem;
+  /* At least a row and a glimpse of the next, even when the details are long. */
+  min-height: 7.5rem;
   margin: 1rem 0 0;
   padding: 0 0 12px;
   overflow-y: auto;
@@ -145,7 +156,7 @@
 
 .album-thumb.is-current::after { transform: scaleX(1); }
 
-.album-controls { margin: .25rem 0 1rem; font: .625rem var(--album-mono); }
+.album-controls { flex: none; margin: .25rem 0 0; font: .625rem var(--album-mono); }
 .album-position { color: var(--muted); font-variant-numeric: tabular-nums; }
 .album-navigation { display: flex; align-items: center; justify-content: space-between; gap: .75rem; }
 
@@ -163,11 +174,15 @@
 .album-navigation button:focus-visible { text-decoration: underline; text-underline-offset: 4px; }
 .album-navigation button:disabled { opacity: .3; cursor: default; }
 
+/* Only on short screens do the details give up height and scroll themselves. */
 .album-details {
   display: grid;
+  flex: 0 1 auto;
   gap: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid var(--border-subtle);
+  min-height: 0;
+  padding-bottom: 1.5rem;
+  overflow-y: auto;
+  scrollbar-width: none;
 }
 
 .album-eyebrow {
@@ -199,10 +214,12 @@
   .photo-album { --album-image-height: min(65dvh, 620px); grid-template-columns: minmax(0, 1fr); gap: 2rem; }
   .album-main { position: static; height: auto; }
   .album-main img { height: auto; max-height: var(--album-image-height); }
-  .album-sidebar { padding: 1.5rem 0 0; border-left: 0; border-top: 1px solid var(--border-subtle); }
+  .album-sidebar { height: auto; padding: 1.5rem 0 0; border-left: 0; border-top: 1px solid var(--border-subtle); }
   .album-arrow { display: none; }
-  .album-thumbs { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 64px; max-height: none; overflow: auto hidden; }
-  .album-details { gap: 1.5rem; }
+  /* Keep the thumbnail strip right under the photograph, with the details after it. */
+  .album-collection-heading { padding-top: 0; border-top: 0; }
+  .album-thumbs { flex: none; grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 64px; min-height: 0; overflow: auto hidden; }
+  .album-details { order: 1; margin-top: 1rem; padding: 1.5rem 0 0; border-top: 1px solid var(--border-subtle); overflow: visible; }
 }
 
 @media (prefers-reduced-motion: reduce) {

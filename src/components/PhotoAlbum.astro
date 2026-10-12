@@ -35,6 +35,28 @@ const fields = photoDetails(first);
   </figure>
 
   <aside class="album-sidebar" aria-label="Album and photograph information">
+  <section class="album-details" aria-label="Photograph information">
+    <div class="album-heading" data-album-fade aria-live="polite">
+      <p class="album-eyebrow">Photograph</p>
+      <h2 id={`${id}-title`} data-album-title>{first?.title ?? ""}</h2>
+      <p class="album-date" data-album-date>{photoDate(first?.takenAt)}</p>
+      <p class="album-location" data-album-location aria-label="Location">{first?.location || "—"}</p>
+      <p class="album-tags" data-album-tags aria-label="Tags">{first?.tags?.map((tag) => `#${tag}`).join(" ")}</p>
+    </div>
+    <div class="album-note" data-album-fade>
+      <h3 class="album-eyebrow">Notes</h3>
+      <p data-album-notes>{first?.notes || first?.caption || "No notes added."}</p>
+    </div>
+    <div class="album-equipment">
+      <h3 class="album-eyebrow">Details</h3>
+      <dl class="album-specs">
+        {fields.map(([label, value]) => (
+          <div><dt>{label}</dt><dd data-album-field={label}>{value || "—"}</dd></div>
+        ))}
+      </dl>
+    </div>
+  </section>
+
   <div class="album-collection-heading">
     <span class="album-eyebrow">Collection</span>
     <span class="album-label" data-album-label>{title}</span>
@@ -60,28 +82,6 @@ const fields = photoDetails(first);
       <button type="button" data-album-next aria-label="Next photograph" disabled={photos.length < 2}>next →</button>
     </nav>
   </div>
-
-  <section class="album-details" aria-label="Photograph information">
-    <div class="album-heading" data-album-fade aria-live="polite">
-      <p class="album-eyebrow">Photograph</p>
-      <h2 id={`${id}-title`} data-album-title>{first?.title ?? ""}</h2>
-      <p class="album-date" data-album-date>{photoDate(first?.takenAt)}</p>
-      <p class="album-location" data-album-location aria-label="Location">{first?.location || "—"}</p>
-      <p class="album-tags" data-album-tags aria-label="Tags">{first?.tags?.map((tag) => `#${tag}`).join(" ")}</p>
-    </div>
-    <div class="album-note" data-album-fade>
-      <h3 class="album-eyebrow">Notes</h3>
-      <p data-album-notes>{first?.notes || first?.caption || "No notes added."}</p>
-    </div>
-    <div class="album-equipment">
-      <h3 class="album-eyebrow">Details</h3>
-      <dl class="album-specs">
-        {fields.map(([label, value]) => (
-          <div><dt>{label}</dt><dd data-album-field={label}>{value || "—"}</dd></div>
-        ))}
-      </dl>
-    </div>
-  </section>
   </aside>
 </photo-album>
 
