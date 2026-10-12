@@ -43,6 +43,30 @@
 /* A large photograph is still decoding: quietly dim the current one after a beat. */
 .album-main[data-loading] img.is-shown { opacity: .55; transition-delay: 180ms; }
 
+/* While a photograph or its full image is on the way, a faint line sweeps along
+   the bottom — only after a beat, so quick loads never flash it. */
+.album-main::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: 1;
+  width: 30%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--muted), transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 300ms ease;
+  animation: album-sharpening 1.6s ease-in-out infinite paused;
+}
+
+.album-main:is([data-loading], [data-sharpening])::after { opacity: .7; transition-delay: 400ms; animation-play-state: running; }
+
+@keyframes album-sharpening {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(334%); }
+}
+
 .album-arrow {
   position: absolute;
   top: 0;
@@ -212,7 +236,7 @@
 
 @media (max-width: 700px) {
   .photo-album { --album-image-height: min(65dvh, 620px); grid-template-columns: minmax(0, 1fr); gap: 2rem; }
-  .album-main { position: static; height: auto; }
+  .album-main { position: relative; height: auto; }
   .album-main img { height: auto; max-height: var(--album-image-height); }
   .album-sidebar { height: auto; padding: 1.5rem 0 0; border-left: 0; border-top: 1px solid var(--border-subtle); }
   .album-arrow { display: none; }
@@ -224,4 +248,5 @@
 
 @media (prefers-reduced-motion: reduce) {
   .album-main img, .album-main img.is-leaving { transform: none; transition: opacity 160ms linear; }
+  .album-main::after { width: 100%; animation: none; }
 }

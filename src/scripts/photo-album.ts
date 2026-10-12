@@ -117,6 +117,7 @@ export class PhotoAlbumElement extends HTMLElement {
     // Stop downloads for photographs the visitor has already moved past.
     this.loads.forEach((image) => { if (!image.complete) image.removeAttribute("src"); });
     this.loads = [];
+    delete main.dataset.sharpening;
 
     // Unless the full image is already here, show the light thumbnail at once
     // (usually cached by the wall or the sidebar) and sharpen it when the full
@@ -124,9 +125,13 @@ export class PhotoAlbumElement extends HTMLElement {
     const preview = this.ready.has(photo.src) ? photo.src : photo.thumbnail ?? photo.src;
     const sharpen = (image: HTMLImageElement) => {
       const full = preview === photo.src ? image : this.load(photo.src, "high");
+      // A faint line sweeps along the photograph while its full image is on the way.
+      if (full !== image) main.dataset.sharpening = "true";
       full.decode().catch(() => undefined).then(() => {
         if (token !== this.swapToken) return;
-        if (full !== image) image.src = photo.src;
+        delete main.dataset.sharpening;
+        // Keep the thumbnail if the full image failed to arrive.
+        if (full !== image && full.naturalWidth) image.src = photo.src;
         for (const neighbour of [this.photos[this.currentIndex - 1], this.photos[this.currentIndex + 1]]) {
           if (neighbour && !this.ready.has(neighbour.src)) this.load(neighbour.src, "low");
         }
