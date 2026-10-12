@@ -1,12 +1,13 @@
 {
   "id": "pavilion-bridge-at-nightfall",
   "src": "/assets/gallery/summer-palace/2026-10-11_1810_001.jpg",
+  "thumbnail": "/assets/gallery/summer-palace/2026-10-11_1810_001_thumb.jpg",
   "title": "Pavilion Bridge at Nightfall",
   "themes": ["Landscapes"],
   "tags": ["bridge", "night"],
   "takenAt": "2026-10-11T18:10",
   "notes": "As night falls, lamps light up a stone bridge and its double-eaved pavilion, doubled in the still lake.",
-  "location": "Summer Palace, Beijing",
+  "location": "Willow Bridge, Summer Palace, Beijing",
   "camera": "Sony α7 V",
   "lens": "Tamron 25-200mm F/2.8-5.6 Di III VXD G2",
   "focalLength": "162 mm",
@@ -18,10 +19,8 @@
   "format": "JPEG",
   "resolution": "32.7 MP",
   "fileSize": "43.4 MB",
-  "width": 2667,
-  "height": 4000,
-  "originalWidth": 4672,
-  "originalHeight": 7008,
+  "width": 4672,
+  "height": 7008,
   "alt": "A lit stone bridge with a red-pillared, double-eaved pavilion reflected in a lake at night in the Summer Palace, framed by willow branches.",
   "caption": "Pavilion Bridge at Nightfall"
 }

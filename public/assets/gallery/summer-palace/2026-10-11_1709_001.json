@@ -1,6 +1,7 @@
 {
   "id": "mandarin-duck-in-full-plumage",
   "src": "/assets/gallery/summer-palace/2026-10-11_1709_001.jpg",
+  "thumbnail": "/assets/gallery/summer-palace/2026-10-11_1709_001_thumb.jpg",
   "title": "Mandarin Duck in Full Plumage",
   "themes": ["Animals & Plants"],
   "tags": ["duck"],
@@ -18,10 +19,8 @@
   "format": "JPEG",
   "resolution": "32.7 MP",
   "fileSize": "34.2 MB",
-  "width": 4000,
-  "height": 2667,
-  "originalWidth": 7008,
-  "originalHeight": 4672,
+  "width": 7008,
+  "height": 4672,
   "alt": "A close-up of a male mandarin duck at the water's edge, showing its orange ruff, white eye stripe and blue and orange wing feathers.",
   "caption": "Mandarin Duck in Full Plumage"
 }

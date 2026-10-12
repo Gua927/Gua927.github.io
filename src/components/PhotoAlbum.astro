@@ -48,7 +48,7 @@ const fields = photoDetails(first);
         aria-pressed={index === 0 ? "true" : "false"}
         aria-label={`Show photograph: ${photo.title}`}
       >
-        <img src={photo.src} alt="" width={photo.width} height={photo.height} loading="lazy" decoding="async" />
+        <img src={photo.thumbnail ?? photo.src} alt="" width={photo.width} height={photo.height} loading="lazy" decoding="async" />
       </button>
     ))}
   </div>

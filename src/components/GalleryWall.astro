@@ -30,7 +30,7 @@ const { photos } = Astro.props;
         aria-haspopup="dialog"
       >
         <img
-          src={photo.src}
+          src={photo.thumbnail ?? photo.src}
           alt={photo.alt}
           width={photo.width}
           height={photo.height}

@@ -103,11 +103,11 @@ const collectionCards = galleryCollections.filter((collection) => collection.pho
                 <span class="gallery-collection-stack" aria-hidden="true">
                   {[1, 2].map((layer) => (
                     <span class={`gallery-collection-print print-${layer}`}>
-                      {cover[layer] && <img src={cover[layer].src} alt="" width={cover[layer].width} height={cover[layer].height} loading="lazy" decoding="async" />}
+                      {cover[layer] && <img src={cover[layer].thumbnail ?? cover[layer].src} alt="" width={cover[layer].width} height={cover[layer].height} loading="lazy" decoding="async" />}
                     </span>
                   ))}
                   <span class="gallery-collection-print print-0">
-                    <img src={cover[0].src} alt="" width={cover[0].width} height={cover[0].height} decoding="async" />
+                    <img src={cover[0].thumbnail ?? cover[0].src} alt="" width={cover[0].width} height={cover[0].height} decoding="async" />
                   </span>
                 </span>
                 <span class="gallery-collection-copy">

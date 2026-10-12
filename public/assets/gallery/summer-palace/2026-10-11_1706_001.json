@@ -1,6 +1,7 @@
 {
   "id": "mandarin-duck-on-the-water",
   "src": "/assets/gallery/summer-palace/2026-10-11_1706_001.jpg",
+  "thumbnail": "/assets/gallery/summer-palace/2026-10-11_1706_001_thumb.jpg",
   "title": "Mandarin Duck on the Water",
   "themes": ["Animals & Plants"],
   "tags": ["duck"],
@@ -18,10 +19,8 @@
   "format": "JPEG",
   "resolution": "32.7 MP",
   "fileSize": "33.5 MB",
-  "width": 4000,
-  "height": 2667,
-  "originalWidth": 7008,
-  "originalHeight": 4672,
+  "width": 7008,
+  "height": 4672,
   "alt": "A male mandarin duck swimming across calm grey water at the Summer Palace, its reflection below it.",
   "caption": "Mandarin Duck on the Water"
 }

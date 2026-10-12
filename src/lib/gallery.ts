@@ -34,6 +34,8 @@ export type GalleryPhoto = {
   originalHeight?: number;
   fileSize?: string;
   src: string;
+  // A smaller copy shown on the wall and as thumbnails; the viewer always opens src.
+  thumbnail?: string;
   width: number;
   height: number;
   alt: string;
@@ -67,9 +69,9 @@ export const galleryCollections: GalleryCollection[] = [
   },
   {
     slug: "summer-palace",
-    title: "First Day with a New Camera",
+    title: "Day One with My A7M5",
     subject: "Summer Palace",
-    description: "Mandarin ducks along the shore and a pavilion bridge lit at nightfall, on my first day with a new camera at the Summer Palace.",
+    description: "The day my A7M5 arrived: unboxed in the afternoon, then straight out to the Summer Palace for mandarin ducks and Willow Bridge lit at nightfall.",
     preview: false,
     photos: [
       theNewCamera,

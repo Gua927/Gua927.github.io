@@ -72,7 +72,7 @@ export class PhotoAlbumElement extends HTMLElement {
       button.dataset.albumPhoto = String(photoIndex);
       button.setAttribute("aria-label", `Show photograph: ${photo.title}`);
       const image = document.createElement("img");
-      image.src = photo.src;
+      image.src = photo.thumbnail ?? photo.src;
       image.alt = "";
       image.width = photo.width;
       image.height = photo.height;
