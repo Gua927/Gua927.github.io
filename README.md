@@ -40,8 +40,11 @@ slugs and storage paths remain stable. Use `Place name, City` for locations,
 naming the spot first where it is known (`Willow Bridge, Summer Palace, Beijing`).
 The wall is a three-column masonry layout that keeps each photograph's own
 proportions; set `"featured": true` in a photograph's JSON to let it span two
-columns. The viewer always displays the full original image. For large originals,
-add a `thumbnail`: a smaller copy beside the image, named `YYYY-MM-DD_HHmm_NNN_thumb.jpg`,
+columns. The viewer always displays the whole image, scaled to fit the screen.
+Keep camera originals offline (GitHub Pages sites are limited to 1 GB): publish a
+display copy at most 4096 px on the long edge, JPEG quality 92, which looks the same
+on any screen at a fraction of the size. For such large photographs, also add a
+`thumbnail`: a 2000 px copy beside the image, named `YYYY-MM-DD_HHmm_NNN_thumb.jpg`,
 which the wall, collection covers, and viewer thumbnails show instead of `src`.
 
 Each photograph requires a stable, URL-safe `id`, `title`, `themes`, `src`, `width`, `height`, `alt`, and `caption`.
@@ -50,7 +53,7 @@ Optional details are `takenAt` (ISO date/month, optionally with local time), `no
 `exposureCompensation`, `originalFilename`, `format`, `resolution`, `fileSize`, `tags`, `featured`, and `thumbnail`.
 Use `originalWidth`/`originalHeight` for the original file's resolution while
 `width`/`height` describe the displayed image asset; omit the original dimensions
-when these are the same. Update dimensions, format, resolution, and file size
+when these are the same. `resolution` and `fileSize` also describe the original. Update dimensions, format, resolution, and file size
 when replacing a file. `format` and `originalFilename` (the name of the uploaded file) are kept as
 records; the viewer does not show them. Supply formatted
 parameter values such as `50 mm`, `f/2.8`, `1/250 s`, and `100`. Omit unknown

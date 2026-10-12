@@ -19,8 +19,10 @@
   "format": "JPEG",
   "resolution": "32.7 MP",
   "fileSize": "34.2 MB",
-  "width": 7008,
-  "height": 4672,
+  "width": 4096,
+  "height": 2731,
+  "originalWidth": 7008,
+  "originalHeight": 4672,
   "alt": "A close-up of a male mandarin duck at the water's edge, showing its orange ruff, white eye stripe and blue and orange wing feathers.",
   "caption": "Mandarin Duck in Full Plumage"
 }
