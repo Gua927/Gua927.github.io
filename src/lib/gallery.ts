@@ -1,6 +1,12 @@
 import fishingByTheSea from "../../public/assets/gallery/by-the-sea/2024-07-03_0631_001.json";
 import lighthouseAtDawn from "../../public/assets/gallery/by-the-sea/2024-07-03_0508_001.json";
 import afterglowOnTheWayHome from "../../public/assets/gallery/singles/2025-04-06_1824_001.json";
+import theNewCamera from "../../public/assets/gallery/summer-palace/2026-10-11_1450_001.json";
+import mandarinDuckOnTheWater from "../../public/assets/gallery/summer-palace/2026-10-11_1706_001.json";
+import mandarinDuckInFullPlumage from "../../public/assets/gallery/summer-palace/2026-10-11_1709_001.json";
+import mandarinDucksOnTheShore from "../../public/assets/gallery/summer-palace/2026-10-11_1721_001.json";
+import pavilionBridgeAtNightfall from "../../public/assets/gallery/summer-palace/2026-10-11_1810_001.json";
+import pavilionBridgeThroughTheWillows from "../../public/assets/gallery/summer-palace/2026-10-11_1812_001.json";
 
 export type GalleryPhoto = {
   id: string;
@@ -58,6 +64,21 @@ export const galleryCollections: GalleryCollection[] = [
     description: "Morning light, a lighthouse, and life along the shore on my first visit to Qinhuangdao.",
     preview: false,
     photos: [fishingByTheSea, lighthouseAtDawn],
+  },
+  {
+    slug: "summer-palace",
+    title: "First Day with a New Camera",
+    subject: "Summer Palace",
+    description: "Mandarin ducks along the shore and a pavilion bridge lit at nightfall, on my first day with a new camera at the Summer Palace.",
+    preview: false,
+    photos: [
+      theNewCamera,
+      mandarinDuckOnTheWater,
+      mandarinDuckInFullPlumage,
+      mandarinDucksOnTheShore,
+      pavilionBridgeAtNightfall,
+      pavilionBridgeThroughTheWillows,
+    ],
   },
 ];
 
