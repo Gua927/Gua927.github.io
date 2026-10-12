@@ -19,8 +19,10 @@
   "format": "JPEG",
   "resolution": "32.7 MP",
   "fileSize": "39.3 MB",
-  "width": 7008,
-  "height": 4672,
+  "width": 4096,
+  "height": 2731,
+  "originalWidth": 7008,
+  "originalHeight": 4672,
   "alt": "A lit pavilion bridge and illuminated willows reflected in a calm lake at night in the Summer Palace, with blurred willow branches in the foreground.",
   "caption": "Pavilion Bridge through the Willows"
 }

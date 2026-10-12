@@ -19,8 +19,10 @@
   "format": "JPEG",
   "resolution": "32.7 MP",
   "fileSize": "43.4 MB",
-  "width": 4672,
-  "height": 7008,
+  "width": 2731,
+  "height": 4096,
+  "originalWidth": 4672,
+  "originalHeight": 7008,
   "alt": "A lit stone bridge with a red-pillared, double-eaved pavilion reflected in a lake at night in the Summer Palace, framed by willow branches.",
   "caption": "Pavilion Bridge at Nightfall"
 }
