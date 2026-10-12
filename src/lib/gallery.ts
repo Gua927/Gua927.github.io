@@ -45,7 +45,7 @@ export type GalleryPhoto = {
 };
 
 // The fixed set of themes, in the order the Gallery filters show them.
-export const galleryThemes = ["Portraits", "Landscapes", "Cityscapes", "Street", "Animals & Plants"];
+export const galleryThemes = ["Portraits", "Architecture", "Scenery", "Culture", "Animals & Plants"];
 
 export type GalleryCollection = {
   slug: string;

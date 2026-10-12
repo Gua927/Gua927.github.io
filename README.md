@@ -58,8 +58,8 @@ values; the viewer shows them as —. Set `preview: true` only for
 collections containing layout samples.
 
 Themes filter the photo wall. Each photograph has its own `themes`, chosen from
-the fixed list in `galleryThemes` (`src/lib/gallery.ts`): Portraits, Landscapes,
-Cityscapes, Street, and Animals & Plants (for example, `["Street", "Landscapes"]`).
+the fixed list in `galleryThemes` (`src/lib/gallery.ts`): Portraits, Architecture,
+Scenery, Culture, and Animals & Plants (for example, `["Culture", "Scenery"]`).
 The build fails on any other theme name. Themes without photographs are shown
 but disabled. `tags` are a few short lowercase subject words shown as `#tag`
 (for example, `["sea", "sunrise"]`; use hyphens for two words, such as `light-trail`).
