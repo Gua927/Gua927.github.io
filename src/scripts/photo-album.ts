@@ -9,6 +9,10 @@ export class PhotoAlbumElement extends HTMLElement {
   private events?: AbortController;
   // Only the most recent selection may swap the main image once it has decoded.
   private swapToken = 0;
+  // Downloads begun for the current selection, cancelled when the visitor moves on.
+  private loads: HTMLImageElement[] = [];
+  // Full images already downloaded, which can be shown without a thumbnail first.
+  private ready = new Set<string>();
 
   connectedCallback() {
     this.events?.abort();
@@ -103,11 +107,6 @@ export class PhotoAlbumElement extends HTMLElement {
     this.updateText(photo, animate && changed);
     this.querySelectorAll<HTMLButtonElement>("[data-album-prev]").forEach((button) => { button.disabled = nextIndex === 0; });
     this.querySelectorAll<HTMLButtonElement>("[data-album-next]").forEach((button) => { button.disabled = nextIndex === this.photos.length - 1; });
-
-    // Warm the neighbours so the next step can cross-fade without waiting.
-    for (const neighbour of [this.photos[nextIndex - 1], this.photos[nextIndex + 1]]) {
-      if (neighbour) new Image().src = neighbour.src;
-    }
   }
 
   private showImage(photo: GalleryPhoto, direction: number, animate: boolean) {
@@ -115,18 +114,38 @@ export class PhotoAlbumElement extends HTMLElement {
     const current = main?.querySelector<HTMLImageElement>("img.is-shown");
     if (!main || !current) return;
     const token = ++this.swapToken;
+    // Stop downloads for photographs the visitor has already moved past.
+    this.loads.forEach((image) => { if (!image.complete) image.removeAttribute("src"); });
+    this.loads = [];
+
+    // Unless the full image is already here, show the light thumbnail at once
+    // (usually cached by the wall or the sidebar) and sharpen it when the full
+    // image arrives; only then warm the neighbours, so they never compete with it.
+    const preview = this.ready.has(photo.src) ? photo.src : photo.thumbnail ?? photo.src;
+    const sharpen = (image: HTMLImageElement) => {
+      const full = preview === photo.src ? image : this.load(photo.src, "high");
+      full.decode().catch(() => undefined).then(() => {
+        if (token !== this.swapToken) return;
+        if (full !== image) image.src = photo.src;
+        for (const neighbour of [this.photos[this.currentIndex - 1], this.photos[this.currentIndex + 1]]) {
+          if (neighbour && !this.ready.has(neighbour.src)) this.load(neighbour.src, "low");
+        }
+      });
+    };
 
     if (!animate) {
       main.querySelectorAll("img:not(.is-shown)").forEach((image) => image.remove());
-      Object.assign(current, { src: photo.src, alt: photo.alt, width: photo.width, height: photo.height });
+      Object.assign(current, { src: preview, alt: photo.alt, width: photo.width, height: photo.height });
       delete main.dataset.loading;
+      sharpen(current);
       return;
     }
 
     const incoming = current.cloneNode(false) as HTMLImageElement;
     incoming.className = "";
     incoming.removeAttribute("fetchpriority");
-    Object.assign(incoming, { src: photo.src, alt: photo.alt, width: photo.width, height: photo.height });
+    Object.assign(incoming, { src: preview, alt: photo.alt, width: photo.width, height: photo.height });
+    this.loads.push(incoming);
     main.style.setProperty("--album-direction", String(direction));
     main.dataset.loading = "true";
 
@@ -143,7 +162,18 @@ export class PhotoAlbumElement extends HTMLElement {
         image.classList.add("is-leaving");
         setTimeout(() => image.remove(), reducedMotion() ? 200 : 700);
       });
+      sharpen(incoming);
     });
+  }
+
+  // Fetch a full image off-screen; a later selection cancels it if unfinished.
+  private load(src: string, priority: "high" | "low") {
+    const image = new Image();
+    image.setAttribute("fetchpriority", priority);
+    image.addEventListener("load", () => this.ready.add(src), { once: true });
+    image.src = src;
+    this.loads.push(image);
+    return image;
   }
 
   private updateThumbs() {

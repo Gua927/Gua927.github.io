@@ -23,7 +23,7 @@ const fields = photoDetails(first);
   <figure class="album-main" data-album-main>
     <img
       class="is-shown"
-      src={first?.src}
+      src={first?.thumbnail ?? first?.src}
       alt={first?.alt ?? ""}
       width={first?.width}
       height={first?.height}
