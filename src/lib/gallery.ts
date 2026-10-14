@@ -7,6 +7,8 @@ import mandarinDuckInFullPlumage from "../../public/assets/gallery/summer-palace
 import mandarinDucksOnTheShore from "../../public/assets/gallery/summer-palace/2026-10-11_1721_001.json";
 import pavilionBridgeAtNightfall from "../../public/assets/gallery/summer-palace/2026-10-11_1810_001.json";
 import pavilionBridgeThroughTheWillows from "../../public/assets/gallery/summer-palace/2026-10-11_1812_001.json";
+import yufengPagodaAboveTheWillows from "../../public/assets/gallery/singles/2026-10-13_1654_001.json";
+import eyeToTheViewfinder from "../../public/assets/gallery/singles/2026-10-13_1715_001.json";
 
 export type GalleryPhoto = {
   id: string;
@@ -85,7 +87,7 @@ export const galleryCollections: GalleryCollection[] = [
 ];
 
 // Photographs that belong to no collection; they appear only on the Gallery wall.
-export const gallerySingles: GalleryPhoto[] = [afterglowOnTheWayHome];
+export const gallerySingles: GalleryPhoto[] = [afterglowOnTheWayHome, yufengPagodaAboveTheWillows, eyeToTheViewfinder];
 
 // Fail the build on a misspelled or ad-hoc theme rather than growing the filter list.
 for (const photo of [...galleryCollections.flatMap((collection) => collection.photos), ...gallerySingles]) {
