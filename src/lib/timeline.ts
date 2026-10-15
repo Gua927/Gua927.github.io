@@ -1,6 +1,7 @@
 import { getCollection } from "astro:content";
 import { curatedMedia, youtubeId } from "./media";
 import { galleryCollections, gallerySingles } from "./gallery";
+import { orderGallery } from "./gallery-order";
 
 export type TimelineCategory = "publication" | "blog" | "media" | "gallery" | "site-update";
 
@@ -50,8 +51,8 @@ function parseMediaDate(value: string) {
   return new Date();
 }
 
-// A collection is one entry dated by its earliest photograph; a photograph outside
-// any collection is its own entry. Undated photographs stay off the timeline.
+// A collection is one entry dated by its earliest photograph; photographs outside
+// any collection share one entry per day. Undated photographs stay off the timeline.
 function galleryEntries(): TimelineEntry[] {
   const collections = galleryCollections.flatMap((collection) => {
     const first = collection.photos.flatMap((photo) => (photo.takenAt ? [photo.takenAt] : [])).sort()[0];
@@ -66,14 +67,25 @@ function galleryEntries(): TimelineEntry[] {
       description: `${count} ${count === 1 ? "photograph" : "photographs"} · ${collection.description}`,
     }];
   });
-  const singles = gallerySingles.flatMap((photo) => (photo.takenAt ? [{
-    id: `gallery-${photo.id}`,
-    date: new Date(photo.takenAt),
-    title: photo.title,
-    category: "gallery" as const,
-    href: `/gallery/#photo-${photo.id}`,
-    description: photo.notes,
-  }] : []));
+  const days = new Map<string, typeof gallerySingles>();
+  for (const photo of orderGallery(gallerySingles, "asc")) {
+    if (!photo.takenAt) continue;
+    const day = photo.takenAt.slice(0, 10);
+    days.set(day, [...(days.get(day) ?? []), photo]);
+  }
+  const singles = [...days].map(([day, photos]) => {
+    const first = photos[0];
+    // The wall runs newest first, so the day's latest photograph is where it begins.
+    const latest = photos[photos.length - 1];
+    return {
+      id: photos.length === 1 ? `gallery-${first.id}` : `gallery-${day}`,
+      date: new Date(first.takenAt!),
+      title: photos.map((photo) => photo.title).join(" · "),
+      category: "gallery" as const,
+      href: `/gallery/#photo-${latest.id}`,
+      description: photos.length === 1 ? first.notes : `${photos.length} photographs`,
+    };
+  });
   return [...collections, ...singles];
 }
 
