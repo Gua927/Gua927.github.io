@@ -11,6 +11,11 @@ import yufengPagodaAboveTheWillows from "../../public/assets/gallery/singles/202
 import eyeToTheViewfinder from "../../public/assets/gallery/singles/2026-10-13_1715_001.json";
 import dancingInTheSquare from "../../public/assets/gallery/singles/2026-10-14_1201_001.json";
 import settingOut from "../../public/assets/gallery/singles/2026-10-14_2036_001.json";
+import autumnArrives from "../../public/assets/gallery/singles/2026-10-15_1336_001.json";
+import fallenLeaves from "../../public/assets/gallery/singles/2026-10-15_1432_001.json";
+import strangersByTheMoat from "../../public/assets/gallery/singles/2026-10-15_1639_001.json";
+import cornerTowerMirroredInTheMoat from "../../public/assets/gallery/singles/2026-10-15_1648_001.json";
+import artificialIntelligence from "../../public/assets/gallery/singles/2026-10-17_0923_001.json";
 
 export type GalleryPhoto = {
   id: string;
@@ -95,6 +100,11 @@ export const gallerySingles: GalleryPhoto[] = [
   eyeToTheViewfinder,
   dancingInTheSquare,
   settingOut,
+  autumnArrives,
+  fallenLeaves,
+  strangersByTheMoat,
+  cornerTowerMirroredInTheMoat,
+  artificialIntelligence,
 ];
 
 // Fail the build on a misspelled or ad-hoc theme rather than growing the filter list.
