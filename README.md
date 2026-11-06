@@ -26,7 +26,7 @@ public/assets/gallery/by-the-sea/
   2024-07-03_0631_001.json
 ```
 
-The JSON file is the source of truth for the photo ID, English title, notes,
+The JSON file is the source of truth for the photo ID, display title, notes,
 location, capture time, equipment, and file details. Import it in
 `src/lib/gallery.ts` and add it to the relevant collection's `photos` array.
 Photographs that belong to no collection live in `public/assets/gallery/singles/`
@@ -65,9 +65,11 @@ the fixed list in `galleryThemes` (`src/lib/gallery.ts`): Portraits, Architectur
 Scenery, Culture, and Animals & Plants (for example, `["Culture", "Scenery"]`).
 The build fails on any other theme name. Themes without photographs are shown
 but disabled. `tags` are a few short lowercase subject words shown as `#tag`
-(for example, `["sea", "sunrise"]`; use hyphens for two words, such as `light-trail`).
-Prefer reusing an existing tag to adding a near-synonym, and keep two or three per
-photograph. The Tags row lists them by frequency; click a tag to filter and again to
+(for example, `["sea", "sunrise"]`).
+Reuse only the existing tags: `tower`, `sunrise`, `sea`, `sunset`, `afterglow`,
+`heritage`, `autumn`, and `bird`. Do not introduce new tags when adding photographs.
+If no existing tag fits, omit `tags` and keep the photograph's theme classification.
+The Tags row lists them by frequency; click a tag to filter and again to
 clear it. The search beside the title further narrows the results.
 Date sorts newest first (default) or oldest first, with undated photographs last.
 The wall fills columns in this order, as does the full-screen All viewer.
