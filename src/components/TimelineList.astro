@@ -21,6 +21,7 @@ const entries = (await getTimelineEntries())
 ---
 
 <ul class:list={["timeline-list", className]}>
+  <slot />
   {
     entries.map((entry) => {
       return (

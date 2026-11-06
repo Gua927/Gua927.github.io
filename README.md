@@ -32,8 +32,8 @@ location, capture time, equipment, and file details. Import it in
 Photographs that belong to no collection live in `public/assets/gallery/singles/`
 and are listed in `gallerySingles`; they appear only on the wall.
 The Timeline follows the Gallery automatically: each collection is one entry dated
-by its earliest photograph, and each photograph outside a collection is its own
-entry dated by `takenAt`. Undated photographs are left off the Timeline.
+by its earliest photograph, and photographs outside a collection share one entry
+per capture day, based on `takenAt`. Undated photographs are left off the Timeline.
 Keep IDs stable when replacing images; increment the sequence for different
 photos taken in the same minute. Collection display names may change while their
 slugs and storage paths remain stable. Use `Place name, City` for locations,
@@ -78,3 +78,14 @@ Both entries share a large central photograph and a right sidebar with thumbnail
 above the photograph's details. Use the thumbnails, previous/next buttons, the
 edges of the photograph, swipes, or arrow keys to browse. Close or Escape returns
 to the wall; closing a collection returns to `/gallery/`.
+
+## Pinned News
+
+The homepage News automatically shows only the three latest Publication and Blog
+entries. Gallery updates remain on the Timeline. Manually specified announcements
+can be added separately; a `PinnedNews` item appears before the automatic entries.
+Configure its title, link, event date, and `from`/`until` timestamps in
+`src/pages/index.astro`. Include an explicit timezone offset; `from` is inclusive
+and `until` is exclusive. The browser shows the `pin` item only during this window,
+including when returning through Astro navigation, and hides it at expiry without
+requiring another build. The linked Gallery photograph and Timeline entry remain.

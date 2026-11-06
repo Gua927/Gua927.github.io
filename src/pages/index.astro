@@ -1,7 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import TimelineList from "../components/TimelineList.astro";
+import PinnedNews from "../components/PinnedNews.astro";
 import { frontmatter } from "../content/about.md";
+import birthdayPhoto from "../../public/assets/gallery/singles/2026-10-29_2240_001.json";
 ---
 
 <BaseLayout title="Runze Tian" description="Runze Tian's academic profile and generative AI notes.">
@@ -34,7 +36,15 @@ import { frontmatter } from "../content/about.md";
         <span>News</span>
         <a href="/timeline/">[ View timeline ]</a>
       </div>
-      <TimelineList limit={3} categories={["publication", "blog", "gallery"]} />
+      <TimelineList limit={3} categories={["publication", "blog"]}>
+        <PinnedNews
+          title="Happy birthday, 小皇帝! 🎂"
+          href={`/gallery/#photo-${birthdayPhoto.id}`}
+          date={birthdayPhoto.takenAt.slice(0, 10)}
+          from="2026-11-06T00:00:00+08:00"
+          until="2026-12-06T00:00:00+08:00"
+        />
+      </TimelineList>
     </section>
   </section>
 </BaseLayout>

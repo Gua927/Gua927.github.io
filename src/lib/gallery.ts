@@ -16,6 +16,12 @@ import fallenLeaves from "../../public/assets/gallery/singles/2026-10-15_1432_00
 import strangersByTheMoat from "../../public/assets/gallery/singles/2026-10-15_1639_001.json";
 import cornerTowerMirroredInTheMoat from "../../public/assets/gallery/singles/2026-10-15_1648_001.json";
 import artificialIntelligence from "../../public/assets/gallery/singles/2026-10-17_0923_001.json";
+import anEveningAtTheSnackStall from "../../public/assets/gallery/singles/2026-10-19_1823_001.json";
+import behindTheYellowMask from "../../public/assets/gallery/singles/2026-10-29_2054_001.json";
+import littleEmperorBirthday from "../../public/assets/gallery/singles/2026-10-29_2240_001.json";
+import sharingAShotAtSunset from "../../public/assets/gallery/singles/2026-10-30_1656_001.json";
+import lotusPondAfterDark from "../../public/assets/gallery/singles/2026-11-05_1821_001.json";
+import aMomentByTheWater from "../../public/assets/gallery/singles/2026-11-05_1751_001.json";
 
 export type GalleryPhoto = {
   id: string;
@@ -105,6 +111,12 @@ export const gallerySingles: GalleryPhoto[] = [
   strangersByTheMoat,
   cornerTowerMirroredInTheMoat,
   artificialIntelligence,
+  anEveningAtTheSnackStall,
+  behindTheYellowMask,
+  littleEmperorBirthday,
+  sharingAShotAtSunset,
+  lotusPondAfterDark,
+  aMomentByTheWater,
 ];
 
 // Fail the build on a misspelled or ad-hoc theme rather than growing the filter list.

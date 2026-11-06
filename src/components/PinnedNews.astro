@@ -1,0 +1,78 @@
+---
+interface Props {
+  title: string;
+  href: string;
+  date: string;
+  from: string;
+  until: string;
+}
+
+const { title, href, date, from, until } = Astro.props;
+---
+
+<li class="timeline-item pinned-news" data-pinned-news data-pin-from={from} data-pin-until={until} hidden>
+  <a href={href}>
+    <span class="timeline-meta">
+      <time datetime={date}>{date.replaceAll("-", ".")}</time> · <span class="pin-label">pin</span>
+    </span>
+    <span class="timeline-separator" aria-hidden="true">—</span>
+    <strong>{title}</strong>
+  </a>
+</li>
+
+<script>
+  let pinTimer: ReturnType<typeof setTimeout> | undefined;
+
+  function updatePinnedNews() {
+    clearTimeout(pinTimer);
+    const now = Date.now();
+    let nextChange = Infinity;
+
+    document.querySelectorAll<HTMLElement>("[data-pinned-news]").forEach((item) => {
+      const from = Date.parse(item.dataset.pinFrom ?? "");
+      const until = Date.parse(item.dataset.pinUntil ?? "");
+      item.hidden = !(from <= now && now < until);
+      for (const boundary of [from, until]) {
+        if (boundary > now) nextChange = Math.min(nextChange, boundary - now);
+      }
+    });
+
+    // Check in the browser so a static deployment expires without a rebuild.
+    // Cap long waits to avoid the browser's 32-bit timeout limit.
+    if (Number.isFinite(nextChange)) {
+      pinTimer = setTimeout(updatePinnedNews, Math.min(nextChange, 86_400_000));
+    }
+  }
+
+  document.addEventListener("astro:page-load", updatePinnedNews);
+  document.addEventListener("astro:before-swap", () => clearTimeout(pinTimer));
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) updatePinnedNews();
+  });
+  updatePinnedNews();
+</script>
+
+<style>
+  .pin-label {
+    color: var(--text-main);
+    font-weight: 600;
+    text-transform: none;
+  }
+
+  .pinned-news strong {
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  @media (max-width: 600px) {
+    .pinned-news a {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 0;
+      padding-bottom: 0.4rem;
+    }
+
+    .pinned-news .timeline-separator {
+      display: none;
+    }
+  }
+</style>
