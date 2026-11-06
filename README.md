@@ -26,8 +26,10 @@ public/assets/gallery/by-the-sea/
   2024-07-03_0631_001.json
 ```
 
-The JSON file is the source of truth for the photo ID, display title, notes,
-location, capture time, equipment, and file details. Import it in
+The JSON file is the source of truth for the photo ID, English title, notes,
+location, capture time, equipment, and file details. Keep all displayed Gallery
+text and homepage News announcements in English, including captions, notes,
+locations, and birthday greetings. Import the JSON file in
 `src/lib/gallery.ts` and add it to the relevant collection's `photos` array.
 Photographs that belong to no collection live in `public/assets/gallery/singles/`
 and are listed in `gallerySingles`; they appear only on the wall.
